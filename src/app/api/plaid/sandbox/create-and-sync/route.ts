@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { user_id, institution_id = 'ins_109508' } = await req.json();
+    const { user_id, institution_id = 'ins_109508', username = 'user_small_business' } = await req.json();
 
     if (!user_id) {
       return NextResponse.json({ error: 'user_id required' }, { status: 400 });
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       institution_id,
       initial_products: [Products.Transactions],
       options: {
-        override_username: 'user_small_business',
+        override_username: username,
       },
     });
 
