@@ -210,25 +210,49 @@ def query_financial_health(
     # Lazy cash = cash beyond 1.5× the 6-month expense buffer
     # Uses current-month spend as a proxy (3-month burn is in query_forecast_data)
     six_month_buffer = expenditure * 6
-    lazy_cash        = max(0.0, net_worth - six_month_buffer * 1.5)
+
+    # ── Outstanding invoice obligations (populated by Gmail invoice agent) ────
+    # These are future cash outflows not yet in Plaid — they reduce real runway.
+    inv_resp = (
+        client.table("invoices")
+        .select("amount, due_date, status")
+        .eq("user_id", user_id)
+        .neq("status", "paid")
+        .execute()
+    )
+    inv_data  = inv_resp.data or []
+    inv_today = date.today()
+    outstanding_invoice_total = sum(float(i.get("amount") or 0) for i in inv_data)
+    overdue_invoice_total = sum(
+        float(i.get("amount") or 0)
+        for i in inv_data
+        if i.get("due_date") and date.fromisoformat(i["due_date"]) < inv_today
+    )
+    # Effective net worth = balance minus all outstanding unpaid invoice liabilities
+    effective_net_worth = net_worth - outstanding_invoice_total
+    # Lazy cash recalculated against effective position so invoices reduce free cash
+    lazy_cash = max(0.0, effective_net_worth - six_month_buffer * 1.5)
 
     return {
-        "insight_type":            "financial_health",
-        "period_start":            period_start.isoformat(),
-        "net_worth":               round(net_worth, 2),
-        "account_breakdown":       account_breakdown,
-        "total_expenditure":       round(expenditure, 2),
-        "total_income":            round(income, 2),
-        "total_profit":            round(profit, 2),
-        "profit_margin_pct":       round((profit / income * 100) if income > 0 else 0.0, 1),
+        "insight_type":              "financial_health",
+        "period_start":              period_start.isoformat(),
+        "net_worth":                 round(net_worth, 2),
+        "effective_net_worth":       round(effective_net_worth, 2),
+        "outstanding_invoice_total": round(outstanding_invoice_total, 2),
+        "overdue_invoice_total":     round(overdue_invoice_total, 2),
+        "account_breakdown":         account_breakdown,
+        "total_expenditure":         round(expenditure, 2),
+        "total_income":              round(income, 2),
+        "total_profit":              round(profit, 2),
+        "profit_margin_pct":         round((profit / income * 100) if income > 0 else 0.0, 1),
         "cost_breakdown": {
             "fixed":    {"amount": round(fixed_total, 2),    "pct": _pct(fixed_total),    "items": bucket_items["fixed"]},
             "variable": {"amount": round(variable_total, 2), "pct": _pct(variable_total), "items": bucket_items["variable"]},
             "payroll":  {"amount": round(payroll_total, 2),  "pct": _pct(payroll_total),  "items": bucket_items["payroll"]},
             "other":    {"amount": round(other_total, 2),    "pct": _pct(other_total)},
         },
-        "lazy_cash_estimate":      round(lazy_cash, 2),
-        "six_month_buffer_needed": round(six_month_buffer, 2),
+        "lazy_cash_estimate":        round(lazy_cash, 2),
+        "six_month_buffer_needed":   round(six_month_buffer, 2),
     }
 
 
@@ -365,14 +389,36 @@ def query_purchase_context(client: Client, user_id: str) -> dict[str, Any]:
         cat_spend_3mo[cat] += float(t["amount"])
 
     six_month_buffer = avg_monthly_burn * 6
-    lazy_cash        = max(0.0, current_balance - six_month_buffer * 1.5)
+
+    # ── Outstanding invoice obligations ───────────────────────────────────────
+    inv_resp = (
+        client.table("invoices")
+        .select("amount, due_date, status, vendor")
+        .eq("user_id", user_id)
+        .neq("status", "paid")
+        .execute()
+    )
+    inv_data  = inv_resp.data or []
+    inv_today = date.today()
+    outstanding_invoice_total = sum(float(i.get("amount") or 0) for i in inv_data)
+    overdue_invoice_total = sum(
+        float(i.get("amount") or 0)
+        for i in inv_data
+        if i.get("due_date") and date.fromisoformat(i["due_date"]) < inv_today
+    )
+    # Purchase decisions should use effective balance (cash minus known liabilities)
+    effective_balance = current_balance - outstanding_invoice_total
+    lazy_cash = max(0.0, effective_balance - six_month_buffer * 1.5)
 
     return {
-        "current_balance":          round(current_balance, 2),
-        "avg_monthly_burn":         round(avg_monthly_burn, 2),
-        "current_runway_months":    current_runway,
-        "six_month_buffer":         round(six_month_buffer, 2),
-        "lazy_cash_estimate":       round(lazy_cash, 2),
+        "current_balance":              round(current_balance, 2),
+        "effective_balance":            round(effective_balance, 2),
+        "outstanding_invoice_total":    round(outstanding_invoice_total, 2),
+        "overdue_invoice_total":        round(overdue_invoice_total, 2),
+        "avg_monthly_burn":             round(avg_monthly_burn, 2),
+        "current_runway_months":        current_runway,
+        "six_month_buffer":             round(six_month_buffer, 2),
+        "lazy_cash_estimate":           round(lazy_cash, 2),
         # Monthly averages per category — divide by 3 for monthly view
         "category_monthly_avg_spend": {
             k: round(v / 3, 2) for k, v in cat_spend_3mo.items()

@@ -33,6 +33,7 @@ from .queries import (
     query_individual_vs_enterprise,
     query_free_trial_trap,
     query_runway_stress_test,
+    query_invoice_obligations,
 )
 from .health_queries import (
     query_financial_health,
@@ -186,7 +187,7 @@ async def get_insights(
         raise HTTPException(status_code=404, detail=f"User '{user_id}' not found.")
 
     # ── Stage 1: Run all 7 queries concurrently ───────────────────────────────
-    log.info("[%s] Running 7 insight queries (months=%d)…", user_id, months)
+    log.info("[%s] Running insight queries (months=%d)…", user_id, months)
 
     (
         saas_waste,
@@ -196,6 +197,7 @@ async def get_insights(
         ind_vs_ent,
         free_trial,
         runway,
+        invoices_data,
     ) = await asyncio.gather(
         asyncio.to_thread(query_saas_seat_waste,          client, user_id, months, team_size),
         asyncio.to_thread(query_price_creep,              client, user_id, months),
@@ -204,6 +206,7 @@ async def get_insights(
         asyncio.to_thread(query_individual_vs_enterprise, client, user_id, months),
         asyncio.to_thread(query_free_trial_trap,          client, user_id, months),
         asyncio.to_thread(query_runway_stress_test,       client, user_id, months),
+        asyncio.to_thread(query_invoice_obligations,      client, user_id),
     )
 
     log.info("[%s] Stage 1 complete. Running AI enrichment…", user_id)
@@ -241,6 +244,7 @@ async def get_insights(
         ind_vs_ent,
         free_trial,
         runway,
+        invoices_data,
     ]
 
     prioritised = await asyncio.to_thread(
@@ -363,12 +367,15 @@ async def get_financial_health(
         "health_score":     ai_health.get("health_score", 0),
         "score_breakdown":  ai_health.get("score_breakdown", {}),
         # P&L
-        "net_worth":          health_raw["net_worth"],
-        "account_breakdown":  health_raw["account_breakdown"],
-        "total_expenditure":  health_raw["total_expenditure"],
-        "total_income":       health_raw["total_income"],
-        "total_profit":       health_raw["total_profit"],
-        "profit_margin_pct":  health_raw["profit_margin_pct"],
+        "net_worth":                 health_raw["net_worth"],
+        "effective_net_worth":       health_raw.get("effective_net_worth", health_raw["net_worth"]),
+        "outstanding_invoice_total": health_raw.get("outstanding_invoice_total", 0),
+        "overdue_invoice_total":     health_raw.get("overdue_invoice_total", 0),
+        "account_breakdown":         health_raw["account_breakdown"],
+        "total_expenditure":         health_raw["total_expenditure"],
+        "total_income":              health_raw["total_income"],
+        "total_profit":              health_raw["total_profit"],
+        "profit_margin_pct":         health_raw["profit_margin_pct"],
         # Cost structure
         "cost_breakdown":              health_raw["cost_breakdown"],
         "variable_cost_assessment":    ai_health.get("variable_cost_assessment", ""),
@@ -385,11 +392,12 @@ async def get_financial_health(
         # Benchmark
         "benchmark_comparison": ai_forecast.get("benchmark_comparison", {}),
         # Alerts
-        "inventory_alert":       ai_forecast.get("inventory_alert"),
-        "seasonal_risk":         ai_forecast.get("seasonal_risk"),
-        "lazy_cash_estimate":    health_raw["lazy_cash_estimate"],
-        "lazy_cash_alert":       ai_health.get("lazy_cash_alert"),
-        "investment_opportunity": ai_health.get("investment_opportunity"),
+        "inventory_alert":           ai_forecast.get("inventory_alert"),
+        "seasonal_risk":             ai_forecast.get("seasonal_risk"),
+        "lazy_cash_estimate":        health_raw["lazy_cash_estimate"],
+        "lazy_cash_alert":           ai_health.get("lazy_cash_alert"),
+        "invoice_liability_alert":   ai_health.get("invoice_liability_alert"),
+        "investment_opportunity":    ai_health.get("investment_opportunity"),
         # Improvements
         "top_3_controllable_improvements": ai_health.get("top_3_controllable_improvements", []),
     }
@@ -445,19 +453,26 @@ async def ask_purchase(
 
     if cached_health:
         log.info("[%s] Using cached financial_health_report for purchase context.", user_id)
+        _eff_balance = cached_health.get("effective_net_worth", cached_health.get("net_worth", 0))
         financial_context = {
-            "current_balance":       cached_health.get("net_worth", 0),
-            "avg_monthly_burn":      cached_health.get("avg_monthly_burn", 0),
+            "current_balance":            _eff_balance,
+            "outstanding_invoice_total":  cached_health.get("outstanding_invoice_total", 0),
+            "overdue_invoice_total":      cached_health.get("overdue_invoice_total", 0),
+            "avg_monthly_burn":           cached_health.get("avg_monthly_burn", 0),
             "current_runway_months": round(
-                cached_health.get("net_worth", 0) / cached_health.get("avg_monthly_burn", 1), 1
+                _eff_balance / cached_health.get("avg_monthly_burn", 1), 1
             ) if cached_health.get("avg_monthly_burn", 0) > 0 else None,
-            "cost_breakdown":        cached_health.get("cost_breakdown", {}),
-            "health_score":          cached_health.get("health_score"),
-            "top_3_improvements":    cached_health.get("top_3_controllable_improvements", []),
+            "cost_breakdown":             cached_health.get("cost_breakdown", {}),
+            "health_score":               cached_health.get("health_score"),
+            "top_3_improvements":         cached_health.get("top_3_controllable_improvements", []),
         }
     else:
         log.info("[%s] No cache found — querying fresh purchase context.", user_id)
         financial_context = await asyncio.to_thread(query_purchase_context, client, user_id)
+        # Promote effective_balance → current_balance so the runway calc below and
+        # the Gemini prompt always see cash-minus-invoice-liabilities, not raw cash.
+        if "effective_balance" in financial_context:
+            financial_context["current_balance"] = financial_context["effective_balance"]
 
     # Pre-calculate runway after purchase so Gemini has it as a hard number
     if financial_context.get("avg_monthly_burn", 0) > 0:

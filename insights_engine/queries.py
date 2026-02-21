@@ -531,3 +531,85 @@ def query_runway_stress_test(client: Client, user_id: str, months: int = 1) -> d
         "stressed_balance":       round(stressed_balance, 2) if stressed_balance is not None else None,
         "stressed_runway_months": stressed_runway,
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8. Invoice Obligations  (populated by Gmail invoice agent)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def query_invoice_obligations(client: Client, user_id: str) -> dict[str, Any]:
+    """
+    Surface outstanding invoice obligations from the invoices table.
+    The Gmail invoice agent parses email attachments and writes rows here;
+    this module turns those rows into an actionable financial risk signal.
+
+    Classifies each unpaid invoice as:
+      - overdue:           due_date has passed and status != 'paid'
+      - due_within_30d:    due date falls within the next 30 days
+      - upcoming:          due date is more than 30 days away (or no due date set)
+
+    These amounts represent *future cash outflows not yet captured in Plaid*,
+    so they directly reduce effective available cash and shorten real runway.
+    """
+    today           = date.today()
+    thirty_days_out = today + timedelta(days=30)
+
+    resp = (
+        client.table("invoices")
+        .select("id, vendor, amount, due_date, status, source")
+        .eq("user_id", user_id)
+        .neq("status", "paid")
+        .execute()
+    )
+
+    overdue:  list[dict] = []
+    due_soon: list[dict] = []
+    upcoming: list[dict] = []
+
+    for inv in (resp.data or []):
+        amt    = round(float(inv.get("amount") or 0), 2)
+        vendor = (inv.get("vendor") or "Unknown").strip()
+        status = inv.get("status") or "pending"
+        source = inv.get("source") or "unknown"
+
+        due: date | None = None
+        if inv.get("due_date"):
+            try:
+                due = date.fromisoformat(inv["due_date"])
+            except ValueError:
+                pass
+
+        record: dict[str, Any] = {
+            "vendor":   vendor,
+            "amount":   amt,
+            "due_date": inv.get("due_date"),
+            "status":   status,
+            "source":   source,
+        }
+
+        if due is None:
+            upcoming.append(record)
+        elif due < today:
+            record["days_overdue"] = (today - due).days
+            overdue.append(record)
+        elif due <= thirty_days_out:
+            record["days_until_due"] = (due - today).days
+            due_soon.append(record)
+        else:
+            upcoming.append(record)
+
+    total_overdue  = sum(inv["amount"] for inv in overdue)
+    total_due_soon = sum(inv["amount"] for inv in due_soon)
+    total_unpaid   = total_overdue + total_due_soon + sum(inv["amount"] for inv in upcoming)
+
+    return {
+        "insight_type":          "invoice_obligations",
+        "overdue_invoices":      overdue,
+        "due_within_30_days":    due_soon,
+        "upcoming_invoices":     upcoming,
+        "total_overdue_amount":  round(total_overdue, 2),
+        "total_due_soon_amount": round(total_due_soon, 2),
+        "total_unpaid_amount":   round(total_unpaid, 2),
+        "overdue_count":         len(overdue),
+        "due_soon_count":        len(due_soon),
+    }

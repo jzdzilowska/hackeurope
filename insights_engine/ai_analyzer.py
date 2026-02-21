@@ -262,7 +262,7 @@ Organisation ID: {org_id}
 {team_size_line}
 Report date: {report_date}
 
-Raw insight data from all 7 modules:
+Raw insight data from all insight modules:
 {all_insights}
 
 Return a JSON object with this exact schema:
@@ -360,7 +360,7 @@ Business Context:
 Score ONLY on these 4 controllable dimensions (25 points each = 100 total):
   1. Cost Structure  (25 pts): Is the fixed/variable/payroll split healthy for their stage?
   2. Profit Quality  (25 pts): Is the profit margin sustainable? Revenue diversification?
-  3. Cash Efficiency (25 pts): Is cash deployed productively? Any idle/lazy cash losing value to inflation?
+  3. Cash Efficiency (25 pts): Is cash deployed productively? Any idle/lazy cash losing value to inflation? Also factor in outstanding and overdue invoice liabilities — they reduce effective available cash and signal cash-management risk.
   4. Expense Control (25 pts): Are there signs of cost discipline, or growing undisciplined spend?
 
 Return ONLY this JSON object — no prose, no markdown:
@@ -375,6 +375,7 @@ Return ONLY this JSON object — no prose, no markdown:
   "variable_cost_assessment": "string — is their variable cost % healthy for their industry and stage?",
   "payroll_assessment": "string — is payroll proportionate to their revenue and stage?",
   "lazy_cash_alert": <null | "string — if idle cash > 150% of 6-month burn: state exact amount, inflation cost per month, and opportunity">,
+  "invoice_liability_alert": <null | "string — if overdue_invoice_total > 0: name the vendors, state the total overdue amount, and give a specific payment urgency recommendation">,
   "investment_opportunity": <null | "string — specific capital allocation recommendation with projected return, e.g. 'Move €200k to a 4.5% business savings account — generates €750/month, covering your entire SaaS stack'">,
   "top_3_controllable_improvements": [
     "string — specific, imperative, with estimated monthly impact in currency",
@@ -404,6 +405,7 @@ def analyze_financial_health(
         "variable_cost_assessment": "Analysis unavailable — please retry.",
         "payroll_assessment":       "Analysis unavailable — please retry.",
         "lazy_cash_alert":          None,
+        "invoice_liability_alert":  None,
         "investment_opportunity":   None,
         "top_3_controllable_improvements": [],
         "_error": "JSON parse failed",

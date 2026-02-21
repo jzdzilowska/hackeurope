@@ -39,6 +39,7 @@ from insights_engine.queries import (
     query_individual_vs_enterprise,
     query_free_trial_trap,
     query_runway_stress_test,
+    query_invoice_obligations,
 )
 from insights_engine.health_queries import query_financial_health, query_forecast_data
 from insights_engine.ai_analyzer import (
@@ -79,8 +80,8 @@ def run_user(client, user_id: str, profile: dict) -> None:
     }
     team_size = profile.get("team_size")
 
-    # ── Stage 1: 7 live insight queries ──────────────────────────────────────
-    print("  [1/5] Running 7 insight queries...")
+    # ── Stage 1: 8 insight queries (7 transaction modules + invoice obligations) ──
+    print("  [1/5] Running insight queries (7 transaction modules + invoices)...")
     saas_waste  = query_saas_seat_waste(client, user_id, months=1, team_size=team_size)
     price_creep = query_price_creep(client, user_id, months=1)
     ad_eff      = query_ad_efficiency(client, user_id, months=1)
@@ -88,7 +89,9 @@ def run_user(client, user_id: str, profile: dict) -> None:
     ind_ent     = query_individual_vs_enterprise(client, user_id, months=1)
     free_trial  = query_free_trial_trap(client, user_id, months=1)
     runway      = query_runway_stress_test(client, user_id, months=1)
+    invoices    = query_invoice_obligations(client, user_id)
     print(f"        runway={runway.get('stressed_runway_months')} months  burn=${runway.get('avg_monthly_burn', 0):,.2f}/mo")
+    print(f"        invoices: {invoices.get('overdue_count', 0)} overdue (${invoices.get('total_overdue_amount', 0):,.2f})  {invoices.get('due_soon_count', 0)} due soon (${invoices.get('total_due_soon_amount', 0):,.2f})")
 
     # ── Stage 2: Health + forecast queries ───────────────────────────────────
     print("  [2/5] Running health & forecast queries...")
@@ -106,8 +109,8 @@ def run_user(client, user_id: str, profile: dict) -> None:
 
     # ── Stage 4: Master prioritisation ───────────────────────────────────────
     print("  [4/5] AI prioritisation + health scoring...")
-    all_7 = [saas_waste, price_creep, ad_eff, dup_svc, ind_ent, free_trial, runway]
-    prioritised = prioritize_all_insights(all_7, user_id, team_size=team_size)
+    all_modules = [saas_waste, price_creep, ad_eff, dup_svc, ind_ent, free_trial, runway, invoices]
+    prioritised = prioritize_all_insights(all_modules, user_id, team_size=team_size)
     ai_health   = analyze_financial_health(health_raw, business_context)
     ai_forecast = generate_benchmark_forecast(forecast_raw, business_context)
     print(f"        priority_score={prioritised.get('priority_score')}  health_score={ai_health.get('health_score')}")
@@ -133,6 +136,7 @@ def run_user(client, user_id: str, profile: dict) -> None:
             "individual_vs_enterprise": ind_ent,
             "free_trial_trap":          free_trial,
             "runway_stress_test":       runway,
+            "invoice_obligations":      invoices,
         },
     }
 
@@ -143,12 +147,15 @@ def run_user(client, user_id: str, profile: dict) -> None:
         "health_score":      ai_health.get("health_score", 0),
         "score_breakdown":   ai_health.get("score_breakdown", {}),
         # P&L
-        "net_worth":           health_raw["net_worth"],
-        "account_breakdown":   health_raw["account_breakdown"],
-        "total_expenditure":   health_raw["total_expenditure"],
-        "total_income":        health_raw["total_income"],
-        "total_profit":        health_raw["total_profit"],
-        "profit_margin_pct":   health_raw["profit_margin_pct"],
+        "net_worth":                 health_raw["net_worth"],
+        "effective_net_worth":       health_raw.get("effective_net_worth", health_raw["net_worth"]),
+        "outstanding_invoice_total": health_raw.get("outstanding_invoice_total", 0),
+        "overdue_invoice_total":     health_raw.get("overdue_invoice_total", 0),
+        "account_breakdown":         health_raw["account_breakdown"],
+        "total_expenditure":         health_raw["total_expenditure"],
+        "total_income":              health_raw["total_income"],
+        "total_profit":              health_raw["total_profit"],
+        "profit_margin_pct":         health_raw["profit_margin_pct"],
         # Cost structure
         "cost_breakdown":              health_raw["cost_breakdown"],
         "variable_cost_assessment":    ai_health.get("variable_cost_assessment", ""),
@@ -166,11 +173,12 @@ def run_user(client, user_id: str, profile: dict) -> None:
         # Benchmark
         "benchmark_comparison": ai_forecast.get("benchmark_comparison", {}),
         # Alerts
-        "inventory_alert":       ai_forecast.get("inventory_alert"),
-        "seasonal_risk":         ai_forecast.get("seasonal_risk"),
-        "lazy_cash_estimate":    health_raw["lazy_cash_estimate"],
-        "lazy_cash_alert":       ai_health.get("lazy_cash_alert"),
-        "investment_opportunity": ai_health.get("investment_opportunity"),
+        "inventory_alert":           ai_forecast.get("inventory_alert"),
+        "seasonal_risk":             ai_forecast.get("seasonal_risk"),
+        "lazy_cash_estimate":        health_raw["lazy_cash_estimate"],
+        "lazy_cash_alert":           ai_health.get("lazy_cash_alert"),
+        "invoice_liability_alert":   ai_health.get("invoice_liability_alert"),
+        "investment_opportunity":    ai_health.get("investment_opportunity"),
         # Improvements
         "top_3_controllable_improvements": ai_health.get("top_3_controllable_improvements", []),
     }
