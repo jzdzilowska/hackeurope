@@ -58,9 +58,9 @@ export default function SettingsPage() {
                 Business type
               </label>
               <div className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3 text-sm text-text-secondary flex items-center justify-between">
-                <span>{mockOrg.businessType === 'software' ? 'SaaS / Software' : 'Physical Goods'}</span>
+                <span>{mockOrg.businessType === 'software' ? 'Software / Services' : 'Physical Goods'}</span>
                 <span className="text-2xs text-text-disabled px-2 py-0.5 rounded bg-surface border border-border/50">
-                  {mockOrg.businessType === 'software' ? 'SaaS mode' : 'COGS mode'}
+                  {mockOrg.businessType === 'software' ? 'Software mode' : 'COGS mode'}
                 </span>
               </div>
             </div>

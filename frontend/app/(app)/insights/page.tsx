@@ -166,7 +166,7 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="relative rounded-2xl border border-border overflow-hidden"
-      style={{ background: 'linear-gradient(145deg, #111111 0%, #0d1410 100%)' }}
+      style={{ background: 'var(--tooltip-bg)' }}
     >
       <div className="pointer-events-none absolute inset-0" style={{
         background: 'radial-gradient(ellipse 90% 60% at 100% 0%, rgba(0,212,160,0.07) 0%, transparent 60%)',
@@ -176,7 +176,7 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
         {/* Score ring */}
         <div className="relative flex-shrink-0">
           <svg width="96" height="96" className="-rotate-90">
-            <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="6" />
+            <circle cx="48" cy="48" r="40" fill="none" stroke="var(--svg-ring)" strokeWidth="6" />
             <motion.circle
               cx="48" cy="48" r="40" fill="none"
               stroke={scoreColor} strokeWidth="6" strokeLinecap="round"
@@ -427,15 +427,15 @@ function ForecastSection({ health }: { health: HealthData }) {
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }} barGap={4}>
-              <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.03)" />
-              <XAxis dataKey="month" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false}
+              <CartesianGrid vertical={false} stroke="var(--grid-line)" />
+              <XAxis dataKey="month" tick={{ fill: 'var(--grid-tick)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: 'var(--grid-tick)', fontSize: 10 }} axisLine={false} tickLine={false}
                 tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
               <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-                contentStyle={{ background: '#161616', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8, fontSize: 12 }}
-                labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}
-                itemStyle={{ color: 'rgba(255,255,255,0.8)' }}
+                cursor={{ fill: 'var(--overlay-subtle)' }}
+                contentStyle={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, fontSize: 12 }}
+                labelStyle={{ color: 'var(--tooltip-label)', marginBottom: 4 }}
+                itemStyle={{ color: 'var(--tooltip-item)' }}
                 formatter={(v: number, name: string) => [formatCurrency(v, 'USD'), name === 'burn' ? 'Burn' : 'Income']}
               />
               <Bar dataKey="burn" fill="#B85858" radius={[3, 3, 0, 0]}>
@@ -501,7 +501,7 @@ function PriorityInsights({ sub }: { sub: SubData }) {
           <div className="space-y-4">
             <div className="relative flex items-center justify-center mb-2">
               <svg width="120" height="120" className="-rotate-90">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
+                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--svg-ring)" strokeWidth="8" />
                 <motion.circle
                   cx="60" cy="60" r="50" fill="none"
                   stroke={runwayColor} strokeWidth="8" strokeLinecap="round"

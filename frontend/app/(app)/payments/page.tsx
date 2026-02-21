@@ -68,7 +68,7 @@ export default function PaymentsPage() {
             <div className="flex items-start justify-between">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center border border-border/60 text-[10px] font-bold mono text-text-muted"
-                style={{ background: 'rgba(255,255,255,0.02)' }}
+                style={{ background: 'var(--overlay-subtle)' }}
               >
                 {kpi.abbr}
               </div>
@@ -116,7 +116,7 @@ export default function PaymentsPage() {
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-2xs font-bold text-text-muted border border-border/50"
-                    style={{ background: 'rgba(255,255,255,0.02)' }}
+                    style={{ background: 'var(--overlay-subtle)' }}
                   >
                     {r.merchantLogoUrl ? (
                       <img src={r.merchantLogoUrl} alt="" className="w-4.5 h-4.5 rounded object-contain"
@@ -196,7 +196,7 @@ export default function PaymentsPage() {
                   <div className="flex items-center gap-2.5">
                     <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center border border-border/50"
-                      style={{ background: 'rgba(255,255,255,0.02)' }}
+                      style={{ background: 'var(--overlay-subtle)' }}
                     >
                       {appr.merchantLogoUrl ? (
                         <img src={appr.merchantLogoUrl} alt="" className="w-5 h-5 rounded object-contain"
