@@ -3,13 +3,17 @@
 import { motion } from 'framer-motion'
 import { TrendingUp, RefreshCw, ArrowUpRight } from 'lucide-react'
 import { formatCurrency, formatTimeAgo } from '@/lib/utils'
-import { mockKPIs, mockAccounts } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 
 export default function CashPositionHero() {
-  const lastSynced = mockAccounts.reduce((latest, acc) =>
-    new Date(acc.lastSynced) > new Date(latest) ? acc.lastSynced : latest,
-    mockAccounts[0].lastSynced
-  )
+  const { kpis: mockKPIs, accounts: mockAccounts } = useDashboard()
+
+  const lastSynced = mockAccounts.length > 0
+    ? mockAccounts.reduce((latest, acc) =>
+        new Date(acc.lastSynced) > new Date(latest) ? acc.lastSynced : latest,
+        mockAccounts[0].lastSynced
+      )
+    : new Date().toISOString()
 
   return (
     <div

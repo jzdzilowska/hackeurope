@@ -7,7 +7,7 @@ import {
   Zap, ToggleLeft, ToggleRight, Loader2,
 } from 'lucide-react'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
-import { mockRecurring, mockApprovals } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency, formatDate, generateStripeRef, cn } from '@/lib/utils'
 
 const STATUS_META = {
@@ -26,6 +26,7 @@ const USAGE_DOT = {
 type ApproveState = 'idle' | 'loading' | 'approved'
 
 export default function PaymentsPage() {
+  const { recurring: mockRecurring, approvals: mockApprovals } = useDashboard()
   const [approveStates, setApproveStates] = useState<Record<string, ApproveState>>({})
   const [stripeRefs, setStripeRefs]       = useState<Record<string, string>>({})
   const [autoPayMap, setAutoPayMap]       = useState<Record<string, boolean>>(

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { ToggleLeft, ToggleRight, ChevronRight } from 'lucide-react'
 import { cn, formatCurrency, formatRelativeDate } from '@/lib/utils'
-import { mockRecurring } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import type { RecurringPayment } from '@/lib/types'
 
 const usageStyles = {
@@ -70,6 +70,7 @@ function RecurringRow({ r, index }: { r: RecurringPayment; index: number }) {
 }
 
 export default function UpcomingPayments() {
+  const { recurring: mockRecurring } = useDashboard()
   const sorted = [...mockRecurring].sort(
     (a, b) => new Date(a.nextExpectedDate).getTime() - new Date(b.nextExpectedDate).getTime()
   )
