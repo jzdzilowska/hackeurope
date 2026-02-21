@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Settings, Zap, Plus } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
-import { useDashboard } from '@/lib/dashboard-context'
+import { mockOrg, mockAccounts } from '@/lib/mock-data'
 
 const navItems = [
   { href: '/dashboard', label: 'Overview'     },
@@ -17,7 +17,6 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { org, accounts } = useDashboard()
 
   return (
     <aside className="w-[210px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/50 bg-background/95 backdrop-blur-sm z-20">
@@ -46,12 +45,12 @@ export default function Sidebar() {
             style={{ background: 'linear-gradient(135deg, rgba(0,212,160,0.10) 0%, rgba(0,212,160,0.06) 100%)' }}
           >
             <span className="text-[10px] font-bold text-accent">
-              {org.name.charAt(0)}
+              {mockOrg.name.charAt(0)}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-text-primary truncate leading-tight">{org.name}</p>
-            <p className="text-2xs text-text-muted">{org.employeeCount} people</p>
+            <p className="text-xs font-medium text-text-primary truncate leading-tight">{mockOrg.name}</p>
+            <p className="text-2xs text-text-muted">{mockOrg.employeeCount} people</p>
           </div>
         </div>
       </div>
@@ -102,7 +101,7 @@ export default function Sidebar() {
         <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-text-disabled px-3 mb-2">
           Accounts
         </p>
-        {accounts.map(acc => (
+        {mockAccounts.map(acc => (
           <div
             key={acc.id}
             className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-surface-raised/60 transition-colors cursor-pointer"

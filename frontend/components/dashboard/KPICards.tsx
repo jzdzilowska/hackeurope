@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { cn, formatCurrency, runwayColor } from '@/lib/utils'
-import { useDashboard } from '@/lib/dashboard-context'
+import { mockKPIs } from '@/lib/mock-data'
 
 const containerVariants = {
   hidden: {},
@@ -15,8 +15,7 @@ const cardVariants = {
 }
 
 export default function KPICards() {
-  const { kpis } = useDashboard()
-  const { runway, monthlyBurn, burnTrend, dueSoon, dueSoonCount } = kpis
+  const { runway, monthlyBurn, burnTrend, dueSoon, dueSoonCount } = mockKPIs
 
   const runwayStatus = runway > 12 ? 'Healthy' : runway > 6 ? 'Watch' : 'Critical'
   const runwayStatusColor =
@@ -77,7 +76,7 @@ export default function KPICards() {
           <p className={cn('text-2xs font-medium', runwayStatusColor)}>
             {runwayStatus}
             <span className="text-text-disabled font-normal ml-1">
-              · at {formatCurrency(monthlyBurn, 'USD', true)}/mo
+              · at {formatCurrency(monthlyBurn, 'EUR', true)}/mo
             </span>
           </p>
         </div>
@@ -108,7 +107,7 @@ export default function KPICards() {
           </p>
           <div className="flex items-baseline gap-1.5">
             <span className="text-4xl font-bold mono leading-none text-text-primary">
-              {formatCurrency(monthlyBurn, 'USD', true)}
+              {formatCurrency(monthlyBurn, 'EUR', true)}
             </span>
           </div>
         </div>
@@ -166,7 +165,7 @@ export default function KPICards() {
           </p>
           <div className="flex items-baseline gap-1.5">
             <span className="text-4xl font-bold mono leading-none text-text-primary">
-              {formatCurrency(dueSoon, 'USD', true)}
+              {formatCurrency(dueSoon, 'EUR', true)}
             </span>
           </div>
         </div>
@@ -182,7 +181,7 @@ export default function KPICards() {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-2xs text-text-disabled">in {item.days}d</span>
                 <span className="text-2xs mono text-text-secondary">
-                  {formatCurrency(item.amount, 'USD', true)}
+                  {formatCurrency(item.amount, 'EUR', true)}
                 </span>
               </div>
             </div>

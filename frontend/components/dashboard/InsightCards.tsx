@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, TrendingDown, Tag, Zap, BarChart2, X, ArrowRight } from 'lucide-react'
 import { cn, formatTimeAgo } from '@/lib/utils'
-import { useDashboard } from '@/lib/dashboard-context'
+import { mockInsights } from '@/lib/mock-data'
 import type { InsightCard, InsightType } from '@/lib/types'
 
 const iconMap: Record<InsightType, React.ReactNode> = {
@@ -65,9 +65,8 @@ function InsightCardItem({ card, onDismiss }: { card: InsightCard; onDismiss: (i
 }
 
 export default function InsightCards() {
-  const { insights } = useDashboard()
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
-  const visible = insights.filter(c => !dismissed.has(c.id))
+  const visible = mockInsights.filter(c => !dismissed.has(c.id))
 
   return (
     <div>
@@ -82,7 +81,7 @@ export default function InsightCards() {
             <InsightCardItem
               key={card.id}
               card={card}
-              onDismiss={(id) => setDismissed(prev => new Set([...prev, id]))}
+              onDismiss={(id) => setDismissed(prev => new Set([...Array.from(prev), id]))}
             />
           ))}
         </AnimatePresence>

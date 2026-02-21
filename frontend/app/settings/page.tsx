@@ -7,7 +7,7 @@ import {
   Bell, Shield, CreditCard, Unlink, ArrowUpRight,
 } from 'lucide-react'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
-import { useDashboard } from '@/lib/dashboard-context'
+import { mockOrg, mockAccounts } from '@/lib/mock-data'
 import { formatCurrency, formatTimeAgo, cn } from '@/lib/utils'
 
 const MOCK_TEAM = [
@@ -17,8 +17,7 @@ const MOCK_TEAM = [
 ]
 
 export default function SettingsPage() {
-  const { org, accounts } = useDashboard()
-  const [orgName, setOrgName]           = useState(org.name)
+  const [orgName, setOrgName]           = useState(mockOrg.name)
   const [saved, setSaved]               = useState(false)
   const [notifMap, setNotifMap]         = useState({
     burnAlert:    true,
@@ -58,9 +57,9 @@ export default function SettingsPage() {
                 Business type
               </label>
               <div className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3 text-sm text-text-secondary flex items-center justify-between">
-                <span>{org.businessType === 'software' ? 'SaaS / Software' : 'Physical Goods'}</span>
+                <span>{mockOrg.businessType === 'software' ? 'SaaS / Software' : 'Physical Goods'}</span>
                 <span className="text-2xs text-text-disabled px-2 py-0.5 rounded bg-surface border border-border/50">
-                  {org.businessType === 'software' ? 'SaaS mode' : 'COGS mode'}
+                  {mockOrg.businessType === 'software' ? 'SaaS mode' : 'COGS mode'}
                 </span>
               </div>
             </div>
@@ -69,7 +68,7 @@ export default function SettingsPage() {
                 Team size
               </label>
               <div className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3 text-sm text-text-secondary">
-                {org.employeeCount} people
+                {mockOrg.employeeCount} people
               </div>
             </div>
             <div>
@@ -77,7 +76,7 @@ export default function SettingsPage() {
                 Stripe Customer ID
               </label>
               <div className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3 text-sm mono text-text-muted">
-                {org.stripeCustomerId}
+                {mockOrg.stripeCustomerId}
               </div>
             </div>
           </div>
@@ -103,7 +102,7 @@ export default function SettingsPage() {
       <div>
         <SectionHeader tag="CONNECTIONS" title="Connected Banks" action="Add account" />
         <div className="space-y-2">
-          {accounts.map((acc, i) => (
+          {mockAccounts.map((acc, i) => (
             <motion.div
               key={acc.id}
               initial={{ opacity: 0, x: -8 }}
@@ -164,7 +163,7 @@ export default function SettingsPage() {
               icon:    CreditCard,
               color:   '#635BFF',
               status:  'connected',
-              detail:  org.stripeCustomerId,
+              detail:  mockOrg.stripeCustomerId,
             },
             {
               name:    'Supabase',
