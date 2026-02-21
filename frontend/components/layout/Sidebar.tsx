@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Settings, Zap, Plus } from 'lucide-react'
+import { Settings, Zap, Plus, Sun, Moon } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useDashboard } from '@/lib/dashboard-context'
 
@@ -18,6 +19,7 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname()
   const { org: mockOrg, accounts: mockAccounts } = useDashboard()
+  const { theme, setTheme } = useTheme()
 
   return (
     <aside className="w-[210px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/50 bg-background/95 backdrop-blur-sm z-20">
@@ -129,8 +131,15 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* ── Settings row ── */}
-      <div className="px-4 pb-5 border-t border-border/30 pt-3">
+      {/* ── Theme toggle + Settings row ── */}
+      <div className="px-4 pb-5 border-t border-border/30 pt-3 space-y-0.5">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-surface-raised/60 transition-colors cursor-pointer text-xs"
+        >
+          {theme === 'dark' ? <Sun size={13} strokeWidth={1.8} /> : <Moon size={13} strokeWidth={1.8} />}
+          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+        </button>
         <Link href="/settings">
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-surface-raised/60 transition-colors cursor-pointer">
             <Settings size={13} strokeWidth={1.8} />

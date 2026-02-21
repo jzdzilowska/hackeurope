@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,20 +10,40 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── Surfaces: near-pure black ─────────────────────────────
-        background: '#0A0A0A',
+        // ── Surfaces: CSS variable driven ───────────────────────
+        background: 'rgb(var(--color-background) / <alpha-value>)',
         surface: {
-          DEFAULT: '#111111',
-          raised:  '#191919',
-          high:    '#242424',
+          DEFAULT: 'rgb(var(--color-surface) / <alpha-value>)',
+          raised:  'rgb(var(--color-surface-raised) / <alpha-value>)',
+          high:    'rgb(var(--color-surface-high) / <alpha-value>)',
         },
-        // ── Borders: neutral whites ───────────────────────────────
+        // ── Borders ─────────────────────────────────────────────
         border: {
-          DEFAULT: '#1E1E1E',
-          subtle:  '#141414',
-          focus:   '#2E2E2E',
+          DEFAULT: 'rgb(var(--color-border) / <alpha-value>)',
+          subtle:  'rgb(var(--color-border-subtle) / <alpha-value>)',
+          focus:   'rgb(var(--color-border-focus) / <alpha-value>)',
         },
-        // ── Accent: bright teal ───────────────────────────────────
+        // ── Text ────────────────────────────────────────────────
+        text: {
+          primary:   'rgb(var(--color-text-primary) / <alpha-value>)',
+          secondary: 'rgb(var(--color-text-secondary) / <alpha-value>)',
+          muted:     'rgb(var(--color-text-muted) / <alpha-value>)',
+          disabled:  'rgb(var(--color-text-disabled) / <alpha-value>)',
+        },
+        // ── Semantic ────────────────────────────────────────────
+        success: {
+          DEFAULT: 'rgb(var(--color-success) / <alpha-value>)',
+          muted:   'rgb(var(--color-success) / 0.10)',
+        },
+        warning: {
+          DEFAULT: 'rgb(var(--color-warning) / <alpha-value>)',
+          muted:   'rgb(var(--color-warning) / 0.10)',
+        },
+        danger: {
+          DEFAULT: 'rgb(var(--color-danger) / <alpha-value>)',
+          muted:   'rgb(var(--color-danger) / 0.10)',
+        },
+        // ── Accent: bright teal (same in both themes) ───────────
         accent: {
           DEFAULT: '#00D4A0',
           hover:   '#00BF90',
@@ -30,20 +51,7 @@ const config: Config = {
           muted:   'rgba(0,212,160,0.10)',
           glow:    'rgba(0,212,160,0.18)',
         },
-        // ── Semantic ─────────────────────────────────────────────
-        success: {
-          DEFAULT: '#00C87A',
-          muted:   'rgba(0,200,122,0.12)',
-        },
-        warning: {
-          DEFAULT: '#C49040',
-          muted:   'rgba(196,144,64,0.12)',
-        },
-        danger: {
-          DEFAULT: '#B85858',
-          muted:   'rgba(184,88,88,0.12)',
-        },
-        // ── Chart — updated to teal-first palette ─────────────────
+        // ── Chart palette (works on both backgrounds) ───────────
         chart: {
           lime:     '#00D4A0',
           pink:     '#E87878',
@@ -51,13 +59,6 @@ const config: Config = {
           sky:      '#6898C8',
           amber:    '#C89850',
           lavender: '#8888C0',
-        },
-        // ── Text ─────────────────────────────────────────────────
-        text: {
-          primary:   '#F0F0F0',
-          secondary: '#999999',
-          muted:     '#666666',
-          disabled:  '#444444',
         },
       },
 
@@ -81,11 +82,11 @@ const config: Config = {
       },
 
       boxShadow: {
-        card:         '0 1px 3px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04)',
-        'card-hover': '0 8px 24px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.07)',
-        glow:         '0 0 32px rgba(0,212,160,0.14)',
-        'glow-sm':    '0 0 16px rgba(0,212,160,0.10)',
-        'teal-glow':  '0 0 80px rgba(0,180,130,0.16)',
+        card:         'var(--card-shadow)',
+        'card-hover': 'var(--card-shadow-hover)',
+        glow:         '0 0 24px rgba(0,212,160,0.16)',
+        'glow-sm':    '0 0 12px rgba(0,212,160,0.12)',
+        'teal-glow':  '0 0 60px rgba(0,180,130,0.18)',
       },
 
       animation: {
@@ -114,17 +115,12 @@ const config: Config = {
       },
 
       backgroundImage: {
-        // Atmospheric sage-olive bloom — matches Image 1's diffuse glow
-        'atmo-glow':       'radial-gradient(ellipse 70% 55% at 88% 0%, rgba(80,120,45,0.35) 0%, rgba(55,90,25,0.14) 45%, transparent 70%)',
-        'atmo-glow-left':  'radial-gradient(ellipse 45% 40% at 0% 40%, rgba(55,90,25,0.12) 0%, transparent 55%)',
-        'atmo-center':     'radial-gradient(ellipse 80% 60% at 50% -5%, rgba(70,105,35,0.15) 0%, transparent 60%)',
-        // Teal gradient — replaces sage-cream; used for logo, CTA buttons
+        // Teal gradient — used for logo, CTA buttons
         'sage-cream':      'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
         'sage-cream-sm':   'linear-gradient(135deg, #00C090 0%, #60D9BC 60%, #B0EAD8 100%)',
         'saas-card':       'linear-gradient(135deg, rgba(60,90,140,0.15) 0%, rgba(40,65,110,0.06) 100%)',
         'physical-card':   'linear-gradient(135deg, rgba(120,90,50,0.15) 0%, rgba(90,65,35,0.06) 100%)',
         'shimmer-gradient':'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',
-        'surface-gradient':'linear-gradient(180deg, #191919 0%, #111111 100%)',
       },
     },
   },
