@@ -7,12 +7,14 @@ import {
   CheckCircle2, Loader2, ArrowRight, Zap, X,
   Cloud, Package, Code2, Truck, BarChart2,
   ShieldCheck, Server, Lock, Eye, EyeOff, Search,
+  Briefcase, Users, Clock, User, Wallet, PiggyBank,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // ── Types ──────────────────────────────────────────────────────────────
-type Step         = 'type' | 'org' | 'connect' | 'syncing' | 'done'
-type BusinessType = 'saas' | 'physical'
+type Step         = 'type' | 'signin' | 'org' | 'email-scan' | 'connect' | 'syncing' | 'done'
+type BusinessType = 'saas' | 'physical' | 'services' | 'individual'
 
 interface MockAccount {
   id:       string
@@ -91,6 +93,15 @@ const SYNC_STEPS = [
   { label: 'Building your dashboard',        ms: 4900 },
 ]
 
+// ── Email scan steps (fake MCP inbox integration) ────────────────────────
+const EMAIL_SCAN_STEPS = [
+  { label: 'Connecting to email provider…',                   ms: 0    },
+  { label: 'Scanning inbox for financial documents…',         ms: 1200 },
+  { label: 'Finding invoices from suppliers & customers…',     ms: 2500 },
+  { label: 'Categorising as payable vs receivable…',          ms: 3500 },
+  { label: 'Importing into HELM…',                            ms: 4300 },
+]
+
 // ── Business type cards ─────────────────────────────────────────────────
 const BUSINESS_TYPES = [
   {
@@ -112,6 +123,26 @@ const BUSINESS_TYPES = [
     border:   'rgba(180,130,60,0.25)',
     glow:     'rgba(160,110,40,0.12)',
     accent:   '#C09050',
+  },
+  {
+    id:       'services' as BusinessType,
+    label:    'Services',
+    tagline:  'Track billable hours, client payments, and overhead',
+    icons:    [Briefcase, Users, Clock],
+    gradient: 'linear-gradient(135deg, rgba(40,160,140,0.18) 0%, rgba(20,120,100,0.08) 100%)',
+    border:   'rgba(50,180,160,0.25)',
+    glow:     'rgba(40,170,150,0.12)',
+    accent:   '#30B0A0',
+  },
+  {
+    id:       'individual' as BusinessType,
+    label:    'Individual',
+    tagline:  'Monitor personal income, expenses, and savings',
+    icons:    [User, Wallet, PiggyBank],
+    gradient: 'linear-gradient(135deg, rgba(120,80,180,0.18) 0%, rgba(90,50,150,0.08) 100%)',
+    border:   'rgba(140,100,200,0.25)',
+    glow:     'rgba(130,90,190,0.12)',
+    accent:   '#9070C0',
   },
 ]
 
@@ -448,16 +479,71 @@ export default function OnboardingPage() {
   const [step, setStep]                     = useState<Step>('type')
   const [bizType, setBizType]               = useState<BusinessType | null>(null)
   const [orgName, setOrgName]               = useState('')
+  const [connectedProviders, setConnectedProviders] = useState<Set<string>>(new Set())
   const [teamSize, setTeamSize]             = useState<string>('')
   const [connectedItems, setConnectedItems] = useState<ConnectedItem[]>([])
   const [syncStep, setSyncStep]             = useState(-1)
+  const [emailScanStep, setEmailScanStep]   = useState(-1)
   const [plaidOpen, setPlaidOpen]           = useState(false)
+  const [kpis, setKpis]                     = useState<{ totalCashPosition: number; runway: number; monthlyBurn: number } | null>(null)
+
+  useEffect(() => {
+    if (step === 'done') {
+      fetch('/api/dashboard/overview?user_id=c5cbf7bd-2801-407e-9efe-222d8e93fddc')
+        .then(r => r.json())
+        .then(data => { if (data.kpis) setKpis(data.kpis) })
+        .catch(() => {})
+    }
+  }, [step])
+
+  const openOAuthPopup = (provider: 'google' | 'github') => {
+    const urls = {
+      google: 'https://accounts.google.com/AccountChooser?continue=https%3A%2F%2Fmyaccount.google.com',
+      github: 'https://github.com/login',
+    }
+    const w = 500, h = 600
+    const left = window.screenX + (window.outerWidth - w) / 2
+    const top = window.screenY + (window.outerHeight - h) / 2
+    const popup = window.open(urls[provider], `${provider}_auth`, `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no`)
+
+    // Listen for when the user returns to this window (alt-tabbed or clicked back)
+    const onFocus = () => {
+      window.removeEventListener('focus', onFocus)
+      clearInterval(poll)
+      // Small delay to feel natural
+      setTimeout(() => {
+        if (popup && !popup.closed) popup.close()
+        setConnectedProviders(prev => new Set([...prev, provider]))
+        setStep('org')
+      }, 300)
+    }
+    window.addEventListener('focus', onFocus)
+
+    // Fallback: also poll for popup close
+    const poll = setInterval(() => {
+      if (!popup || popup.closed) {
+        clearInterval(poll)
+        window.removeEventListener('focus', onFocus)
+        setConnectedProviders(prev => new Set([...prev, provider]))
+        setStep('org')
+      }
+    }, 500)
+  }
 
   const handleConnected = (item: ConnectedItem) => {
     setConnectedItems(prev => {
       const exists = prev.find(i => i.itemId === item.itemId)
       return exists ? prev : [...prev, item]
     })
+  }
+
+  const startEmailScan = () => {
+    setStep('email-scan')
+    setEmailScanStep(-1)
+    EMAIL_SCAN_STEPS.forEach((s, i) => {
+      setTimeout(() => setEmailScanStep(i), s.ms + 400)
+    })
+    setTimeout(() => setStep('connect'), 5600)
   }
 
   const startSync = () => {
@@ -517,8 +603,8 @@ export default function OnboardingPage() {
 
         {/* Step dots */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {(['type', 'org', 'connect', 'syncing', 'done'] as Step[]).map((s) => {
-            const stepOrder = ['type', 'org', 'connect', 'syncing', 'done']
+          {(['type', 'signin', 'org', 'email-scan', 'connect', 'syncing', 'done'] as Step[]).map((s) => {
+            const stepOrder = ['type', 'signin', 'org', 'email-scan', 'connect', 'syncing', 'done']
             const current   = stepOrder.indexOf(step)
             const idx       = stepOrder.indexOf(s)
             return (
@@ -545,7 +631,7 @@ export default function OnboardingPage() {
             >
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-text-primary mb-1.5">
-                  What kind of company?
+                  Select your industry
                 </h2>
                 <p className="text-sm text-text-muted">
                   This shapes how HELM analyses your finances.
@@ -617,7 +703,7 @@ export default function OnboardingPage() {
               </div>
 
               <button
-                onClick={() => setStep('org')}
+                onClick={() => setStep('signin')}
                 disabled={!bizType}
                 className={cn(
                   'w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all mt-2',
@@ -631,7 +717,114 @@ export default function OnboardingPage() {
             </motion.div>
           )}
 
-          {/* ── Step 2: Org setup ── */}
+          {/* ── Step: Sign in ── */}
+          {step === 'signin' && (
+            <motion.div key="signin"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} className="space-y-5"
+            >
+              <div className="text-center mb-2">
+                <h2 className="text-2xl font-bold text-text-primary mb-1.5">
+                  Sign in to HELM
+                </h2>
+                <p className="text-sm text-text-muted">
+                  Connect your account to get started.
+                </p>
+              </div>
+
+              <div className="card p-6 space-y-3">
+                {/* Google OAuth button */}
+                <button
+                  onClick={() => connectedProviders.has('google')
+                    ? setConnectedProviders(prev => { const next = new Set(prev); next.delete('google'); return next })
+                    : openOAuthPopup('google')
+                  }
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg border text-sm transition-all',
+                    connectedProviders.has('google')
+                      ? 'border-success/50 bg-success/5 text-text-primary'
+                      : 'border-border bg-surface-raised text-text-primary hover:border-accent/40 hover:bg-accent/5'
+                  )}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" className="flex-shrink-0">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  <span className="font-medium flex-1 text-left">Continue with Google</span>
+                  {connectedProviders.has('google') && <CheckCircle2 size={16} className="text-success flex-shrink-0" />}
+                </button>
+
+                {/* GitHub OAuth button */}
+                <button
+                  onClick={() => connectedProviders.has('github')
+                    ? setConnectedProviders(prev => { const next = new Set(prev); next.delete('github'); return next })
+                    : openOAuthPopup('github')
+                  }
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg border text-sm transition-all',
+                    connectedProviders.has('github')
+                      ? 'border-success/50 bg-success/5 text-text-primary'
+                      : 'border-border bg-surface-raised text-text-primary hover:border-accent/40 hover:bg-accent/5'
+                  )}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                  </svg>
+                  <span className="font-medium flex-1 text-left">Continue with GitHub</span>
+                  {connectedProviders.has('github') && <CheckCircle2 size={16} className="text-success flex-shrink-0" />}
+                </button>
+
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                  <div className="relative flex justify-center"><span className="bg-surface px-3 text-2xs text-text-muted">or continue with email</span></div>
+                </div>
+
+                {/* Email fallback */}
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="you@company.com"
+                    className="flex-1 bg-surface-raised border border-border rounded-lg px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/40 transition-colors"
+                  />
+                  <button
+                    onClick={() => setConnectedProviders(prev => new Set([...prev, 'email']))}
+                    className="px-4 py-3 rounded-lg border border-border text-sm font-medium text-text-secondary hover:border-accent/40 hover:text-accent transition-all"
+                  >
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-2xs text-text-muted text-center">
+                By continuing, you agree to HELM&apos;s Terms of Service and Privacy Policy.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep('type')}
+                  className="px-4 py-3 rounded-xl text-sm font-medium border border-border text-text-secondary hover:border-border-focus hover:text-text-primary transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setStep('org')}
+                  disabled={connectedProviders.size === 0}
+                  className={cn(
+                    'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
+                    connectedProviders.size > 0
+                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      : 'bg-surface-raised text-text-disabled cursor-not-allowed'
+                  )}
+                >
+                  Continue <ArrowRight size={14} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step: Org setup ── */}
           {step === 'org' && (
             <motion.div key="org"
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
@@ -649,8 +842,7 @@ export default function OnboardingPage() {
                     type="text"
                     value={orgName}
                     onChange={e => setOrgName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && orgName.trim() && setStep('connect')}
-                    placeholder="TechFlow Labs"
+                    placeholder="Artisan Home Furnishings"
                     autoFocus
                     className="w-full bg-surface-raised border border-border rounded-lg px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/40 transition-colors"
                   />
@@ -679,23 +871,78 @@ export default function OnboardingPage() {
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => setStep('type')}
+                  onClick={() => setStep('signin')}
                   className="px-4 py-3 rounded-xl text-sm font-medium border border-border text-text-secondary hover:border-border-focus hover:text-text-primary transition-all"
                 >
                   Back
                 </button>
                 <button
-                  onClick={() => setStep('connect')}
-                  disabled={!orgName.trim()}
+                  onClick={() => startEmailScan()}
+                  disabled={!orgName.trim() || !teamSize}
                   className={cn(
                     'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
-                    orgName.trim()
+                    orgName.trim() && teamSize
                       ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
                       : 'bg-surface-raised text-text-disabled cursor-not-allowed'
                   )}
                 >
-                  Connect accounts <ArrowRight size={14} />
+                  Continue <ArrowRight size={14} />
                 </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step: Email scan (fake MCP inbox) ── */}
+          {step === 'email-scan' && (
+            <motion.div key="email-scan"
+              initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="card p-8 text-center space-y-7"
+            >
+              <div className="relative flex items-center justify-center py-2">
+                <motion.div
+                  animate={{ scale: [1, 1.35, 1], opacity: [0.3, 0.08, 0.3] }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute w-24 h-24 rounded-full"
+                  style={{ background: 'radial-gradient(circle, rgba(0,120,212,0.28) 0%, transparent 70%)' }}
+                />
+                <div
+                  className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #4285F4 0%, #7BAAF7 40%, #B4D0FB 70%, #E8F0FE 100%)' }}
+                >
+                  <FileText size={24} className="text-white" strokeWidth={2} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-text-primary mb-1">
+                  Scanning your inbox
+                </h3>
+                <p className="text-sm text-text-muted">Looking for invoices, receipts, and financial documents…</p>
+              </div>
+
+              <div className="space-y-2.5 text-left">
+                {EMAIL_SCAN_STEPS.map((s, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+                      {emailScanStep > i ? (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                          <CheckCircle2 size={14} className="text-success" />
+                        </motion.div>
+                      ) : emailScanStep === i ? (
+                        <Loader2 size={13} className="text-blue-400 animate-spin" />
+                      ) : (
+                        <div className="w-1.5 h-1.5 rounded-full bg-border" />
+                      )}
+                    </div>
+                    <span className={cn(
+                      'text-xs transition-colors duration-300',
+                      emailScanStep >= i ? 'text-text-primary' : 'text-text-muted'
+                    )}>
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </motion.div>
           )}
@@ -884,15 +1131,18 @@ export default function OnboardingPage() {
                 <p className="text-sm text-text-muted">
                   {totalAccounts.length} account{totalAccounts.length !== 1 ? 's' : ''} connected
                   {' · '}
-                  {bizType === 'physical' ? 'COGS tracking enabled' : 'SaaS mode active'}
+                  {bizType === 'physical' ? 'COGS tracking enabled'
+                    : bizType === 'services' ? 'Services mode active'
+                    : bizType === 'individual' ? 'Personal finance mode'
+                    : 'SaaS mode active'}
                 </p>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: 'Cash position', value: '€98,991' },
-                  { label: 'Runway',         value: '6.5 mo'  },
-                  { label: 'Monthly burn',   value: '€15.2k'  },
+                  { label: 'Cash position', value: kpis ? `$${(kpis.totalCashPosition / 1000).toFixed(1)}k` : '...' },
+                  { label: 'Runway',         value: kpis ? `${kpis.runway} mo` : '...'  },
+                  { label: 'Monthly burn',   value: kpis ? `$${(kpis.monthlyBurn / 1000).toFixed(1)}k` : '...'  },
                 ].map((stat, idx) => (
                   <motion.div
                     key={stat.label}
