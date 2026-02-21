@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+  <!-- Unique identifier for this job -->
+  <key>Label</key>
+  <string>com.hackeurope.invoice-agent</string>
+
+  <!-- Command to run -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Users/gretasikora/code/hackeurope/email_integration/launchd/run_invoice_agent.sh</string>
+  </array>
+
+  <!-- Run daily at 08:00 local time -->
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>8</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <!-- If the Mac was asleep at 08:00, run as soon as it wakes -->
+  <key>RunAtLoad</key>
+  <false/>
+
+  <!-- stdout / stderr captured here as a fallback -->
+  <key>StandardOutPath</key>
+  <string>/Users/gretasikora/code/hackeurope/email_integration/logs/launchd_stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/gretasikora/code/hackeurope/email_integration/logs/launchd_stderr.log</string>
+
+</dict>
+</plist>
