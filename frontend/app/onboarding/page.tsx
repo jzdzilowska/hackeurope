@@ -1,0 +1,923 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  CheckCircle2, Loader2, ArrowRight, Zap, X,
+  Cloud, Package, Code2, Truck, BarChart2,
+  ShieldCheck, Server, Lock, Eye, EyeOff, Search,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+// ── Types ──────────────────────────────────────────────────────────────
+type Step         = 'type' | 'org' | 'connect' | 'syncing' | 'done'
+type BusinessType = 'saas' | 'physical'
+
+interface MockAccount {
+  id:       string
+  name:     string
+  balance:  number
+  currency: string
+  type:     string
+  mask:     string
+}
+
+interface ConnectedItem {
+  itemId:          string
+  institutionName: string
+  institutionLogo: string
+  accounts:        MockAccount[]
+}
+
+// ── Mock institution data (mirrors Plaid sandbox) ──────────────────────
+const MOCK_INSTITUTIONS = [
+  {
+    id:      'ins_bank_of_ireland',
+    name:    'Bank of Ireland',
+    color:   '#003399',
+    abbr:    'BoI',
+    accounts: [
+      { id: 'acc_boi_001', name: 'Business Current', balance: 38200.00, currency: 'EUR', type: 'depository', mask: '4821' },
+      { id: 'acc_boi_002', name: 'Reserve Savings',  balance: 9030.00,  currency: 'EUR', type: 'savings',    mask: '7743' },
+    ],
+  },
+  {
+    id:      'ins_revolut',
+    name:    'Revolut Business',
+    color:   '#191C1F',
+    abbr:    'Rev',
+    accounts: [
+      { id: 'acc_rev_001', name: 'EUR Account',      balance: 28920.00, currency: 'EUR', type: 'depository', mask: '1190' },
+      { id: 'acc_rev_002', name: 'USD Account',      balance: 10000.00, currency: 'USD', type: 'depository', mask: '2204' },
+    ],
+  },
+  {
+    id:      'ins_wise',
+    name:    'Wise',
+    color:   '#00B9FF',
+    abbr:    'Wise',
+    accounts: [
+      { id: 'acc_wise_001', name: 'Wise Business EUR', balance: 12840.00, currency: 'EUR', type: 'depository', mask: '9901' },
+    ],
+  },
+  {
+    id:      'ins_hsbc',
+    name:    'HSBC Business',
+    color:   '#DB0011',
+    abbr:    'HSBC',
+    accounts: [
+      { id: 'acc_hsbc_001', name: 'Business Current',  balance: 5500.00, currency: 'EUR', type: 'depository', mask: '6612' },
+    ],
+  },
+  {
+    id:      'ins_monzo',
+    name:    'Monzo Business',
+    color:   '#FF3464',
+    abbr:    'Mnz',
+    accounts: [
+      { id: 'acc_mnz_001', name: 'Current Account',    balance: 7200.00, currency: 'GBP', type: 'depository', mask: '3310' },
+    ],
+  },
+]
+
+// ── Sync steps ─────────────────────────────────────────────────────────
+const SYNC_STEPS = [
+  { label: 'Verifying bank connection',      ms: 0    },
+  { label: 'Fetching transaction history',   ms: 1100 },
+  { label: 'Categorising transactions',      ms: 2300 },
+  { label: 'Calculating runway & burn',      ms: 3300 },
+  { label: 'Generating AI insights',         ms: 4100 },
+  { label: 'Building your dashboard',        ms: 4900 },
+]
+
+// ── Business type cards ─────────────────────────────────────────────────
+const BUSINESS_TYPES = [
+  {
+    id:       'saas' as BusinessType,
+    label:    'SaaS / Software',
+    tagline:  'Track burn, runway, and subscription costs',
+    icons:    [Cloud, Code2, Server],
+    gradient: 'linear-gradient(135deg, rgba(60,90,160,0.18) 0%, rgba(40,60,120,0.08) 100%)',
+    border:   'rgba(80,110,200,0.25)',
+    glow:     'rgba(70,100,200,0.12)',
+    accent:   '#7090D0',
+  },
+  {
+    id:       'physical' as BusinessType,
+    label:    'Physical Goods',
+    tagline:  'Monitor COGS, inventory, and variable costs',
+    icons:    [Package, Truck, BarChart2],
+    gradient: 'linear-gradient(135deg, rgba(150,100,50,0.18) 0%, rgba(110,70,30,0.08) 100%)',
+    border:   'rgba(180,130,60,0.25)',
+    glow:     'rgba(160,110,40,0.12)',
+    accent:   '#C09050',
+  },
+]
+
+// ── Mock Plaid Link Modal ───────────────────────────────────────────────
+type PlaidStep = 'picker' | 'login' | 'connecting' | 'success'
+
+function MockPlaidModal({
+  onClose,
+  onConnected,
+}: {
+  onClose: () => void
+  onConnected: (item: ConnectedItem) => void
+}) {
+  const [plaidStep, setPlaidStep]       = useState<PlaidStep>('picker')
+  const [selectedInst, setSelectedInst] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null)
+  const [search, setSearch]             = useState('')
+  const [username, setUsername]         = useState('user_good')
+  const [password, setPassword]         = useState('pass_good')
+  const [showPass, setShowPass]         = useState(false)
+  const [loginError, setLoginError]     = useState(false)
+  const [progress, setProgress]         = useState(0)
+
+  const filtered = MOCK_INSTITUTIONS.filter(i =>
+    i.name.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const handleLogin = () => {
+    if (username === 'user_good' && password === 'pass_good') {
+      setPlaidStep('connecting')
+      // Fake progress animation
+      let p = 0
+      const interval = setInterval(() => {
+        p += Math.random() * 22 + 8
+        if (p >= 100) {
+          p = 100
+          clearInterval(interval)
+          setTimeout(() => setPlaidStep('success'), 300)
+        }
+        setProgress(Math.min(p, 100))
+      }, 220)
+    } else {
+      setLoginError(true)
+      setTimeout(() => setLoginError(false), 2000)
+    }
+  }
+
+  const handleSuccess = () => {
+    if (!selectedInst) return
+    onConnected({
+      itemId:          `item_${selectedInst.id}_${Date.now()}`,
+      institutionName: selectedInst.name,
+      institutionLogo: selectedInst.abbr,
+      accounts:        selectedInst.accounts,
+    })
+    onClose()
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
+    >
+      <motion.div
+        initial={{ scale: 0.94, opacity: 0, y: 16 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.94, opacity: 0, y: 16 }}
+        transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+        className="relative bg-white rounded-2xl overflow-hidden shadow-2xl"
+        style={{ width: '420px', maxHeight: '580px' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Plaid-style header */}
+        <div className="px-6 pt-5 pb-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {selectedInst && plaidStep !== 'picker' ? (
+              <>
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-2xs font-bold flex-shrink-0"
+                  style={{ background: selectedInst.color, fontSize: '10px' }}
+                >
+                  {selectedInst.abbr}
+                </div>
+                <span className="text-sm font-semibold text-gray-800">{selectedInst.name}</span>
+              </>
+            ) : (
+              <span className="text-sm font-semibold text-gray-800">Connect a bank account</span>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Content area */}
+        <div className="overflow-y-auto" style={{ maxHeight: '460px' }}>
+          <AnimatePresence mode="wait">
+
+            {/* Institution picker */}
+            {plaidStep === 'picker' && (
+              <motion.div key="picker"
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.18 }}
+                className="p-5"
+              >
+                {/* Search */}
+                <div className="relative mb-4">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search for your bank..."
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                    autoFocus
+                  />
+                </div>
+
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-2 px-1">Popular institutions</p>
+
+                <div className="space-y-1.5">
+                  {filtered.map(inst => (
+                    <button
+                      key={inst.id}
+                      onClick={() => { setSelectedInst(inst); setPlaidStep('login') }}
+                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left group"
+                    >
+                      <div
+                        className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                        style={{ background: inst.color, fontSize: '10px' }}
+                      >
+                        {inst.abbr}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800">{inst.name}</p>
+                        <p className="text-xs text-gray-400">{inst.accounts.length} account{inst.accounts.length !== 1 ? 's' : ''} available</p>
+                      </div>
+                      <ArrowRight size={14} className="text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Login form */}
+            {plaidStep === 'login' && selectedInst && (
+              <motion.div key="login"
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.18 }}
+                className="p-5 space-y-4"
+              >
+                <p className="text-xs text-gray-500 text-center">
+                  Enter your {selectedInst.name} online banking credentials.<br />
+                  HELM never stores your login details.
+                </p>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Username</label>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      placeholder="user_good"
+                      className={cn(
+                        'w-full px-4 py-3 rounded-xl border text-sm text-gray-800 focus:outline-none focus:ring-2 transition-all',
+                        loginError
+                          ? 'border-red-300 focus:ring-red-100'
+                          : 'border-gray-200 focus:border-blue-400 focus:ring-blue-100'
+                      )}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPass ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                        placeholder="pass_good"
+                        className={cn(
+                          'w-full px-4 py-3 pr-11 rounded-xl border text-sm text-gray-800 focus:outline-none focus:ring-2 transition-all',
+                          loginError
+                            ? 'border-red-300 focus:ring-red-100'
+                            : 'border-gray-200 focus:border-blue-400 focus:ring-blue-100'
+                        )}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPass(v => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {loginError && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="text-xs text-red-500 text-center"
+                      >
+                        Invalid credentials. Use <code className="bg-red-50 px-1 rounded">user_good</code> / <code className="bg-red-50 px-1 rounded">pass_good</code>
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Hint */}
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
+                  <p className="text-xs text-amber-700 text-center">
+                    Sandbox demo — use <strong>user_good</strong> / <strong>pass_good</strong>
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => { setPlaidStep('picker'); setLoginError(false) }}
+                    className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-all"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={handleLogin}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all flex items-center justify-center gap-2"
+                    style={{ background: selectedInst.color }}
+                  >
+                    <Lock size={13} /> Log in securely
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Connecting / MFA simulation */}
+            {plaidStep === 'connecting' && (
+              <motion.div key="connecting"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-8 flex flex-col items-center justify-center gap-5"
+                style={{ minHeight: '240px' }}
+              >
+                <Loader2 size={32} className="animate-spin text-blue-500" />
+                <div className="text-center space-y-1.5 w-full">
+                  <p className="text-sm font-semibold text-gray-800">Connecting securely…</p>
+                  <p className="text-xs text-gray-400">Verifying your credentials with {selectedInst?.name}</p>
+                </div>
+                {/* Progress bar */}
+                <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-blue-500"
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.2 }}
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Success */}
+            {plaidStep === 'success' && selectedInst && (
+              <motion.div key="success"
+                initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-5 space-y-4"
+              >
+                <div className="flex items-center gap-3 py-2">
+                  <div className="w-9 h-9 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 size={18} className="text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Connected!</p>
+                    <p className="text-xs text-gray-400">{selectedInst.accounts.length} account{selectedInst.accounts.length !== 1 ? 's' : ''} found</p>
+                  </div>
+                </div>
+
+                {/* Account list */}
+                <div className="space-y-2">
+                  {selectedInst.accounts.map(acc => (
+                    <div key={acc.id} className="flex items-center justify-between px-3.5 py-3 rounded-xl bg-gray-50 border border-gray-100">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <div>
+                          <p className="text-xs font-medium text-gray-800">{acc.name}</p>
+                          <p className="text-2xs text-gray-400">····{acc.mask}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-semibold text-gray-800 tabular-nums">
+                          {acc.currency} {acc.balance.toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                        <p className="text-2xs text-gray-400 capitalize">{acc.type}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleSuccess}
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-green-600 hover:bg-green-700 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                >
+                  Continue <ArrowRight size={14} />
+                </button>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
+        </div>
+
+        {/* Plaid-style footer */}
+        <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-center gap-1.5">
+          <ShieldCheck size={11} className="text-gray-300" />
+          <span className="text-2xs text-gray-300">Secured by</span>
+          <span className="text-2xs font-bold text-gray-400">Plaid</span>
+          <span className="text-2xs text-gray-300 mx-1">·</span>
+          <span className="text-2xs text-gray-300">256-bit TLS · Read-only</span>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+// ── Main onboarding page ───────────────────────────────────────────────
+export default function OnboardingPage() {
+  const router = useRouter()
+
+  const [step, setStep]                     = useState<Step>('type')
+  const [bizType, setBizType]               = useState<BusinessType | null>(null)
+  const [orgName, setOrgName]               = useState('')
+  const [teamSize, setTeamSize]             = useState<string>('')
+  const [connectedItems, setConnectedItems] = useState<ConnectedItem[]>([])
+  const [syncStep, setSyncStep]             = useState(-1)
+  const [plaidOpen, setPlaidOpen]           = useState(false)
+
+  const handleConnected = (item: ConnectedItem) => {
+    setConnectedItems(prev => {
+      const exists = prev.find(i => i.itemId === item.itemId)
+      return exists ? prev : [...prev, item]
+    })
+  }
+
+  const startSync = () => {
+    setStep('syncing')
+    SYNC_STEPS.forEach((s, i) => {
+      setTimeout(() => setSyncStep(i), s.ms + 400)
+    })
+    setTimeout(() => setStep('done'), 6200)
+  }
+
+  const totalAccounts = connectedItems.flatMap(i => i.accounts)
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 overflow-hidden">
+
+      {/* Atmospheric background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 70% 55% at 80% 0%, rgba(80,120,45,0.20) 0%, rgba(55,90,25,0.09) 40%, transparent 70%)',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse 50% 45% at 5% 60%, rgba(28,70,50,0.10) 0%, transparent 55%)',
+        }} />
+      </div>
+
+      {/* Mock Plaid modal */}
+      <AnimatePresence>
+        {plaidOpen && (
+          <MockPlaidModal
+            onClose={() => setPlaidOpen(false)}
+            onConnected={handleConnected}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="relative z-10 w-full max-w-[460px]">
+
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-center gap-2.5 mb-10"
+        >
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
+              boxShadow: '0 0 20px rgba(0,212,160,0.20)',
+            }}
+          >
+            <Zap size={15} className="text-black" strokeWidth={2.5} />
+          </div>
+          <span className="text-base font-semibold tracking-tight text-text-primary">HELM</span>
+        </motion.div>
+
+        {/* Step dots */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          {(['type', 'org', 'connect', 'syncing', 'done'] as Step[]).map((s) => {
+            const stepOrder = ['type', 'org', 'connect', 'syncing', 'done']
+            const current   = stepOrder.indexOf(step)
+            const idx       = stepOrder.indexOf(s)
+            return (
+              <div
+                key={s}
+                className={cn(
+                  'rounded-full transition-all duration-300',
+                  idx < current  ? 'w-2 h-2 bg-accent'
+                  : idx === current ? 'w-4 h-2 bg-accent'
+                                    : 'w-2 h-2 bg-border'
+                )}
+              />
+            )
+          })}
+        </div>
+
+        <AnimatePresence mode="wait">
+
+          {/* ── Step 1: Business type ── */}
+          {step === 'type' && (
+            <motion.div key="type"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} className="space-y-5"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-text-primary mb-1.5">
+                  What kind of company?
+                </h2>
+                <p className="text-sm text-text-muted">
+                  This shapes how HELM analyses your finances.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {BUSINESS_TYPES.map(bt => {
+                  const selected = bizType === bt.id
+                  return (
+                    <motion.button
+                      key={bt.id}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setBizType(bt.id)}
+                      className={cn(
+                        'relative w-full text-left rounded-card p-5 border transition-all duration-200 overflow-hidden',
+                        selected ? 'border-opacity-60' : 'border-border hover:border-opacity-50'
+                      )}
+                      style={{
+                        background: bt.gradient,
+                        borderColor: selected ? bt.border : undefined,
+                        boxShadow: selected ? `0 0 24px ${bt.glow}` : undefined,
+                      }}
+                    >
+                      {selected && (
+                        <motion.div
+                          layoutId="type-selected"
+                          className="absolute inset-0 rounded-card"
+                          style={{ background: bt.gradient, opacity: 0.5 }}
+                        />
+                      )}
+
+                      <div className="relative z-10 flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-1.5 mb-3">
+                            {bt.icons.map((Icon, i) => (
+                              <div
+                                key={i}
+                                className="w-7 h-7 rounded-lg flex items-center justify-center border border-white/10"
+                                style={{ background: 'rgba(255,255,255,0.05)' }}
+                              >
+                                <Icon size={13} style={{ color: bt.accent }} />
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-sm font-semibold text-text-primary mb-1">{bt.label}</p>
+                          <p className="text-xs text-text-secondary">{bt.tagline}</p>
+                        </div>
+
+                        <div className={cn(
+                          'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all',
+                          selected
+                            ? 'border-accent bg-accent'
+                            : 'border-border bg-transparent'
+                        )}>
+                          {selected && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="w-2 h-2 rounded-full bg-black"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </motion.button>
+                  )
+                })}
+              </div>
+
+              <button
+                onClick={() => setStep('org')}
+                disabled={!bizType}
+                className={cn(
+                  'w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all mt-2',
+                  bizType
+                    ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                    : 'bg-surface-raised text-text-disabled cursor-not-allowed'
+                )}
+              >
+                Continue <ArrowRight size={14} />
+              </button>
+            </motion.div>
+          )}
+
+          {/* ── Step 2: Org setup ── */}
+          {step === 'org' && (
+            <motion.div key="org"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} className="space-y-5"
+            >
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-text-primary mb-1.5">Name your workspace</h2>
+                <p className="text-sm text-text-muted">Takes 30 seconds. No credit card needed.</p>
+              </div>
+
+              <div className="card p-6 space-y-4">
+                <div>
+                  <label className="label block mb-2">Company name</label>
+                  <input
+                    type="text"
+                    value={orgName}
+                    onChange={e => setOrgName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && orgName.trim() && setStep('connect')}
+                    placeholder="TechFlow Labs"
+                    autoFocus
+                    className="w-full bg-surface-raised border border-border rounded-lg px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/40 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="label block mb-2">Team size</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['1–5', '6–20', '21–50', '50+'].map(size => (
+                      <button
+                        key={size}
+                        onClick={() => setTeamSize(size)}
+                        className={cn(
+                          'py-2 rounded-lg border text-xs transition-all',
+                          teamSize === size
+                            ? 'border-accent/50 bg-accent/10 text-accent font-medium'
+                            : 'border-border text-text-secondary hover:border-accent/30 hover:text-accent/80'
+                        )}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep('type')}
+                  className="px-4 py-3 rounded-xl text-sm font-medium border border-border text-text-secondary hover:border-border-focus hover:text-text-primary transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => setStep('connect')}
+                  disabled={!orgName.trim()}
+                  className={cn(
+                    'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
+                    orgName.trim()
+                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      : 'bg-surface-raised text-text-disabled cursor-not-allowed'
+                  )}
+                >
+                  Connect accounts <ArrowRight size={14} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step 3: Connect (mock Plaid) ── */}
+          {step === 'connect' && (
+            <motion.div key="connect"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} className="space-y-5"
+            >
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-text-primary mb-1.5">
+                  Connect your accounts
+                </h2>
+                <p className="text-sm text-text-muted">
+                  Read-only access via Plaid. Bank credentials never stored.
+                </p>
+              </div>
+
+              {/* Trust badges */}
+              <div className="flex items-center justify-center gap-4">
+                {['256-bit AES', 'Read-only', 'GDPR'].map(badge => (
+                  <span key={badge} className="flex items-center gap-1.5 text-2xs text-text-muted">
+                    <ShieldCheck size={10} className="text-accent" />
+                    {badge}
+                  </span>
+                ))}
+              </div>
+
+              {/* Connected items */}
+              <AnimatePresence>
+                {connectedItems.map(item => (
+                  <motion.div
+                    key={item.itemId}
+                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="card p-4 border-success/25 bg-success/[0.03]"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-success" />
+                        <p className="text-sm font-medium text-text-primary">{item.institutionName}</p>
+                      </div>
+                      <span className="badge-success text-2xs">Connected</span>
+                    </div>
+                    <div className="space-y-1 pl-5">
+                      {item.accounts.map(acc => (
+                        <div key={acc.id} className="flex items-center justify-between">
+                          <span className="text-xs text-text-secondary">{acc.name} ····{acc.mask}</span>
+                          <span className="text-xs mono text-text-primary">
+                            {acc.currency} {acc.balance.toLocaleString('en-IE', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {/* Connect button */}
+              <button
+                onClick={() => setPlaidOpen(true)}
+                className={cn(
+                  'w-full py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 transition-all',
+                  connectedItems.length === 0
+                    ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                    : 'bg-surface border border-border text-text-secondary hover:border-accent/40 hover:text-accent hover:bg-accent/5'
+                )}
+              >
+                <ShieldCheck size={14} />
+                {connectedItems.length === 0 ? 'Connect bank account via Plaid' : '+ Connect another account'}
+              </button>
+
+              {/* Sandbox hint */}
+              <div className="card p-3 border-border/40">
+                <p className="text-2xs text-text-muted text-center">
+                  <span className="text-warning font-medium">Sandbox mode</span>
+                  {' '}— use credentials{' '}
+                  <code className="mono bg-surface-raised px-1.5 py-0.5 rounded text-text-secondary">user_good</code>
+                  {' / '}
+                  <code className="mono bg-surface-raised px-1.5 py-0.5 rounded text-text-secondary">pass_good</code>
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep('org')}
+                  className="px-4 py-3 rounded-xl text-sm font-medium border border-border text-text-secondary hover:border-border-focus hover:text-text-primary transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={startSync}
+                  disabled={connectedItems.length === 0}
+                  className={cn(
+                    'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
+                    connectedItems.length > 0
+                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      : 'bg-surface-raised text-text-disabled cursor-not-allowed'
+                  )}
+                >
+                  {connectedItems.length === 0
+                    ? 'Connect at least one account'
+                    : `Sync ${totalAccounts.length} account${totalAccounts.length !== 1 ? 's' : ''}`
+                  }
+                  {connectedItems.length > 0 && <ArrowRight size={14} />}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step 4: Syncing ── */}
+          {step === 'syncing' && (
+            <motion.div key="syncing"
+              initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="card p-8 text-center space-y-7"
+            >
+              <div className="relative flex items-center justify-center py-2">
+                <motion.div
+                  animate={{ scale: [1, 1.35, 1], opacity: [0.3, 0.08, 0.3] }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute w-24 h-24 rounded-full"
+                  style={{ background: 'radial-gradient(circle, rgba(0,212,160,0.28) 0%, transparent 70%)' }}
+                />
+                <div
+                  className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)' }}
+                >
+                  <Zap size={24} className="text-black" strokeWidth={2.5} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-text-primary mb-1">
+                  Pulling in your finances
+                </h3>
+                <p className="text-sm text-text-muted">Syncing data from {connectedItems.length} institution{connectedItems.length !== 1 ? 's' : ''}</p>
+              </div>
+
+              <div className="space-y-2.5 text-left">
+                {SYNC_STEPS.map((s, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+                      {syncStep > i ? (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                          <CheckCircle2 size={14} className="text-success" />
+                        </motion.div>
+                      ) : syncStep === i ? (
+                        <Loader2 size={13} className="text-accent animate-spin" />
+                      ) : (
+                        <div className="w-1.5 h-1.5 rounded-full bg-border" />
+                      )}
+                    </div>
+                    <span className={cn(
+                      'text-xs transition-colors duration-300',
+                      syncStep >= i ? 'text-text-primary' : 'text-text-muted'
+                    )}>
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step 5: Done ── */}
+          {step === 'done' && (
+            <motion.div key="done"
+              initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+              className="card p-8 text-center space-y-6"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
+                className="w-14 h-14 rounded-2xl bg-success/12 border border-success/25 flex items-center justify-center mx-auto"
+              >
+                <CheckCircle2 size={26} className="text-success" />
+              </motion.div>
+
+              <div>
+                <h3 className="text-xl font-bold text-text-primary mb-1.5">
+                  You're all set, {orgName || 'there'}!
+                </h3>
+                <p className="text-sm text-text-muted">
+                  {totalAccounts.length} account{totalAccounts.length !== 1 ? 's' : ''} connected
+                  {' · '}
+                  {bizType === 'physical' ? 'COGS tracking enabled' : 'SaaS mode active'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: 'Cash position', value: '€98,991' },
+                  { label: 'Runway',         value: '6.5 mo'  },
+                  { label: 'Monthly burn',   value: '€15.2k'  },
+                ].map((stat, idx) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + idx * 0.08 }}
+                    className="bg-surface-raised rounded-lg p-3 border border-border"
+                  >
+                    <p className="text-base font-bold mono text-text-primary">{stat.value}</p>
+                    <p className="text-2xs text-text-muted mt-0.5">{stat.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="w-full py-3 rounded-xl text-sm font-semibold bg-accent text-black hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                Open HELM <ArrowRight size={14} />
+              </button>
+            </motion.div>
+          )}
+
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}

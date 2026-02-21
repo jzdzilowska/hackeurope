@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0A0A0A;
+    color: #F0F0F0;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Grain overlay on body — keep as-is, user loves it */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain 8s steps(10) infinite;
+  }
+
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3A3A3A; }
+}
+
+@layer components {
+  /* ── Core card ── */
+  .card {
+    @apply bg-surface rounded-card border border-border;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.03);
+  }
+  .card-hover {
+    @apply card transition-all duration-200 cursor-pointer;
+  }
+  .card-hover:hover {
+    @apply border-border-focus;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06);
+    transform: translateY(-1px);
+  }
+
+  /* ── Section label ── */
+  .label {
+    @apply text-2xs uppercase tracking-widest font-medium text-text-muted;
+  }
+
+  /* ── Mono numbers ── */
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Shimmer skeleton ── */
+  .skeleton {
+    background: linear-gradient(90deg, #191919 0%, #242424 50%, #191919 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    border-radius: 8px;
+  }
+
+  /* ── Atmospheric fog glow — sage-olive (Image 1 reference) ── */
+  .atmo-blob {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 55% at 88% 0%, rgba(80,120,45,0.32) 0%, rgba(55,90,25,0.12) 45%, transparent 70%),
+      radial-gradient(ellipse 40% 35% at 0% 50%, rgba(55,90,25,0.10) 0%, transparent 55%);
+  }
+
+  /* ── Progress bar fill ── */
+  .progress-fill {
+    @apply h-full rounded-pill bg-accent transition-all duration-700;
+    box-shadow: 0 0 8px rgba(0,212,160,0.35);
+  }
+
+  /* ── Status badges ── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-pill text-2xs font-medium;
+  }
+  .badge-success { @apply badge bg-success/10 text-success border border-success/20; }
+  .badge-warning { @apply badge bg-warning/10 text-warning border border-warning/20; }
+  .badge-danger  { @apply badge bg-danger/10  text-danger  border border-danger/20;  }
+  .badge-accent  { @apply badge bg-accent/10  text-accent  border border-accent/20;  }
+  .badge-neutral { @apply badge bg-surface-high text-text-secondary border border-border; }
+}
+
+@layer utilities {
+  .text-sage-cream {
+    background: linear-gradient(135deg, #00D4A0 0%, #7FEDD4 50%, #C0F5E8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+}
+
+/* Grain keyframes (must be in global scope) */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10%  { transform: translate(-2%, -3%); }
+  20%  { transform: translate(3%, 2%); }
+  30%  { transform: translate(-1%, 4%); }
+  40%  { transform: translate(4%, -2%); }
+  50%  { transform: translate(-3%, 3%); }
+  60%  { transform: translate(2%, -4%); }
+  70%  { transform: translate(-4%, 1%); }
+  80%  { transform: translate(1%, 3%); }
+  90%  { transform: translate(3%, -1%); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
