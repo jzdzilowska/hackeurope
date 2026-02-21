@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0D0D0D;
+    color: #F5F5F5;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 3px; height: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2A2A2A; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #383838; }
+}
+
+@layer components {
+  /* ── Core card ── */
+  .card {
+    @apply bg-surface rounded-card border border-border/60;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+  }
+  .card-hover {
+    @apply card transition-all duration-200 cursor-pointer;
+  }
+  .card-hover:hover {
+    @apply border-border-focus;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+    transform: translateY(-1px);
+  }
+
+  /* ── Section label ── */
+  .label {
+    @apply text-2xs uppercase tracking-widest font-medium text-text-muted;
+  }
+
+  /* ── Mono numbers ── */
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Shimmer skeleton ── */
+  .skeleton {
+    background: linear-gradient(90deg, #1A1A1A 0%, #242424 50%, #1A1A1A 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite;
+    border-radius: 8px;
+  }
+
+  /* ── Aurora glow blob behind hero ── */
+  .aurora-blob {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 70% 50% at 50% 0%,
+      rgba(201,230,81,0.28) 0%,
+      rgba(180,210,60,0.10) 40%,
+      transparent 70%
+    );
+  }
+
+  /* ── Progress bar fill ── */
+  .progress-fill {
+    @apply h-full rounded-pill bg-accent transition-all duration-700;
+    box-shadow: 0 0 8px rgba(201,230,81,0.4);
+  }
+
+  /* ── Status badges ── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-pill text-2xs font-medium;
+  }
+  .badge-success  { @apply badge bg-success/10 text-success border border-success/20; }
+  .badge-warning  { @apply badge bg-warning/10 text-warning border border-warning/20; }
+  .badge-danger   { @apply badge bg-danger/10  text-danger  border border-danger/20;  }
+  .badge-accent   { @apply badge bg-accent/10  text-accent  border border-accent/20;  }
+  .badge-neutral  { @apply badge bg-surface-high text-text-secondary border border-border; }
+}
+
+@layer utilities {
+  .text-aurora {
+    background: linear-gradient(135deg, #C9E651 0%, #F5EFA0 50%, #E8DDD0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .bg-aurora-card {
+    background: linear-gradient(135deg, #D9F060 0%, #F5EFA0 38%, #F0E6C8 65%, #E8DDD0 100%);
+  }
+}
