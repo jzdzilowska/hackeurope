@@ -23,7 +23,7 @@ function CustomTooltip({ active, payload, label }: any) {
       <div className="flex items-center justify-between gap-4">
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-chart-pink inline-block" />
-          <span className="text-text-secondary">Burn</span>
+          <span className="text-text-secondary">Costs</span>
         </span>
         <span className="mono text-text-primary">{formatCurrency(payload[1]?.value ?? 0, 'EUR', true)}</span>
       </div>
@@ -42,7 +42,7 @@ export default function BurnRateChart() {
     >
       <div className="flex items-center justify-between mb-5">
         <div>
-          <p className="label mb-0.5">Burn vs Revenue</p>
+          <p className="label mb-0.5">Costs vs Revenue</p>
           <p className="text-xs text-text-muted">6-month view</p>
         </div>
         <div className="flex items-center gap-4">
@@ -52,7 +52,7 @@ export default function BurnRateChart() {
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
             <span className="w-2 h-2 rounded-full bg-chart-pink inline-block" />
-            Burn
+            Costs
           </span>
         </div>
       </div>
@@ -73,22 +73,22 @@ export default function BurnRateChart() {
 
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="rgba(255,255,255,0.04)"
+              stroke="var(--grid-line)"
               vertical={false}
             />
             <XAxis
               dataKey="month"
-              tick={{ fill: '#686868', fontSize: 11 }}
+              tick={{ fill: 'var(--grid-tick)', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fill: '#686868', fontSize: 11 }}
+              tick={{ fill: 'var(--grid-tick)', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.06)', strokeWidth: 1 }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
 
             <Area
               type="monotone"

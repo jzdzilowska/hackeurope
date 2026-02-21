@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Wallet, Receipt, FileText } from 'lucide-react'
 import { cn, formatCurrency, runwayColor } from '@/lib/utils'
 import { useDashboard } from '@/lib/dashboard-context'
 
@@ -29,19 +29,18 @@ export default function KPICards() {
       animate="show"
       className="grid grid-cols-3 gap-3"
     >
-      {/* ── Cash Runway (CR) ── */}
+      {/* ── Cash Reserves ── */}
       <motion.div
         variants={cardVariants}
         className="card p-5 group hover:border-border-focus transition-all duration-200 flex flex-col justify-between"
         style={{ minHeight: '170px' }}
       >
         <div className="flex items-start justify-between">
-          {/* Letter abbreviation box — Dwarf-style */}
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center border border-border/70 flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.03)' }}
+            style={{ background: 'var(--overlay-subtle)' }}
           >
-            <span className="text-[11px] font-bold mono tracking-tight text-text-muted">CR</span>
+            <Wallet size={16} className="text-text-muted" />
           </div>
           <ArrowUpRight
             size={14}
@@ -51,7 +50,7 @@ export default function KPICards() {
 
         <div className="mt-4">
           <p className="text-2xs font-medium uppercase tracking-[0.12em] text-text-muted mb-2">
-            Cash Runway
+            Cash Reserves
           </p>
           <div className="flex items-baseline gap-1.5">
             <span className={cn('text-4xl font-bold mono leading-none', runwayColor(runway))}>
@@ -83,7 +82,7 @@ export default function KPICards() {
         </div>
       </motion.div>
 
-      {/* ── Burn Rate (BR) ── */}
+      {/* ── Monthly Costs ── */}
       <motion.div
         variants={cardVariants}
         className="card p-5 group hover:border-border-focus transition-all duration-200 flex flex-col justify-between"
@@ -92,9 +91,9 @@ export default function KPICards() {
         <div className="flex items-start justify-between">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center border border-border/70 flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.03)' }}
+            style={{ background: 'var(--overlay-subtle)' }}
           >
-            <span className="text-[11px] font-bold mono tracking-tight text-text-muted">BR</span>
+            <Receipt size={16} className="text-text-muted" />
           </div>
           <ArrowUpRight
             size={14}
@@ -104,7 +103,7 @@ export default function KPICards() {
 
         <div className="mt-4">
           <p className="text-2xs font-medium uppercase tracking-[0.12em] text-text-muted mb-2">
-            Monthly Burn
+            Monthly Costs
           </p>
           <div className="flex items-baseline gap-1.5">
             <span className="text-4xl font-bold mono leading-none text-text-primary">
@@ -142,7 +141,7 @@ export default function KPICards() {
         </div>
       </motion.div>
 
-      {/* ── Due Soon (DS) ── */}
+      {/* ── Payables Due ── */}
       <motion.div
         variants={cardVariants}
         className="card p-5 group hover:border-border-focus transition-all duration-200 flex flex-col justify-between"
@@ -151,9 +150,9 @@ export default function KPICards() {
         <div className="flex items-start justify-between">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center border border-border/70 flex-shrink-0"
-            style={{ background: 'rgba(255,255,255,0.03)' }}
+            style={{ background: 'var(--overlay-subtle)' }}
           >
-            <span className="text-[11px] font-bold mono tracking-tight text-text-muted">DS</span>
+            <FileText size={16} className="text-text-muted" />
           </div>
           <span className="text-2xs font-medium px-2 py-0.5 rounded-pill border bg-accent/8 text-accent border-accent/20 mt-0.5">
             {dueSoonCount} pending
@@ -162,7 +161,7 @@ export default function KPICards() {
 
         <div className="mt-4">
           <p className="text-2xs font-medium uppercase tracking-[0.12em] text-text-muted mb-2">
-            Due in 14 days
+            Payables Due
           </p>
           <div className="flex items-baseline gap-1.5">
             <span className="text-4xl font-bold mono leading-none text-text-primary">
@@ -173,9 +172,9 @@ export default function KPICards() {
 
         <div className="mt-4 pt-3.5 border-t border-border/40 space-y-1">
           {[
-            { name: 'AWS',              amount: 2100, days: 3  },
-            { name: 'Google Workspace', amount: 120,  days: 8  },
-            { name: 'WeWork',           amount: 800,  days: 14 },
+            { name: 'Häfele Hardware',   amount: 2100, days: 3  },
+            { name: 'IKEA Industry',    amount: 120,  days: 8  },
+            { name: 'Blum Hinges',      amount: 800,  days: 14 },
           ].map((item, i) => (
             <div key={i} className="flex items-center justify-between">
               <span className="text-2xs text-text-muted truncate">{item.name}</span>

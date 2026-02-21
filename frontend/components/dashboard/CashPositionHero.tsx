@@ -14,52 +14,13 @@ export default function CashPositionHero() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-card border border-border/60"
-      style={{ minHeight: '200px', background: '#111111' }}
+      className="relative overflow-hidden rounded-card border border-border/60 bg-surface"
+      style={{ minHeight: '200px' }}
     >
-      {/* Deep atmospheric bloom — top-right, like reference Image 1 */}
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          top: '-60px', right: '-60px',
-          width: '380px', height: '320px',
-          background: 'radial-gradient(ellipse at center, rgba(80,120,45,0.50) 0%, rgba(55,90,25,0.22) 40%, transparent 72%)',
-          filter: 'blur(52px)',
-        }}
-      />
-      {/* Secondary cool bloom — lower-left */}
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          bottom: '-40px', left: '0px',
-          width: '240px', height: '200px',
-          background: 'radial-gradient(ellipse at center, rgba(55,85,30,0.22) 0%, transparent 70%)',
-          filter: 'blur(36px)',
-        }}
-      />
-
-      {/* Frosted inner texture layer — mimics blurred image under text (ref Image 2) */}
+      {/* Subtle overlay */}
       <div
         className="pointer-events-none absolute inset-0"
-        style={{
-          background: `
-            linear-gradient(125deg,
-              rgba(70,110,35,0.10) 0%,
-              rgba(18,28,48,0.04) 35%,
-              rgba(8,10,18,0.0) 60%,
-              rgba(22,40,60,0.08) 100%
-            )
-          `,
-        }}
-      />
-
-      {/* Very subtle dot-grid texture */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.018]"
-        style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-        }}
+        style={{ background: 'var(--overlay-subtle)' }}
       />
 
       {/* Content */}
@@ -135,7 +96,7 @@ export default function CashPositionHero() {
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.28, delay: 0.45 + i * 0.07 }}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-white/[0.025] hover:bg-white/[0.04] hover:border-border-focus transition-all cursor-default"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-surface-high/40 hover:bg-surface-high/60 hover:border-border-focus transition-all cursor-default"
             >
               <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: acc.institutionColor }} />
               <span className="text-2xs text-text-muted">{acc.institution}</span>
