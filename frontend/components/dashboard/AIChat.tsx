@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, Loader2, MessageSquare } from 'lucide-react'
 import { cn, formatTimeAgo } from '@/lib/utils'
-import { mockChatHistory } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import type { ChatMessage } from '@/lib/types'
 
 const CANNED_RESPONSES: Record<string, string> = {
@@ -81,7 +81,8 @@ interface AIChatProps {
 }
 
 export default function AIChat({ open, onClose }: AIChatProps) {
-  const [messages, setMessages]     = useState<ChatMessage[]>(mockChatHistory)
+  const { chatHistory } = useDashboard()
+  const [messages, setMessages]     = useState<ChatMessage[]>(chatHistory)
   const [input, setInput]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [streamingId, setStreamingId] = useState<string | null>(null)
