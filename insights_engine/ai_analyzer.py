@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import time
 from typing import Any
 
@@ -27,8 +28,19 @@ from .config import GEMINI_API_KEY, GEMINI_MODEL, COMPETING_SERVICES_SEED
 
 log = logging.getLogger(__name__)
 
-# Single SDK client — thread-safe, reused across all calls
-_client = genai.Client(api_key=GEMINI_API_KEY)
+# Set AI_ENABLED=true in your environment to activate Gemini calls.
+# When False (default) every AI function returns its structured stub immediately.
+AI_ENABLED: bool = os.getenv("AI_ENABLED", "false").lower() == "true"
+
+# Lazy-initialised so the client is only created when actually needed.
+_client: genai.Client | None = None
+
+
+def _get_client() -> genai.Client:
+    global _client
+    if _client is None:
+        _client = genai.Client(api_key=GEMINI_API_KEY)
+    return _client
 
 
 def _generate(
@@ -37,11 +49,14 @@ def _generate(
     *,
     max_retries: int = 4,
     base_delay: float = 55.0,
-) -> str:
+) -> str | None:
     """
     Call Gemini with automatic retry-on-rate-limit (exponential back-off).
-    Returns the raw text of the response.
+    Returns the raw text of the response, or None when AI_ENABLED is False.
     """
+    if not AI_ENABLED:
+        return None
+
     cfg = GenerateContentConfig(
         system_instruction=system,
         response_mime_type="application/json",
@@ -51,7 +66,7 @@ def _generate(
     last_exc: Exception | None = None
     for attempt in range(max_retries):
         try:
-            resp = _client.models.generate_content(
+            resp = _get_client().models.generate_content(
                 model=GEMINI_MODEL,
                 contents=user,
                 config=cfg,
@@ -68,9 +83,7 @@ def _generate(
                 delay = base_delay * (2 ** attempt)
                 log.warning(
                     "Gemini rate-limit hit (attempt %d/%d). Retrying in %.0fs …",
-                    attempt + 1,
-                    max_retries,
-                    delay,
+                    attempt + 1, max_retries, delay,
                 )
                 time.sleep(delay)
                 last_exc = exc
@@ -81,7 +94,9 @@ def _generate(
     ) from last_exc
 
 
-def _safe_parse(raw: str, fallback: Any) -> Any:
+def _safe_parse(raw: str | None, fallback: Any) -> Any:
+    if raw is None:          # AI disabled — return stub directly
+        return fallback
     try:
         return json.loads(raw)
     except (json.JSONDecodeError, ValueError):

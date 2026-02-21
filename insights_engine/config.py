@@ -10,7 +10,7 @@ SUPABASE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
 # ── Gemini ────────────────────────────────────────────────────────────────────
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL: str = "gemini-2.0-flash"
+GEMINI_MODEL: str = "gemini-2.5-flash"
 
 # ── Plaid Personal Finance Category (PFC) values — CONFIRMED ────────────────
 # The schema stores Plaid's modern PFC taxonomy in two columns:
