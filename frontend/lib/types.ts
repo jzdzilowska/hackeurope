@@ -123,6 +123,20 @@ export interface KPIs {
   financialHealthScore: number
 }
 
+// ─── Upcoming Dues ───────────────────────────────────────────────────────────
+export type DueDirection = 'payable' | 'receivable'
+
+export interface UpcomingDue {
+  id:         string
+  company:    string
+  logoUrl?:   string
+  amount:     number
+  currency:   string
+  dueDate:    string        // ISO date string, e.g. "2026-02-21"
+  direction:  DueDirection  // payable = you owe them; receivable = they owe you
+  invoiceRef: string
+}
+
 // ─── AI Chat ─────────────────────────────────────────────────────────────────
 export interface ChatMessage {
   id: string

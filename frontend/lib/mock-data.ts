@@ -1,6 +1,6 @@
 import type {
   Organisation, Account, Transaction, RecurringPayment,
-  InsightCard, PaymentApproval, MonthlyBurn, KPIs, ChatMessage,
+  InsightCard, PaymentApproval, MonthlyBurn, KPIs, ChatMessage, UpcomingDue,
 } from './types'
 
 // ─── Organisation ─────────────────────────────────────────────────────────────
@@ -396,5 +396,105 @@ export const mockChatHistory: ChatMessage[] = [
     role: 'assistant',
     content: 'Based on transaction patterns, **Linear** and **Notion** both show low engagement signals:\n\n• **Linear** — paid €80/mo, but no commit-linked activity in 45 days across 2 seats\n• **Notion** — paid €160/mo, 2 of 10 seats show zero page edits in 6 weeks\n\nDowngrading both to smaller plans saves approximately **€52/month** (€624/year).\n\nWant me to flag these in your recurring payments for review?',
     timestamp: new Date(Date.now() - 24 * 60000).toISOString(),
+  },
+]
+
+// ─── Upcoming Dues ─────────────────────────────────────────────────────────
+// Dates anchored to Feb 21 2026 (today).
+// Payables  = invoices owed to suppliers
+// Receivables = invoices owed by customers
+export const mockUpcomingDues: UpcomingDue[] = [
+  // ── Overdue ──
+  {
+    id: 'due_001',
+    company: 'Maersk Shipping',
+    logoUrl: 'https://logo.clearbit.com/maersk.com',
+    amount: 8_400,
+    currency: 'EUR',
+    dueDate: '2026-02-14',
+    direction: 'payable',
+    invoiceRef: 'INV-2026-0312',
+  },
+  {
+    id: 'due_002',
+    company: 'H&M Supply Chain',
+    logoUrl: 'https://logo.clearbit.com/hm.com',
+    amount: 14_750,
+    currency: 'EUR',
+    dueDate: '2026-02-17',
+    direction: 'receivable',
+    invoiceRef: 'REC-2026-0088',
+  },
+  // ── Due today ──
+  {
+    id: 'due_003',
+    company: 'DHL Freight',
+    logoUrl: 'https://logo.clearbit.com/dhl.com',
+    amount: 2_230,
+    currency: 'EUR',
+    dueDate: '2026-02-21',
+    direction: 'payable',
+    invoiceRef: 'INV-2026-0341',
+  },
+  // ── Due soon (≤7 days) ──
+  {
+    id: 'due_004',
+    company: 'Zara Group',
+    logoUrl: 'https://logo.clearbit.com/zara.com',
+    amount: 31_200,
+    currency: 'EUR',
+    dueDate: '2026-02-24',
+    direction: 'receivable',
+    invoiceRef: 'REC-2026-0101',
+  },
+  {
+    id: 'due_005',
+    company: 'GlobalTex Supply',
+    amount: 6_800,
+    currency: 'EUR',
+    dueDate: '2026-02-25',
+    direction: 'payable',
+    invoiceRef: 'INV-2026-0358',
+  },
+  {
+    id: 'due_006',
+    company: 'Nordic Fabrics',
+    logoUrl: 'https://logo.clearbit.com/nordicfabrics.com',
+    amount: 4_150,
+    currency: 'EUR',
+    dueDate: '2026-02-27',
+    direction: 'payable',
+    invoiceRef: 'INV-2026-0362',
+  },
+  // ── Upcoming (≤30 days) ──
+  {
+    id: 'due_007',
+    company: 'IKEA Retail',
+    logoUrl: 'https://logo.clearbit.com/ikea.com',
+    amount: 22_500,
+    currency: 'EUR',
+    dueDate: '2026-03-02',
+    direction: 'receivable',
+    invoiceRef: 'REC-2026-0115',
+  },
+  {
+    id: 'due_008',
+    company: 'Henkel Distribution',
+    logoUrl: 'https://logo.clearbit.com/henkel.com',
+    amount: 3_980,
+    currency: 'EUR',
+    dueDate: '2026-03-05',
+    direction: 'payable',
+    invoiceRef: 'INV-2026-0374',
+  },
+  {
+    id: 'due_009',
+    company: 'Marks & Spencer',
+    logoUrl: 'https://logo.clearbit.com/marksandspencer.com',
+    amount: 18_600,
+    currency: 'EUR',
+    dueDate: '2026-03-10',
+    direction: 'receivable',
+    invoiceRef: 'REC-2026-0129',
   },
 ]

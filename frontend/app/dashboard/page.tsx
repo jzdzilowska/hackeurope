@@ -6,11 +6,7 @@ import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
 import KPICards             from '@/components/dashboard/KPICards'
-import BurnRateChart        from '@/components/dashboard/BurnRateChart'
-import CategoryBreakdown    from '@/components/dashboard/CategoryBreakdown'
-import InsightCards         from '@/components/dashboard/InsightCards'
-import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
-import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
+import UpcomingDues         from '@/components/dashboard/UpcomingDues'
 import AIChat               from '@/components/dashboard/AIChat'
 import { useDashboard } from '@/lib/dashboard-context'
 
@@ -81,8 +77,8 @@ export default function DashboardPage() {
             {/* Ask HELM */}
             <button
               onClick={() => setChatOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-black text-xs font-semibold hover:brightness-105 active:scale-[0.98] transition-all"
-              style={{ background: 'rgba(255,255,255,0.08)' }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-[#0A0A0A] text-xs font-semibold hover:brightness-95 active:scale-[0.98] transition-all"
+              style={{ background: 'rgba(255,255,255,0.88)' }}
             >
               <MessageSquare size={11} />
               Ask HELM
@@ -105,36 +101,9 @@ export default function DashboardPage() {
             <KPICards />
           </div>
 
-          {/* Section 3: Burn + categories */}
+          {/* Section 3: Upcoming dues */}
           <div>
-            <SectionHeader tag="ANALYSIS" title="Spend Breakdown" action="Export" />
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
-                <BurnRateChart />
-              </div>
-              <div className="col-span-1">
-                <CategoryBreakdown />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 4: AI insights */}
-          <div>
-            <SectionHeader tag="AI" title="Insights" action="Refresh" />
-            <InsightCards />
-          </div>
-
-          {/* Section 5: Payments + approvals */}
-          <div>
-            <SectionHeader tag="PAYMENTS" title="Upcoming & Approvals" action="All payments" />
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
-                <UpcomingPayments />
-              </div>
-              <div className="col-span-1">
-                <ApprovalQueue />
-              </div>
-            </div>
+            <UpcomingDues />
           </div>
 
           <div className="h-4" />

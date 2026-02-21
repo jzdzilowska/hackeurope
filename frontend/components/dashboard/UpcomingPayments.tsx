@@ -22,13 +22,29 @@ function RecurringRow({ r, index }: { r: RecurringPayment; index: number }) {
       transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
       className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-surface-raised transition-colors cursor-pointer group"
     >
-      {/* Logo */}
-      <div className="w-7 h-7 rounded-md bg-surface-high border border-border/60 flex items-center justify-center overflow-hidden flex-shrink-0">
+      {/* Logo — white tile so dark logos (GitHub, Notion etc.) show on dark bg */}
+      <div
+        className="w-7 h-7 rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center"
+        style={{ background: 'rgba(255,255,255,0.80)' }}
+      >
         {r.merchantLogoUrl ? (
-          <img src={r.merchantLogoUrl} alt={r.merchantName} className="w-4 h-4 object-contain" />
-        ) : (
-          <span className="text-2xs font-bold text-text-muted">{r.merchantName.charAt(0)}</span>
-        )}
+          <img
+            src={r.merchantLogoUrl}
+            alt={r.merchantName}
+            className="w-[18px] h-[18px] object-contain"
+            onError={e => {
+              e.currentTarget.style.display = 'none'
+              const fb = e.currentTarget.nextElementSibling as HTMLElement | null
+              if (fb) fb.style.display = 'flex'
+            }}
+          />
+        ) : null}
+        <span
+          className="text-[10px] font-bold text-[#333] items-center justify-center"
+          style={{ display: r.merchantLogoUrl ? 'none' : 'flex' }}
+        >
+          {r.merchantName.charAt(0)}
+        </span>
       </div>
 
       {/* Name + category */}

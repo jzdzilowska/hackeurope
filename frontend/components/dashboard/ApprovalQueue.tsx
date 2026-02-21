@@ -39,13 +39,29 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
     >
       {/* Header row */}
       <div className="flex items-center gap-3 mb-3">
-        {/* Merchant logo */}
-        <div className="w-8 h-8 rounded-lg bg-surface-raised border border-border/60 flex items-center justify-center overflow-hidden flex-shrink-0">
+        {/* Merchant logo — white tile so dark logos show on dark bg */}
+        <div
+          className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center"
+          style={{ background: 'rgba(255,255,255,0.80)' }}
+        >
           {approval.merchantLogoUrl ? (
-            <img src={approval.merchantLogoUrl} alt={approval.merchantName} className="w-5 h-5 object-contain" />
-          ) : (
-            <span className="text-xs font-bold text-text-muted">{approval.merchantName.charAt(0)}</span>
-          )}
+            <img
+              src={approval.merchantLogoUrl}
+              alt={approval.merchantName}
+              className="w-5 h-5 object-contain"
+              onError={e => {
+                e.currentTarget.style.display = 'none'
+                const fb = e.currentTarget.nextElementSibling as HTMLElement | null
+                if (fb) fb.style.display = 'flex'
+              }}
+            />
+          ) : null}
+          <span
+            className="text-xs font-bold text-[#333] items-center justify-center"
+            style={{ display: approval.merchantLogoUrl ? 'none' : 'flex' }}
+          >
+            {approval.merchantName.charAt(0)}
+          </span>
         </div>
 
         <div className="flex-1 min-w-0">
