@@ -89,7 +89,7 @@ export default function CashPositionHero() {
           width: '60%', height: '180%',
           backgroundImage: GRAIN,
           backgroundRepeat: 'repeat',
-          backgroundSize: '320px 320px',
+          backgroundSize: '150px 150px',
           WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 35% 50%, black 10%, transparent 75%)',
           maskImage:        'radial-gradient(ellipse 75% 65% at 35% 50%, black 10%, transparent 75%)',
         }}
@@ -110,7 +110,7 @@ export default function CashPositionHero() {
           width: '58%', height: '180%',
           backgroundImage: GRAIN,
           backgroundRepeat: 'repeat',
-          backgroundSize: '260px 260px',
+          backgroundSize: '120px 120px',
           WebkitMaskImage: 'radial-gradient(ellipse 75% 65% at 65% 50%, black 10%, transparent 75%)',
           maskImage:        'radial-gradient(ellipse 75% 65% at 65% 50%, black 10%, transparent 75%)',
         }}

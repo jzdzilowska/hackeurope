@@ -6,7 +6,6 @@ import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
 import KPICards             from '@/components/dashboard/KPICards'
-import UpcomingDues         from '@/components/dashboard/UpcomingDues'
 import AIChat               from '@/components/dashboard/AIChat'
 import { useDashboard } from '@/lib/dashboard-context'
 
@@ -99,11 +98,6 @@ export default function DashboardPage() {
           <div>
             <SectionHeader tag="METRICS" title="Key Indicators" action="View all" />
             <KPICards />
-          </div>
-
-          {/* Section 3: Upcoming dues */}
-          <div>
-            <UpcomingDues />
           </div>
 
           <div className="h-4" />
