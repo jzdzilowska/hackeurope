@@ -200,7 +200,7 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
               HELM Intelligence · Executive Briefing
             </span>
           </div>
-          <h2 className="text-xl font-bold text-text-primary mb-2 leading-tight">Wataru Endo Wholesale</h2>
+          <h2 className="text-xl font-bold text-text-primary mb-2 leading-tight">TechFlow Labs</h2>
           <div className="flex items-center gap-3 flex-wrap">
             <span
               className="text-xs font-semibold px-2.5 py-1 rounded-full border"
@@ -867,7 +867,7 @@ export default function InsightsPage() {
   )
 
   return (
-    <PageShell tag="WATARU ENDO WHOLESALE" title="Intelligence Hub" topBarRight={topBarRight}>
+    <PageShell tag="TECHFLOW LABS" title="Intelligence Hub" topBarRight={topBarRight}>
       {loading ? (
         <div className="space-y-8">
           <SkeletonBlock h="h-56" />
