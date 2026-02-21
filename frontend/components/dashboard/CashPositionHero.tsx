@@ -20,45 +20,9 @@ export default function CashPositionHero() {
       className="relative overflow-hidden rounded-card border border-border/60"
       style={{ minHeight: '200px', background: '#111111' }}
     >
-      {/* Deep atmospheric bloom — top-right, like reference Image 1 */}
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          top: '-60px', right: '-60px',
-          width: '380px', height: '320px',
-          background: 'radial-gradient(ellipse at center, rgba(80,120,45,0.50) 0%, rgba(55,90,25,0.22) 40%, transparent 72%)',
-          filter: 'blur(52px)',
-        }}
-      />
-      {/* Secondary cool bloom — lower-left */}
-      <div
-        className="pointer-events-none absolute"
-        style={{
-          bottom: '-40px', left: '0px',
-          width: '240px', height: '200px',
-          background: 'radial-gradient(ellipse at center, rgba(55,85,30,0.22) 0%, transparent 70%)',
-          filter: 'blur(36px)',
-        }}
-      />
-
-      {/* Frosted inner texture layer — mimics blurred image under text (ref Image 2) */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `
-            linear-gradient(125deg,
-              rgba(70,110,35,0.10) 0%,
-              rgba(18,28,48,0.04) 35%,
-              rgba(8,10,18,0.0) 60%,
-              rgba(22,40,60,0.08) 100%
-            )
-          `,
-        }}
-      />
-
       {/* Very subtle dot-grid texture */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.018]"
+        className="pointer-events-none absolute inset-0 opacity-[0.012]"
         style={{
           backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
           backgroundSize: '28px 28px',
@@ -75,8 +39,8 @@ export default function CashPositionHero() {
             </p>
             {/* Live dot */}
             <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-50" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-40" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-success" />
             </span>
           </div>
 

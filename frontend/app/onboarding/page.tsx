@@ -477,7 +477,7 @@ export default function OnboardingPage() {
       <div className="fixed inset-0 pointer-events-none">
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'radial-gradient(ellipse 70% 55% at 80% 0%, rgba(80,120,45,0.20) 0%, rgba(55,90,25,0.09) 40%, transparent 70%)',
+          background: 'transparent',
         }} />
         <div style={{
           position: 'absolute', inset: 0,
@@ -506,8 +506,8 @@ export default function OnboardingPage() {
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
-              boxShadow: '0 0 20px rgba(0,212,160,0.20)',
+              background: 'rgba(255,255,255,0.08)',
+              boxShadow: 'none',
             }}
           >
             <Zap size={15} className="text-black" strokeWidth={2.5} />
@@ -819,11 +819,11 @@ export default function OnboardingPage() {
                   animate={{ scale: [1, 1.35, 1], opacity: [0.3, 0.08, 0.3] }}
                   transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
                   className="absolute w-24 h-24 rounded-full"
-                  style={{ background: 'radial-gradient(circle, rgba(0,212,160,0.28) 0%, transparent 70%)' }}
+                  style={{ background: 'transparent' }}
                 />
                 <div
                   className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)' }}
+                  style={{ background: 'rgba(255,255,255,0.08)' }}
                 >
                   <Zap size={24} className="text-black" strokeWidth={2.5} />
                 </div>

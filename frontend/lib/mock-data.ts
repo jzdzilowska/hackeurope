@@ -80,7 +80,7 @@ export const mockBurnData: MonthlyBurn[] = [
 
 // ─── Category Breakdown ───────────────────────────────────────────────────────
 export const mockCategories = [
-  { name: 'Infrastructure',  amount: 4380, pct: 28.8, color: '#00D4A0' },
+  { name: 'Infrastructure',  amount: 4380, pct: 28.8, color: '#FFFFFF' },
   { name: 'SaaS & Tools',    amount: 2840, pct: 18.6, color: '#E87878' },
   { name: 'Payroll',         amount: 5200, pct: 34.1, color: '#7AC0A8' },
   { name: 'Marketing',       amount: 1200, pct: 7.9,  color: '#6898C8' },
