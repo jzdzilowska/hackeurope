@@ -88,7 +88,7 @@ export default function UpcomingPayments() {
         <div>
           <p className="label mb-0.5">Recurring payments</p>
           <p className="text-xs text-text-muted">
-            {mockRecurring.length} active · {formatCurrency(totalMonthly, 'USD', true)}/mo
+            {mockRecurring.length} active · {formatCurrency(totalMonthly, 'EUR', true)}/mo
           </p>
         </div>
         <div className="flex items-center gap-3 text-2xs text-text-muted">

@@ -3,17 +3,13 @@
 import { motion } from 'framer-motion'
 import { TrendingUp, RefreshCw, ArrowUpRight } from 'lucide-react'
 import { formatCurrency, formatTimeAgo } from '@/lib/utils'
-import { useDashboard } from '@/lib/dashboard-context'
+import { mockKPIs, mockAccounts } from '@/lib/mock-data'
 
 export default function CashPositionHero() {
-  const { accounts, kpis } = useDashboard()
-
-  const lastSynced = accounts.length > 0
-    ? accounts.reduce((latest, acc) =>
-        new Date(acc.lastSynced) > new Date(latest) ? acc.lastSynced : latest,
-        accounts[0].lastSynced
-      )
-    : new Date().toISOString()
+  const lastSynced = mockAccounts.reduce((latest, acc) =>
+    new Date(acc.lastSynced) > new Date(latest) ? acc.lastSynced : latest,
+    mockAccounts[0].lastSynced
+  )
 
   return (
     <div
@@ -100,7 +96,7 @@ export default function CashPositionHero() {
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="text-[3.6rem] leading-none font-bold tracking-tighter text-text-primary mono"
             >
-              {formatCurrency(kpis.totalCashPosition, 'USD')}
+              {formatCurrency(mockKPIs.totalCashPosition, 'EUR')}
             </motion.h1>
 
             <motion.div
@@ -132,7 +128,7 @@ export default function CashPositionHero() {
           transition={{ duration: 0.5, delay: 0.38 }}
           className="flex items-center gap-2 flex-wrap mt-6 pt-5 border-t border-border/30"
         >
-          {accounts.map((acc, i) => (
+          {mockAccounts.map((acc, i) => (
             <motion.div
               key={acc.id}
               initial={{ opacity: 0, y: 4 }}
@@ -149,7 +145,7 @@ export default function CashPositionHero() {
           ))}
 
           <span className="text-2xs text-text-disabled ml-auto">
-            {accounts.length} institutions
+            {mockAccounts.length} institutions
           </span>
         </motion.div>
       </div>
