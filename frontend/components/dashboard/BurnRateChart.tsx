@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, AreaChart, Area,
   XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts'
-import { mockBurnData } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency } from '@/lib/utils'
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -32,6 +32,7 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export default function BurnRateChart() {
+  const { burnData: mockBurnData } = useDashboard()
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}

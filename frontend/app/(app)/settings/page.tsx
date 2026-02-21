@@ -7,7 +7,7 @@ import {
   Bell, Shield, CreditCard, Unlink, ArrowUpRight,
 } from 'lucide-react'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
-import { mockOrg, mockAccounts } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency, formatTimeAgo, cn } from '@/lib/utils'
 
 const MOCK_TEAM = [
@@ -17,6 +17,7 @@ const MOCK_TEAM = [
 ]
 
 export default function SettingsPage() {
+  const { org: mockOrg, accounts: mockAccounts } = useDashboard()
   const [orgName, setOrgName]           = useState(mockOrg.name)
   const [saved, setSaved]               = useState(false)
   const [notifMap, setNotifMap]         = useState({

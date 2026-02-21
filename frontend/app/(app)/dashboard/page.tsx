@@ -12,7 +12,7 @@ import InsightCards         from '@/components/dashboard/InsightCards'
 import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
 import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
 import AIChat               from '@/components/dashboard/AIChat'
-import { mockOrg, mockApprovals, mockAccounts } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 
 // ── Editorial section header component ──────────────────────────────────
 function SectionHeader({
@@ -45,6 +45,7 @@ function SectionHeader({
 }
 
 export default function DashboardPage() {
+  const { org: mockOrg, approvals: mockApprovals, accounts: mockAccounts } = useDashboard()
   const [chatOpen, setChatOpen] = useState(false)
   const pendingCount = mockApprovals.filter(a => a.status === 'pending').length
 

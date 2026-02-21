@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import Sidebar from './Sidebar'
-import { mockAccounts } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 
 interface PageShellProps {
   /** Tiny all-caps tag above the heading */
@@ -44,6 +44,7 @@ export function SectionHeader({
 }
 
 export default function PageShell({ tag, title, topBarRight, children }: PageShellProps) {
+  const { accounts: mockAccounts } = useDashboard()
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />

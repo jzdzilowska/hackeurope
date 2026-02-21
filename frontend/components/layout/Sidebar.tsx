@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Settings, Zap, Plus } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
-import { mockOrg, mockAccounts } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 
 const navItems = [
   { href: '/dashboard', label: 'Overview'     },
@@ -17,6 +17,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { org: mockOrg, accounts: mockAccounts } = useDashboard()
 
   return (
     <aside className="w-[210px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/50 bg-background/95 backdrop-blur-sm z-20">

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { cn, formatCurrency, runwayColor } from '@/lib/utils'
-import { mockKPIs } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 
 const containerVariants = {
   hidden: {},
@@ -15,7 +15,8 @@ const cardVariants = {
 }
 
 export default function KPICards() {
-  const { runway, monthlyBurn, burnTrend, dueSoon, dueSoonCount } = mockKPIs
+  const { kpis } = useDashboard()
+  const { runway, monthlyBurn, burnTrend, dueSoon, dueSoonCount } = kpis
 
   const runwayStatus = runway > 12 ? 'Healthy' : runway > 6 ? 'Watch' : 'Critical'
   const runwayStatusColor =

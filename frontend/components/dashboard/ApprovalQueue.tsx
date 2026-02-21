@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, Clock, SkipForward, Loader2, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
 import { cn, formatCurrency, formatRelativeDate, generateStripeRef } from '@/lib/utils'
-import { mockApprovals } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import type { PaymentApproval } from '@/lib/types'
 
 type CardState = 'idle' | 'loading' | 'approved' | 'skipped'
@@ -165,6 +165,7 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
 }
 
 export default function ApprovalQueue() {
+  const { approvals: mockApprovals } = useDashboard()
   const [approvals] = useState(mockApprovals)
 
   return (

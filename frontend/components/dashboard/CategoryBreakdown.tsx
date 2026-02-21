@@ -1,10 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { mockCategories } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency } from '@/lib/utils'
 
 export default function CategoryBreakdown() {
+  const { categories: mockCategories } = useDashboard()
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}

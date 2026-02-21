@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RefreshCw, ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
-import { mockAccounts, mockTransactions, mockKPIs } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency, formatDate, formatTimeAgo, cn } from '@/lib/utils'
-import type { HelmCategory } from '@/lib/types'
+import type { HelmCategory, Transaction } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<string, string> = {
   Infrastructure: '#00D4A0', 'SaaS & Tools': '#E87878', Payroll: '#7AC0A8',
@@ -17,8 +17,8 @@ const ALL_CATS: (HelmCategory | 'All')[] = [
   'All', 'Revenue', 'Infrastructure', 'SaaS & Tools', 'Payroll', 'Marketing', 'Office & Rent',
 ]
 
-function groupByDate(txns: typeof mockTransactions) {
-  const groups: Record<string, typeof mockTransactions> = {}
+function groupByDate(txns: Transaction[]) {
+  const groups: Record<string, Transaction[]> = {}
   txns.forEach(t => {
     const label = (() => {
       const d = new Date(t.date), now = new Date()
@@ -36,6 +36,7 @@ function groupByDate(txns: typeof mockTransactions) {
 }
 
 export default function AccountsPage() {
+  const { accounts: mockAccounts, transactions: mockTransactions, kpis: mockKPIs } = useDashboard()
   const [activeFilter, setActiveFilter] = useState<HelmCategory | 'All'>('All')
 
   const filtered = activeFilter === 'All'
