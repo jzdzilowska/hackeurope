@@ -43,3 +43,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.zapier_tokens.json
+.zapier_client.json
+email_integration/output/

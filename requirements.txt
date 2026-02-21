@@ -1,8 +1,23 @@
+# Web / API
 fastapi>=0.110.0
 uvicorn[standard]>=0.29.0
-supabase>=2.4.0
-google-genai>=1.0.0
-python-dotenv>=1.0.0
 pydantic>=2.0.0
+
+# Database
+supabase>=2.4.0
+
+# AI / LLM
+openai>=1.30.0
+google-genai>=1.0.0
+
+# MCP
+mcp>=1.0.0
+
+# Email / invoice parsing
+pdfplumber>=0.11.0
+httpx>=0.27.0
+
+# Utilities
+python-dotenv>=1.0.0
 python-dateutil>=2.9.0
 numpy>=1.26.0
