@@ -96,7 +96,7 @@ class PrioritisedInsight(BaseModel):
 
 
 class InsightsResponse(BaseModel):
-    org_id: str
+    user_id: str
     generated_at: datetime
     date_range_months: int
     priority_score: int            # 1–100, overall financial health
@@ -104,3 +104,76 @@ class InsightsResponse(BaseModel):
     total_estimated_monthly_savings: float
     total_estimated_annual_savings: float
     insights: list[PrioritisedInsight]
+
+
+# ── Predictive & General Health module ────────────────────────────────────────
+
+class PurchaseAdvisorRequest(BaseModel):
+    item_description: str
+    price: float
+    currency: str = "USD"
+
+
+class PurchaseAdvisorResponse(BaseModel):
+    user_id: str
+    evaluated_at: datetime
+    item_description: str
+    price: float
+    currency: str
+    # Traffic light
+    risk_level: str                             # "green" | "yellow" | "red"
+    runway_after_purchase_months: Optional[float]
+    verdict: str
+    reasoning: str
+    alternatives: list[str]
+    best_time_to_buy: str
+    investment_opportunity: Optional[str]
+    # Context snapshot
+    current_balance: float
+    current_runway_months: Optional[float]
+    avg_monthly_burn: float
+
+
+class ScoreDimension(BaseModel):
+    score: int
+    reasoning: str
+
+
+class FinancialHealthReport(BaseModel):
+    user_id: str
+    generated_at: datetime
+    cached: bool = False
+    business_context: dict[str, Any] = Field(default_factory=dict)
+    # ── Scores ──────────────────────────────────────────────────────────────
+    health_score: int              # Controllable elements score (1–100)
+    score_breakdown: dict[str, Any] = Field(default_factory=dict)
+    # ── P&L ─────────────────────────────────────────────────────────────────
+    net_worth: float
+    total_expenditure: float
+    total_income: float
+    total_profit: float
+    profit_margin_pct: float
+    account_breakdown: list[dict[str, Any]] = Field(default_factory=list)
+    # ── Cost structure ───────────────────────────────────────────────────────
+    cost_breakdown: dict[str, Any] = Field(default_factory=dict)
+    variable_cost_assessment: str
+    payroll_assessment: str
+    # ── Forecast ─────────────────────────────────────────────────────────────
+    avg_monthly_burn: float
+    statistical_burn_forecast: float
+    statistical_income_forecast: float
+    predicted_burn_next_month: float
+    predicted_income_next_month: float
+    forecast_confidence: str
+    forecast_reasoning: str
+    historical_months: list[dict[str, Any]] = Field(default_factory=list)
+    # ── Benchmark ────────────────────────────────────────────────────────────
+    benchmark_comparison: dict[str, Any] = Field(default_factory=dict)
+    # ── Alerts ───────────────────────────────────────────────────────────────
+    inventory_alert: Optional[str] = None
+    seasonal_risk: Optional[str] = None
+    lazy_cash_estimate: float
+    lazy_cash_alert: Optional[str] = None
+    investment_opportunity: Optional[str] = None
+    # ── Improvements ─────────────────────────────────────────────────────────
+    top_3_controllable_improvements: list[str] = Field(default_factory=list)

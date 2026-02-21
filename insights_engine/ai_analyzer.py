@@ -17,29 +17,68 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from typing import Any
 
-import google.generativeai as genai
+from google import genai
+from google.genai.types import GenerateContentConfig
 
 from .config import GEMINI_API_KEY, GEMINI_MODEL, COMPETING_SERVICES_SEED
 
 log = logging.getLogger(__name__)
 
-# Configure once at import time
-genai.configure(api_key=GEMINI_API_KEY)
-
-_JSON_CONFIG = genai.types.GenerationConfig(
-    response_mime_type="application/json",
-    temperature=0.2,          # Low temp → consistent, fact-like output
-    max_output_tokens=8192,
-)
+# Single SDK client — thread-safe, reused across all calls
+_client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-def _make_model() -> genai.GenerativeModel:
-    return genai.GenerativeModel(
-        model_name=GEMINI_MODEL,
-        generation_config=_JSON_CONFIG,
+def _generate(
+    system: str,
+    user: str,
+    *,
+    max_retries: int = 4,
+    base_delay: float = 55.0,
+) -> str:
+    """
+    Call Gemini with automatic retry-on-rate-limit (exponential back-off).
+    Returns the raw text of the response.
+    """
+    cfg = GenerateContentConfig(
+        system_instruction=system,
+        response_mime_type="application/json",
+        temperature=0.2,
+        max_output_tokens=8192,
     )
+    last_exc: Exception | None = None
+    for attempt in range(max_retries):
+        try:
+            resp = _client.models.generate_content(
+                model=GEMINI_MODEL,
+                contents=user,
+                config=cfg,
+            )
+            return resp.text
+        except Exception as exc:
+            msg = str(exc)
+            if (
+                "RESOURCE_EXHAUSTED" in msg
+                or "429" in msg
+                or "quota" in msg.lower()
+                or "rate" in msg.lower()
+            ):
+                delay = base_delay * (2 ** attempt)
+                log.warning(
+                    "Gemini rate-limit hit (attempt %d/%d). Retrying in %.0fs …",
+                    attempt + 1,
+                    max_retries,
+                    delay,
+                )
+                time.sleep(delay)
+                last_exc = exc
+            else:
+                raise
+    raise RuntimeError(
+        f"Gemini quota exceeded after {max_retries} retries."
+    ) from last_exc
 
 
 def _safe_parse(raw: str, fallback: Any) -> Any:
@@ -111,9 +150,7 @@ def identify_duplicate_services(
         seed_categories=seed,
     )
 
-    model = _make_model()
-    resp = model.generate_content([DUPLICATE_SYSTEM, prompt])
-    return _safe_parse(resp.text, [])
+    return _safe_parse(_generate(DUPLICATE_SYSTEM, prompt), [])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -181,9 +218,7 @@ def analyze_individual_plans(
         team_size_line=team_size_line,
     )
 
-    model = _make_model()
-    resp = model.generate_content([INDIVIDUAL_SYSTEM, prompt])
-    return _safe_parse(resp.text, [])
+    return _safe_parse(_generate(INDIVIDUAL_SYSTEM, prompt), [])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -274,10 +309,8 @@ def prioritize_all_insights(
         all_insights=json.dumps(all_insights, indent=2),
     )
 
-    model = _make_model()
-    resp = model.generate_content([PRIORITISE_SYSTEM, prompt])
     return _safe_parse(
-        resp.text,
+        _generate(PRIORITISE_SYSTEM, prompt),
         {
             "priority_score": 0,
             "summary": "AI analysis failed — please retry.",
@@ -285,6 +318,223 @@ def prioritize_all_insights(
             "total_estimated_annual_savings": 0,
             "insights": [],
             "_error": "JSON parse failed",
-            "_raw_response": resp.text[:500],
         },
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Call 4 — Financial Health Score (Controllable Elements Only)
+# ─────────────────────────────────────────────────────────────────────────────
+
+HEALTH_SYSTEM = """\
+You are a CFO-level financial analyst specialising in early-stage and growth-stage technology startups.
+You score companies ONLY on controllable financial metrics — things the founder can directly influence.
+You never penalise for market conditions, revenue size, or uncontrollable external factors.
+You are direct, specific, and always reference actual numbers from the data provided.
+"""
+
+HEALTH_USER = """\
+Analyse this company's financial health data and produce a structured assessment.
+
+Financial Data:
+{health_data}
+
+Business Context:
+{business_context}
+
+Score ONLY on these 4 controllable dimensions (25 points each = 100 total):
+  1. Cost Structure  (25 pts): Is the fixed/variable/payroll split healthy for their stage?
+  2. Profit Quality  (25 pts): Is the profit margin sustainable? Revenue diversification?
+  3. Cash Efficiency (25 pts): Is cash deployed productively? Any idle/lazy cash losing value to inflation?
+  4. Expense Control (25 pts): Are there signs of cost discipline, or growing undisciplined spend?
+
+Return ONLY this JSON object — no prose, no markdown:
+{{
+  "health_score": <integer 1–100, sum of the 4 dimension scores>,
+  "score_breakdown": {{
+    "cost_structure":  {{"score": <0–25>, "reasoning": "string — reference their specific numbers"}},
+    "profit_quality":  {{"score": <0–25>, "reasoning": "string — reference their specific numbers"}},
+    "cash_efficiency": {{"score": <0–25>, "reasoning": "string — reference their specific numbers"}},
+    "expense_control": {{"score": <0–25>, "reasoning": "string — reference their specific numbers"}}
+  }},
+  "variable_cost_assessment": "string — is their variable cost % healthy for their industry and stage?",
+  "payroll_assessment": "string — is payroll proportionate to their revenue and stage?",
+  "lazy_cash_alert": <null | "string — if idle cash > 150% of 6-month burn: state exact amount, inflation cost per month, and opportunity">,
+  "investment_opportunity": <null | "string — specific capital allocation recommendation with projected return, e.g. 'Move €200k to a 4.5% business savings account — generates €750/month, covering your entire SaaS stack'">,
+  "top_3_controllable_improvements": [
+    "string — specific, imperative, with estimated monthly impact in currency",
+    "string",
+    "string"
+  ]
+}}
+"""
+
+
+def analyze_financial_health(
+    health_data: dict,
+    business_context: dict,
+) -> dict:
+    """
+    Call Gemini to score the company's financial health on controllable metrics only
+    (cost structure, profit quality, cash efficiency, expense control).
+    Surfaces lazy-cash opportunities and top improvement actions.
+    """
+    prompt = HEALTH_USER.format(
+        health_data=json.dumps(health_data, indent=2),
+        business_context=json.dumps(business_context, indent=2),
+    )
+    return _safe_parse(_generate(HEALTH_SYSTEM, prompt), {
+        "health_score": 0,
+        "score_breakdown": {},
+        "variable_cost_assessment": "Analysis unavailable — please retry.",
+        "payroll_assessment":       "Analysis unavailable — please retry.",
+        "lazy_cash_alert":          None,
+        "investment_opportunity":   None,
+        "top_3_controllable_improvements": [],
+        "_error": "JSON parse failed",
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Call 5 — Benchmark Forecast + Seasonal Intelligence
+# ─────────────────────────────────────────────────────────────────────────────
+
+FORECAST_SYSTEM = """\
+You are a financial forecasting analyst with deep knowledge of industry benchmarks,
+seasonal spending patterns, and sector-specific financial ratios for SMEs and startups
+across Europe and North America as of 2026.
+You use your knowledge of business cycles, retail seasons, regulatory calendars, and
+startup financial patterns to enrich and validate statistical forecasts.
+"""
+
+FORECAST_USER = """\
+Here is a company's financial trend data for the last 3 calendar months,
+plus linear regression (OLS) forecasts for next month:
+
+Forecast Data:
+{forecast_data}
+
+Business Context:
+{business_context}
+
+Today: {today}
+
+Your tasks:
+1. Validate or refine the statistical burn/income forecasts using seasonal and industry knowledge.
+2. Compare their category spend patterns to benchmarks for a similar-stage company in their sector.
+3. Flag inventory or stock-up recommendations based on upcoming seasons or business cycles.
+4. Identify any upcoming financial risks (tax deadlines, seasonal slow periods, etc.).
+
+Return ONLY this JSON object — no prose, no markdown:
+{{
+  "predicted_burn_next_month":   <number — your best estimate; can differ from the statistical model>,
+  "predicted_income_next_month": <number>,
+  "forecast_confidence": "high | medium | low",
+  "forecast_reasoning": "string — key drivers behind your forecast adjustment, 2–3 sentences",
+  "benchmark_comparison": {{
+    "summary": "string — how does this company compare to similar-stage businesses in their sector?",
+    "areas_above_benchmark": ["string — category name + specific observation"],
+    "areas_below_benchmark": ["string — category name + specific observation"]
+  }},
+  "inventory_alert": <null | "string — seasonal stock/inventory recommendation with specific timing and rationale">,
+  "seasonal_risk":   <null | "string — upcoming risk with estimated financial impact, e.g. 'Q1 corporation tax estimated at €X based on current profit'">
+}}
+"""
+
+
+def generate_benchmark_forecast(
+    forecast_data: dict,
+    business_context: dict,
+) -> dict:
+    """
+    Call Gemini to validate statistical forecasts against industry benchmarks and
+    surface seasonal intelligence (inventory alerts, tax risk, slow periods).
+    """
+    from datetime import date as _date
+
+    prompt = FORECAST_USER.format(
+        forecast_data=json.dumps(forecast_data, indent=2),
+        business_context=json.dumps(business_context, indent=2),
+        today=_date.today().isoformat(),
+    )
+    return _safe_parse(_generate(FORECAST_SYSTEM, prompt), {
+        "predicted_burn_next_month":   forecast_data.get("predicted_expenditure", 0),
+        "predicted_income_next_month": forecast_data.get("predicted_income", 0),
+        "forecast_confidence": "low",
+        "forecast_reasoning":  "AI forecast unavailable.",
+        "benchmark_comparison": {
+            "summary": "Unavailable.",
+            "areas_above_benchmark": [],
+            "areas_below_benchmark": [],
+        },
+        "inventory_alert": None,
+        "seasonal_risk":   None,
+        "_error": "JSON parse failed",
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Call 6 — Purchase Advisor (Green / Yellow / Red)
+# ─────────────────────────────────────────────────────────────────────────────
+
+PURCHASE_SYSTEM = """\
+You are a CFO advisor for early-stage startups. You give direct, financially-grounded
+advice on whether a founder should make a specific purchase right now.
+Use a strict Green/Yellow/Red traffic-light system. You are not overly conservative —
+good tooling drives growth — but you protect runway ruthlessly.
+Always reference specific numbers from the financial context. Never give vague advice.
+"""
+
+PURCHASE_USER = """\
+A founder is considering this purchase:
+  Description: {item_description}
+  Price: {price} {currency}
+
+Their current financial position:
+{financial_context}
+
+Decision rules:
+  RED    → purchase reduces runway below 4 months, OR this category already exceeds 30% of monthly burn.
+  YELLOW → runway drops to 4–6 months after purchase, OR this category spend is unusually high.
+  GREEN  → runway stays above 6 months and the purchase is proportionate to their stage.
+
+Return ONLY this JSON object — no prose, no markdown:
+{{
+  "risk_level": "green | yellow | red",
+  "runway_after_purchase_months": <number | null>,
+  "verdict": "string — 1 direct sentence, e.g. 'Do not approve this purchase.' or 'This is a sound investment at your current runway.'",
+  "reasoning": "string — 2–3 sentences with specific numbers from their financial data",
+  "alternatives": ["string — specific cheaper or free alternative if applicable"],
+  "best_time_to_buy": "string — e.g. 'After your Q2 revenue lands' or 'Now — your cash position supports it'",
+  "investment_opportunity": <null | "string — if idle cash > 150% of 6-month buffer, recommend specific capital allocation with projected return">
+}}
+"""
+
+
+def evaluate_purchase(
+    item_description: str,
+    price: float,
+    financial_context: dict,
+    currency: str = "USD",
+) -> dict:
+    """
+    Call Gemini to evaluate a proposed purchase against the user's live financial position.
+    Returns a Green/Yellow/Red verdict with specific reasoning, alternatives, and
+    an investment opportunity tip if idle cash is detected.
+    """
+    prompt = PURCHASE_USER.format(
+        item_description=item_description,
+        price=price,
+        currency=currency,
+        financial_context=json.dumps(financial_context, indent=2),
+    )
+    return _safe_parse(_generate(PURCHASE_SYSTEM, prompt), {
+        "risk_level":                    "yellow",
+        "runway_after_purchase_months":  None,
+        "verdict":                       "Unable to evaluate — please retry.",
+        "reasoning":                     "AI evaluation failed.",
+        "alternatives":                  [],
+        "best_time_to_buy":              "Unknown",
+        "investment_opportunity":        None,
+        "_error": "JSON parse failed",
+    })

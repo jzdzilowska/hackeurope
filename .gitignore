@@ -1,1 +1,5 @@
 .planning/
+# Environment — never commit secrets
+.env
+.env.local
+.env.*.local

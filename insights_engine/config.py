@@ -12,29 +12,32 @@ SUPABASE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL: str = "gemini-2.0-flash"
 
-# ── Plaid category strings ────────────────────────────────────────────────────
-# TODO: Confirm exact Plaid category strings once the Plaid integration is live.
-# Plaid uses a hierarchical category system, e.g. ["Software", "Computers and Electronics"]
-# or the newer Plaid Personal Finance Category taxonomy (e.g. "SOFTWARE_AS_A_SERVICE").
-# Update the ILIKE patterns in queries.py to match your actual Plaid output.
-PLAID_CATEGORY_SOFTWARE     = "%Software%"
-PLAID_CATEGORY_ADVERTISING  = "%Advertising%"
-PLAID_CATEGORY_INCOME       = "%Income%"   # TODO: verify — may be "Payroll", "Transfer In", etc.
+# ── Plaid Personal Finance Category (PFC) values — CONFIRMED ────────────────
+# The schema stores Plaid's modern PFC taxonomy in two columns:
+#   category_primary  — uppercase enum, e.g. "GENERAL_SERVICES", "INCOME"
+#   category_detailed — finer breakdown,  e.g. "GENERAL_SERVICES_SUBSCRIPTION"
+#   ai_category       — WS3 AI-refined category (populated by the AI pipeline)
 
-# ── Transaction amount sign convention ───────────────────────────────────────
-# TODO: Confirm with the database team.
-# Common Plaid conventions:
-#   Option A) Expenses are POSITIVE, income / credits are NEGATIVE.
-#   Option B) A separate `transaction_type` column ("debit" / "credit").
-#   Option C) A separate `amount` sign per transaction type.
-# Set this to True if expenses are stored as positive numbers (most common for Plaid).
-EXPENSES_ARE_POSITIVE: bool = True  # TODO: confirm
+# SaaS / Software subscriptions map to GENERAL_SERVICES at the primary level.
+PLAID_CATEGORY_SOFTWARE         = "GENERAL_SERVICES"
+PLAID_CATEGORY_DETAILED_SUB     = "%SUBSCRIPTION%"       # ILIKE on category_detailed
 
-# ── Accounts / Balance ────────────────────────────────────────────────────────
-# TODO: Confirm the accounts table name and balance column with the database team.
-# Expected structure: accounts(id, org_id, balance, currency, updated_at)
-ACCOUNTS_TABLE:  str = "accounts"   # TODO: confirm
-BALANCE_COLUMN:  str = "balance"    # TODO: confirm
+# Advertising has no dedicated Plaid PFC — also falls under GENERAL_SERVICES.
+# The ai_category column (WS3-refined) is the reliable ad-spend signal once live.
+PLAID_CATEGORY_ADVERTISING      = "GENERAL_SERVICES"
+PLAID_AI_CATEGORY_ADVERTISING   = "%advertising%"        # ILIKE on ai_category
+
+# Income — confirmed Plaid PFC primary value
+PLAID_CATEGORY_INCOME           = "INCOME"
+
+# ── Transaction amount sign convention — CONFIRMED ────────────────────────────
+# Schema comment: "Plaid convention: positive = money out, negative = money in"
+EXPENSES_ARE_POSITIVE: bool = True   # confirmed — positive amount = expense
+
+# ── Accounts / Balance — CONFIRMED ────────────────────────────────────────────
+# Schema: accounts(id, user_id, plaid_account_id, ..., balance_current, balance_available, ...)
+ACCOUNTS_TABLE:  str = "accounts"
+BALANCE_COLUMN:  str = "balance_current"   # posted balance; balance_available excludes pending
 
 # ── Known SaaS per-seat monthly prices (EUR, as of early 2026) ───────────────
 # Used as a starting seed for SaaS Seat Waste detection.

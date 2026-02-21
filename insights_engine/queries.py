@@ -4,11 +4,16 @@ queries.py — Raw data extraction for all 7 financial insight modules.
 All functions are *synchronous* (supabase-py uses a sync HTTP client).
 They are wrapped with asyncio.to_thread() in main.py for concurrent execution.
 
-Schema assumptions (update once the database team confirms):
-  transactions(id, org_id, amount, date, merchant_name, plaid_category, recurring_id)
-  organisations(id, team_size)
+Confirmed schema (from supabase/schema.sql):
+  transactions(id, user_id, account_id, plaid_transaction_id, plaid_account_id,
+               amount, date, authorized_date, name, merchant_name, merchant_entity_id,
+               original_description, pending, pending_transaction_id,
+               category_primary, category_detailed, category_confidence, ai_category,
+               payment_channel, iso_currency_code, logo_url, website, ...)
+  accounts(id, user_id, plaid_account_id, ..., balance_available, balance_current, ...)
+  profiles(id, display_name, company_name, ...)
 
-TODO items are marked inline — most relate to unconfirmed Plaid schema details.
+Amount sign: POSITIVE = money out (expense), NEGATIVE = money in (income)  ← Plaid convention
 """
 
 from __future__ import annotations
@@ -21,7 +26,13 @@ from typing import Any
 from dateutil.relativedelta import relativedelta
 from supabase import Client
 
-from .config import KNOWN_SEAT_PRICES, PLAID_CATEGORY_SOFTWARE, PLAID_CATEGORY_ADVERTISING, PLAID_CATEGORY_INCOME, EXPENSES_ARE_POSITIVE, ACCOUNTS_TABLE, BALANCE_COLUMN
+from .config import (
+    KNOWN_SEAT_PRICES,
+    PLAID_CATEGORY_ADVERTISING, PLAID_AI_CATEGORY_ADVERTISING,
+    PLAID_CATEGORY_INCOME,
+    EXPENSES_ARE_POSITIVE,
+    ACCOUNTS_TABLE, BALANCE_COLUMN,
+)
 
 log = logging.getLogger(__name__)
 
@@ -39,10 +50,7 @@ def _calendar_month_start(months_back: int = 0) -> date:
 def _is_expense(amount: float) -> bool:
     """
     Return True if this transaction is an expense (money leaving the org).
-
-    TODO: Update once the database team confirms whether Plaid stores expenses
-    as positive or negative numbers, or uses a separate transaction_type column.
-    Current assumption: EXPENSES_ARE_POSITIVE = True (standard Plaid behaviour).
+    Confirmed: Plaid stores expenses as POSITIVE amounts (positive = money out).
     """
     if EXPENSES_ARE_POSITIVE:
         return amount > 0
@@ -51,7 +59,8 @@ def _is_expense(amount: float) -> bool:
 
 def _is_income(amount: float) -> bool:
     """
-    TODO: Mirror of _is_expense — confirm sign convention with database team.
+    Return True if this transaction is income (money into the org).
+    Confirmed: Plaid stores income/credits as NEGATIVE amounts (negative = money in).
     """
     return not _is_expense(amount)
 
@@ -61,46 +70,48 @@ def _abs_amount(amount: float) -> float:
     return abs(amount)
 
 
+def _merchant(txn: dict) -> str:
+    """Return the best available merchant label: merchant_name → name → 'Unknown'."""
+    return (txn.get("merchant_name") or txn.get("name") or "Unknown").strip()
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. SaaS Seat Waste
 # ─────────────────────────────────────────────────────────────────────────────
 
-def query_saas_seat_waste(client: Client, org_id: str, months: int = 1) -> dict[str, Any]:
+def query_saas_seat_waste(
+    client: Client, user_id: str, months: int = 1, team_size: int | None = None
+) -> dict[str, Any]:
     """
     Find Software-category merchants where (amount / known_seat_price) implies
     more seats than the organisation's team_size.
 
-    Returns the list of flagged merchants with estimated monthly waste.
+    team_size is passed in from the API layer (set during onboarding / UI).
+    Falls back to 1 if unknown, which flags any multi-seat subscription charge.
     """
-    # Fetch team size
-    org_resp = (
-        client.table("organisations")
-        .select("team_size")
-        .eq("id", org_id)
-        .single()
-        .execute()
-    )
-    team_size: int = (org_resp.data or {}).get("team_size") or 1
-
+    effective_team_size: int = team_size or 1
     month_start = _calendar_month_start(months_back=0)
 
+    # Query all current-month expenses. KNOWN_SEAT_PRICES merchant-name matching
+    # is the real filter, so we cast a wide net rather than relying on category.
     txn_resp = (
         client.table("transactions")
-        .select("merchant_name, amount, date")
-        .eq("org_id", org_id)
-        .ilike("plaid_category", PLAID_CATEGORY_SOFTWARE)
-        # TODO: If Plaid uses a hierarchical category list (e.g. JSON array), switch to
-        # a containedBy / overlap filter once confirmed.
+        .select("merchant_name, amount, date, category_primary")
+        .eq("user_id", user_id)
         .gte("date", month_start.isoformat())
+        .gt("amount", 0)          # expenses only (Plaid: positive = money out)
         .execute()
     )
 
     # Keep only the most-recent transaction per merchant (latest recurring charge)
     latest: dict[str, dict] = {}
     for txn in (txn_resp.data or []):
-        key = txn["merchant_name"].lower().strip()
+        label = _merchant(txn)
+        if not label or label == "Unknown":
+            continue
+        key = label.lower().strip()
         if key not in latest or txn["date"] > latest[key]["date"]:
-            latest[key] = {**txn, "_key": key}
+            latest[key] = {**txn, "_key": key, "_merchant_label": label}
 
     flagged = []
     for key, txn in latest.items():
@@ -112,24 +123,24 @@ def query_saas_seat_waste(client: Client, org_id: str, months: int = 1) -> dict[
         if seat_price and seat_price > 0:
             amount = _abs_amount(txn["amount"])
             implied_seats = amount / seat_price
-            if implied_seats > team_size:
+            if implied_seats > effective_team_size:
                 flagged.append(
                     {
-                        "merchant": txn["merchant_name"],
+                        "merchant": txn.get("_merchant_label", key),
                         "amount": amount,
                         "seat_price": seat_price,
                         "implied_seats": round(implied_seats, 1),
-                        "team_size": team_size,
-                        "wasted_seats": round(implied_seats - team_size, 1),
+                        "team_size": effective_team_size,
+                        "wasted_seats": round(implied_seats - effective_team_size, 1),
                         "estimated_monthly_waste": round(
-                            (implied_seats - team_size) * seat_price, 2
+                            (implied_seats - effective_team_size) * seat_price, 2
                         ),
                     }
                 )
 
     return {
         "insight_type": "saas_seat_waste",
-        "team_size": team_size,
+        "team_size": effective_team_size,
         "flagged_merchants": flagged,
     }
 
@@ -138,34 +149,38 @@ def query_saas_seat_waste(client: Client, org_id: str, months: int = 1) -> dict[
 # 2. Price Creep
 # ─────────────────────────────────────────────────────────────────────────────
 
-def query_price_creep(client: Client, org_id: str, months: int = 1) -> dict[str, Any]:
+def query_price_creep(client: Client, user_id: str, months: int = 1) -> dict[str, Any]:
     """
-    For recurring transactions, flag any merchant whose latest charge is more
-    than 10 % above the average of the previous 3 calendar months.
+    Flag merchants whose latest charge is more than 10 % above the 3-month average.
 
-    Relies on recurring_id being populated by Plaid.
-    TODO: If recurring_id is sparsely populated, add a fallback that groups by
-    (merchant_name, approximate_amount) to infer recurrence.
+    The schema has no recurring_id column, so recurrence is inferred: a merchant
+    is treated as recurring if it appears in at least 2 of the last 3 calendar months.
     """
     three_months_ago = _calendar_month_start(months_back=3)
 
     resp = (
         client.table("transactions")
-        .select("merchant_name, amount, date, recurring_id")
-        .eq("org_id", org_id)
-        .not_.is_("recurring_id", "null")
-        # TODO: confirm Supabase / PostgREST null filter syntax for your version
+        .select("merchant_name, amount, date")
+        .eq("user_id", user_id)
         .gte("date", three_months_ago.isoformat())
+        .gt("amount", 0)          # expenses only (Plaid: positive = money out)
         .execute()
     )
 
+    # Group transactions and track which calendar months each merchant appears in
     merchant_txns: dict[str, list] = defaultdict(list)
+    merchant_months: dict[str, set] = defaultdict(set)
     for txn in (resp.data or []):
-        merchant_txns[txn["merchant_name"]].append(txn)
+        m = _merchant(txn)
+        if m == "Unknown":
+            continue
+        merchant_txns[m].append(txn)
+        merchant_months[m].add(txn["date"][:7])   # "YYYY-MM"
 
     flagged = []
     for merchant, txns in merchant_txns.items():
-        if len(txns) < 2:
+        # Only analyse merchants appearing in ≥2 distinct months (recurring signal)
+        if len(merchant_months[merchant]) < 2:
             continue
         sorted_txns = sorted(txns, key=lambda t: t["date"])
         latest = sorted_txns[-1]
@@ -198,40 +213,66 @@ def query_price_creep(client: Client, org_id: str, months: int = 1) -> dict[str,
 # 3. Ad Efficiency Anomaly
 # ─────────────────────────────────────────────────────────────────────────────
 
-def query_ad_efficiency(client: Client, org_id: str, months: int = 1) -> dict[str, Any]:
+def query_ad_efficiency(client: Client, user_id: str, months: int = 1) -> dict[str, Any]:
     """
     Flag if this calendar month's advertising spend is >20 % higher than last
     month's without a corresponding increase in income.
 
-    TODO: PLAID_CATEGORY_INCOME may need to be updated — Plaid uses category
-    strings like "Transfer In", "Payroll", or "Interest Earned" for credits.
-    Confirm with the database team which plaid_category values represent revenue.
-
-    TODO: Confirm amount sign convention (EXPENSES_ARE_POSITIVE flag in config.py).
+    Advertising is detected via:
+      1. ai_category ILIKE '%advertising%' (primary — WS3 AI pipeline)
+      2. Merchant name pattern matching as fallback (when ai_category is null)
+    Income uses category_primary = 'INCOME' (confirmed Plaid PFC value).
+    Amount sign: positive = money out (expense), negative = money in (income).
     """
     this_month = _calendar_month_start(0)
     last_month = _calendar_month_start(1)
+    tomorrow   = date.today() + timedelta(days=1)
 
-    def _sum_category(category_pattern: str, start: date, end: date) -> float:
+    _AD_MERCHANTS = {
+        "google ads", "facebook ads", "meta ads", "tiktok ads",
+        "linkedin ads", "twitter ads", "instagram ads", "snapchat ads",
+        "bing ads", "youtube ads", "amazon advertising", "pinterest ads",
+    }
+
+    def _sum_ad_spend(start: date, end: date) -> float:
+        """Fetch GENERAL_SERVICES transactions and filter by ai_category / merchant name."""
+        r = (
+            client.table("transactions")
+            .select("amount, merchant_name, ai_category")
+            .eq("user_id", user_id)
+            .eq("category_primary", PLAID_CATEGORY_ADVERTISING)
+            .gte("date", start.isoformat())
+            .lt("date", end.isoformat())
+            .execute()
+        )
+        total = 0.0
+        for t in (r.data or []):
+            ai_cat   = (t.get("ai_category")   or "").lower()
+            merchant = (t.get("merchant_name") or "").lower()
+            if (
+                "advertising" in ai_cat or "marketing" in ai_cat
+                or any(p in merchant for p in _AD_MERCHANTS)
+            ):
+                total += _abs_amount(t["amount"])
+        return total
+
+    def _sum_income(start: date, end: date) -> float:
+        """Sum income using confirmed Plaid PFC INCOME category. Amounts are negative."""
         r = (
             client.table("transactions")
             .select("amount")
-            .eq("org_id", org_id)
-            .ilike("plaid_category", category_pattern)
+            .eq("user_id", user_id)
+            .eq("category_primary", PLAID_CATEGORY_INCOME)
             .gte("date", start.isoformat())
             .lt("date", end.isoformat())
             .execute()
         )
         return sum(_abs_amount(t["amount"]) for t in (r.data or []))
 
-    # Advertising spend
-    this_ad  = _sum_category(PLAID_CATEGORY_ADVERTISING, this_month, date.today() + timedelta(days=1))
-    last_ad  = _sum_category(PLAID_CATEGORY_ADVERTISING, last_month, this_month)
-
-    # Income / revenue
-    # TODO: Replace PLAID_CATEGORY_INCOME with the correct Plaid category(ies)
-    this_inc = _sum_category(PLAID_CATEGORY_INCOME, this_month, date.today() + timedelta(days=1))
-    last_inc = _sum_category(PLAID_CATEGORY_INCOME, last_month, this_month)
+    this_ad  = _sum_ad_spend(this_month, tomorrow)
+    last_ad  = _sum_ad_spend(last_month, this_month)
+    this_inc = _sum_income(this_month, tomorrow)
+    last_inc = _sum_income(last_month, this_month)
 
     result: dict[str, Any] = {
         "insight_type": "ad_efficiency",
@@ -243,8 +284,8 @@ def query_ad_efficiency(client: Client, org_id: str, months: int = 1) -> dict[st
     }
 
     if last_ad > 0:
-        ad_pct   = (this_ad  - last_ad)  / last_ad
-        inc_pct  = (this_inc - last_inc) / last_inc if last_inc > 0 else 0.0
+        ad_pct  = (this_ad  - last_ad)  / last_ad
+        inc_pct = (this_inc - last_inc) / last_inc if last_inc > 0 else 0.0
 
         result["ad_spend_pct_change"] = round(ad_pct * 100, 1)
         result["income_pct_change"]   = round(inc_pct * 100, 1)
@@ -261,7 +302,7 @@ def query_ad_efficiency(client: Client, org_id: str, months: int = 1) -> dict[st
 # 4. Duplicate Services  (raw data — AI does the semantic matching)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def query_duplicate_services(client: Client, org_id: str, months: int = 1) -> dict[str, Any]:
+def query_duplicate_services(client: Client, user_id: str, months: int = 1) -> dict[str, Any]:
     """
     Collect all distinct merchants paid in the last 30 days and pass the full
     list to Gemini, which will semantically identify overlapping/competing tools.
@@ -273,20 +314,22 @@ def query_duplicate_services(client: Client, org_id: str, months: int = 1) -> di
 
     resp = (
         client.table("transactions")
-        .select("merchant_name, amount, date, plaid_category")
-        .eq("org_id", org_id)
+        .select("merchant_name, amount, date, category_primary, category_detailed, ai_category")
+        .eq("user_id", user_id)
         .gte("date", window_start.isoformat())
+        .gt("amount", 0)           # expenses only
         .execute()
     )
 
     transactions = resp.data or []
-    merchants = sorted(set(t["merchant_name"] for t in transactions))
+    merchants = sorted(set(
+        _merchant(t) for t in transactions if _merchant(t) != "Unknown"
+    ))
 
     return {
         "insight_type": "duplicate_services",
         "window_days": 30,
         "merchants_in_window": merchants,
-        # Pass full transaction list so the AI has amounts / categories as context
         "raw_transactions": transactions,
     }
 
@@ -296,7 +339,7 @@ def query_duplicate_services(client: Client, org_id: str, months: int = 1) -> di
 # ─────────────────────────────────────────────────────────────────────────────
 
 def query_individual_vs_enterprise(
-    client: Client, org_id: str, months: int = 1
+    client: Client, user_id: str, months: int = 1
 ) -> dict[str, Any]:
     """
     Find patterns where the same merchant is charged multiple times at the same
@@ -310,16 +353,20 @@ def query_individual_vs_enterprise(
 
     resp = (
         client.table("transactions")
-        .select("merchant_name, amount, date")
-        .eq("org_id", org_id)
+        .select("merchant_name, amount, date, category_primary")
+        .eq("user_id", user_id)
         .gte("date", month_start.isoformat())
+        .gt("amount", 0)          # expenses only (Plaid: positive = money out)
         .execute()
     )
 
     # Group by (merchant, rounded_amount) to surface same-price repeats
     groups: dict[tuple, list] = defaultdict(list)
     for txn in (resp.data or []):
-        key = (txn["merchant_name"], round(float(txn["amount"]), 2))
+        m = _merchant(txn)
+        if m == "Unknown":
+            continue
+        key = (m, round(float(txn["amount"]), 2))
         groups[key].append(txn)
 
     suspicious = []
@@ -337,7 +384,6 @@ def query_individual_vs_enterprise(
 
     return {
         "insight_type": "individual_vs_enterprise",
-        # Full list passed to AI — no filtering here, let AI decide what's suspicious
         "suspicious_patterns": suspicious,
         "month_start": month_start.isoformat(),
     }
@@ -347,54 +393,59 @@ def query_individual_vs_enterprise(
 # 6. Free Trial Trap
 # ─────────────────────────────────────────────────────────────────────────────
 
-def query_free_trial_trap(client: Client, org_id: str, months: int = 1) -> dict[str, Any]:
+def query_free_trial_trap(client: Client, user_id: str, months: int = 1) -> dict[str, Any]:
     """
-    Detect a €0.00 transaction from a merchant followed by a full-price charge
-    exactly 7, 14, or 30 days later — classic free-trial-to-paid conversion.
+    Detect a $0.00 / pending transaction from a merchant followed by a full-price
+    charge exactly 7, 14, or 30 days later — classic free-trial-to-paid conversion.
 
-    TODO: Plaid may surface trial authorisations as:
-      - amount = 0.00 (most common)
-      - a 'pending' flag on the transaction (check if Plaid includes a `pending`
-        boolean column in your schema — this is common in Plaid's transaction objects)
-      - a separate transaction_type = 'authorization'
-    Add a .eq("pending", True) filter (or equivalent) once confirmed.
-
-    We look back 60 days to catch the €0 event and any follow-up within 30 days.
+    Uses the confirmed `pending boolean` column (schema: `pending boolean default false`).
+    Plaid sets pending=True for authorisation holds, which includes $0 trial charges.
+    We also capture completed $0 transactions to cover all Plaid implementation variants.
     """
     lookback_start = date.today() - timedelta(days=60)
 
     resp = (
         client.table("transactions")
-        .select("merchant_name, amount, date")
-        # TODO: add .eq("pending", True) or equivalent once Plaid schema confirmed
-        .eq("org_id", org_id)
+        .select("merchant_name, name, amount, date, pending, authorized_date")
+        .eq("user_id", user_id)
         .gte("date", lookback_start.isoformat())
         .execute()
     )
 
     transactions = resp.data or []
 
-    # TODO: If a `pending` or `status` column exists, filter zero-amount rows by
-    # that column rather than purely by amount == 0, to avoid false positives from
-    # legitimate refunds or balance checks.
-    zero_txns = [t for t in transactions if float(t["amount"]) == 0.0]
-    paid_txns = [t for t in transactions if float(t["amount"]) > 0.0]
+    # Trial signals: pending $0 authorisations OR completed $0 transactions
+    zero_txns = [
+        t for t in transactions
+        if float(t["amount"]) == 0.0 and t.get("merchant_name")
+    ]
+    # Confirmed paid charges: not pending, positive amount
+    paid_txns = [
+        t for t in transactions
+        if not t.get("pending") and float(t["amount"]) > 0.0 and t.get("merchant_name")
+    ]
 
     traps: list[dict] = []
+    seen: set[tuple] = set()   # deduplicate (merchant, charge_date) pairs
     for z in zero_txns:
-        z_date = date.fromisoformat(z["date"])
+        z_date    = date.fromisoformat(z["date"])
+        z_merch   = _merchant(z)
         for p in paid_txns:
-            if p["merchant_name"] != z["merchant_name"]:
+            if _merchant(p) != z_merch:
                 continue
             p_date = date.fromisoformat(p["date"])
             days_diff = (p_date - z_date).days
             if days_diff in (7, 14, 30):
+                key = (z_merch, p["date"])
+                if key in seen:
+                    continue
+                seen.add(key)
                 traps.append(
                     {
-                        "merchant":         z["merchant_name"],
-                        "trial_date":       z["date"],
-                        "charge_date":      p["date"],
-                        "charge_amount":    _abs_amount(p["amount"]),
+                        "merchant":          z_merch,
+                        "trial_date":        z["date"],
+                        "charge_date":       p["date"],
+                        "charge_amount":     _abs_amount(p["amount"]),
                         "days_until_charge": days_diff,
                     }
                 )
@@ -406,7 +457,7 @@ def query_free_trial_trap(client: Client, org_id: str, months: int = 1) -> dict[
 # 7. Runway Stress Test
 # ─────────────────────────────────────────────────────────────────────────────
 
-def query_runway_stress_test(client: Client, org_id: str, months: int = 1) -> dict[str, Any]:
+def query_runway_stress_test(client: Client, user_id: str, months: int = 1) -> dict[str, Any]:
     """
     Simulate losing the top 3 income sources and calculate how many months of
     runway remain at the current 3-month average burn rate.
@@ -414,52 +465,56 @@ def query_runway_stress_test(client: Client, org_id: str, months: int = 1) -> di
     Formula:
         stressed_runway = (current_balance - top_3_income_total) / avg_monthly_burn
 
-    TODO: Populate current_balance once the accounts table schema is confirmed.
-    Expected: accounts(id, org_id, balance, currency, updated_at)
+    Balance: sum of accounts.balance_current for the user (confirmed schema).
+    Income:  category_primary = 'INCOME' (confirmed Plaid PFC value; amounts are negative).
+    Expenses: all positive-amount transactions (Plaid: positive = money out).
     """
     three_months_ago = _calendar_month_start(3)
 
-    # ── Current balance ───────────────────────────────────────────────────────
-    # TODO: uncomment and adjust once accounts table is confirmed
-    # accounts_resp = (
-    #     client.table(ACCOUNTS_TABLE)
-    #     .select(BALANCE_COLUMN)
-    #     .eq("org_id", org_id)
-    #     .execute()
-    # )
-    # current_balance = sum(
-    #     float(a[BALANCE_COLUMN]) for a in (accounts_resp.data or [])
-    # )
-    current_balance = None  # TODO: replace with real query above
+    # ── Current balance — sum balance_current across all user accounts ────────
+    accounts_resp = (
+        client.table(ACCOUNTS_TABLE)
+        .select(BALANCE_COLUMN)
+        .eq("user_id", user_id)
+        .execute()
+    )
+    current_balance: float | None = None
+    if accounts_resp.data:
+        current_balance = sum(
+            float(a[BALANCE_COLUMN] or 0) for a in accounts_resp.data
+        )
 
     # ── Last 3 months of transactions ─────────────────────────────────────────
     resp = (
         client.table("transactions")
-        .select("merchant_name, amount, date, plaid_category")
-        .eq("org_id", org_id)
+        .select("merchant_name, name, amount, date, category_primary")
+        .eq("user_id", user_id)
         .gte("date", three_months_ago.isoformat())
         .execute()
     )
     transactions = resp.data or []
 
-    # TODO: Update income / expense split once sign convention is confirmed.
-    # Current approach: treat PLAID_CATEGORY_INCOME as income, everything else as expense.
-    income_txns  = [t for t in transactions if PLAID_CATEGORY_INCOME.strip("%").lower() in (t.get("plaid_category") or "").lower()]
-    expense_txns = [t for t in transactions if t not in income_txns]
+    # Income: category_primary = 'INCOME' (amounts are NEGATIVE in Plaid)
+    income_txns  = [
+        t for t in transactions
+        if (t.get("category_primary") or "") == PLAID_CATEGORY_INCOME
+    ]
+    # Expenses: all positive-amount transactions (Plaid: positive = money out)
+    expense_txns = [t for t in transactions if float(t["amount"]) > 0]
 
-    # Top 3 income sources (by total over 3 months)
+    # Top 3 income sources by total over 3 months
     income_by_merchant: dict[str, float] = defaultdict(float)
     for txn in income_txns:
-        income_by_merchant[txn["merchant_name"]] += _abs_amount(txn["amount"])
+        label = txn.get("merchant_name") or txn.get("name") or "Unknown"
+        income_by_merchant[label] += _abs_amount(txn["amount"])
 
     top_3 = sorted(income_by_merchant.items(), key=lambda x: x[1], reverse=True)[:3]
     top_3_total = sum(v for _, v in top_3)
 
-    # Average monthly burn
-    total_expenses   = sum(_abs_amount(t["amount"]) for t in expense_txns)
+    # 3-month average monthly burn
+    total_expenses   = sum(float(t["amount"]) for t in expense_txns)
     avg_monthly_burn = total_expenses / 3 if total_expenses > 0 else 0.0
 
-    # Stress calculation — only possible once balance is available
     stressed_balance = (current_balance - top_3_total) if current_balance is not None else None
     stressed_runway  = (
         round(stressed_balance / avg_monthly_burn, 1)
@@ -469,7 +524,7 @@ def query_runway_stress_test(client: Client, org_id: str, months: int = 1) -> di
 
     return {
         "insight_type":           "runway_stress_test",
-        "current_balance":        current_balance,  # TODO: awaiting accounts table
+        "current_balance":        round(current_balance, 2) if current_balance is not None else None,
         "top_3_income_sources":   [{"merchant": m, "three_month_total": round(v, 2)} for m, v in top_3],
         "top_3_income_total":     round(top_3_total, 2),
         "avg_monthly_burn":       round(avg_monthly_burn, 2),
