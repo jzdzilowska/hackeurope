@@ -46,6 +46,7 @@ from .ai_analyzer import (
     prioritize_all_insights,
     analyze_financial_health,
     generate_benchmark_forecast,
+    synthesize_executive_briefing,
     evaluate_purchase,
 )
 from .models import PurchaseAdvisorRequest
@@ -254,12 +255,28 @@ async def get_insights(
         team_size,
     )
 
+    # ── Stage 3b: Executive synthesis ────────────────────────────────────────
+    # health_raw/forecast for synthesis — fetch in parallel with prioritisation
+    # then run all three master AI calls in parallel (3, 4, 5 are independent).
+    health_raw_lite, forecast_raw_lite = await asyncio.gather(
+        asyncio.to_thread(query_financial_health, client, user_id, 1),
+        asyncio.to_thread(query_forecast_data,    client, user_id),
+    )
+    ai_health_lite, ai_forecast_lite = await asyncio.gather(
+        asyncio.to_thread(analyze_financial_health,    health_raw_lite,   {}),
+        asyncio.to_thread(generate_benchmark_forecast, forecast_raw_lite, {}),
+    )
+    briefing = await asyncio.to_thread(
+        synthesize_executive_briefing, prioritised, ai_health_lite, ai_forecast_lite
+    )
+
     log.info("[%s] Pipeline complete. Returning %d insights.", user_id, len(prioritised.get("insights", [])))
 
     return {
         "user_id":            user_id,
         "generated_at":       datetime.now(timezone.utc).isoformat(),
         "date_range_months":  months,
+        "executive_briefing": briefing,
         **prioritised,
     }
 
@@ -357,6 +374,16 @@ async def get_financial_health(
 
     log.info("[%s] Financial health report built. health_score=%s", user_id, ai_health.get("health_score"))
 
+    # ── Stage 2b: Executive synthesis ────────────────────────────────────────
+    # For the health endpoint we don't have the subscription prioritised dict,
+    # so pass an empty stub — the synthesis still connects health + forecast.
+    briefing = await asyncio.to_thread(
+        synthesize_executive_briefing,
+        {},          # no subscription data available in this endpoint
+        ai_health,
+        ai_forecast,
+    )
+
     # ── Merge into final report ───────────────────────────────────────────────
     report: dict[str, Any] = {
         "user_id":          user_id,
@@ -400,6 +427,8 @@ async def get_financial_health(
         "investment_opportunity":    ai_health.get("investment_opportunity"),
         # Improvements
         "top_3_controllable_improvements": ai_health.get("top_3_controllable_improvements", []),
+        # Executive synthesis
+        "executive_briefing": briefing,
     }
 
     # ── Cache and return ──────────────────────────────────────────────────────

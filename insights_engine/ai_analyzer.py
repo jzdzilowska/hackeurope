@@ -491,7 +491,105 @@ def generate_benchmark_forecast(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Call 6 — Purchase Advisor (Green / Yellow / Red)
+# Call 6 — Executive Synthesis  (cross-references all three parallel outputs)
+# ─────────────────────────────────────────────────────────────────────────────
+
+SYNTHESIS_SYSTEM = """\
+You are a CFO-level advisor writing a weekly financial briefing for a startup founder.
+You have just received three separate AI analyses of the same company.
+Your job is to connect the dots between them — surfacing the single underlying story
+that explains how the subscription waste, the health score, and the forecast relate
+to each other. Be direct. Reference specific numbers. Maximum 120 words per field.
+"""
+
+SYNTHESIS_USER = """\
+These three analyses were produced independently for the same company on {today}:
+
+1. SUBSCRIPTION INSIGHT REPORT (waste detection across all modules):
+{subscription_summary}
+
+2. FINANCIAL HEALTH REPORT (health score + P&L):
+{health_summary}
+
+3. FORECAST REPORT (burn forecast + benchmarks):
+{forecast_summary}
+
+Write a unified executive briefing that connects these three into one coherent narrative.
+Identify the single root cause (or top two if genuinely distinct) that runs through all
+three analyses. Show how fixing it would move the health score, reduce burn, and extend runway.
+
+Return ONLY this JSON object — no prose, no markdown:
+{{
+  "root_cause": "string — the single most important driver connecting all three analyses, \
+in 1–2 sentences with specific numbers",
+  "connected_narrative": "string — 3–4 sentences that tell the full story: \
+what the waste is → how it shows up in the health score → what it does to the forecast",
+  "single_most_impactful_action": "string — one specific action the founder should take this week \
+with a projected monthly saving and estimated health score improvement",
+  "if_nothing_changes": "string — what the forecast implies in 90 days if no action is taken, \
+with specific numbers (runway, burn, balance)"
+}}
+"""
+
+
+def synthesize_executive_briefing(
+    prioritised: dict,
+    ai_health: dict,
+    ai_forecast: dict,
+) -> dict:
+    """
+    Final synthesis call: receives the outputs of the three parallel master calls
+    and produces a single executive briefing that cross-references all three,
+    surfacing the root cause that connects subscription waste → health score → forecast.
+
+    This is Call 6 in the pipeline, run after calls 3+4+5 complete.
+    """
+    from datetime import date as _date
+
+    # Extract compact summaries to keep the prompt focused
+    subscription_summary = {
+        "priority_score":   prioritised.get("priority_score"),
+        "summary":          prioritised.get("summary"),
+        "top_insights":     [
+            {k: ins.get(k) for k in ("insight_type", "title", "severity", "headline_metric")}
+            for ins in (prioritised.get("insights") or [])[:5]
+        ],
+        "total_monthly_savings_available": prioritised.get("total_estimated_monthly_savings"),
+    }
+    health_summary = {
+        "health_score":     ai_health.get("health_score"),
+        "score_breakdown":  ai_health.get("score_breakdown"),
+        "top_3_improvements": ai_health.get("top_3_controllable_improvements"),
+        "lazy_cash_alert":  ai_health.get("lazy_cash_alert"),
+        "invoice_liability_alert": ai_health.get("invoice_liability_alert"),
+    }
+    forecast_summary = {
+        "avg_monthly_burn":            ai_forecast.get("predicted_burn_next_month"),
+        "predicted_income_next_month": ai_forecast.get("predicted_income_next_month"),
+        "forecast_confidence":         ai_forecast.get("forecast_confidence"),
+        "forecast_reasoning":          ai_forecast.get("forecast_reasoning"),
+        "seasonal_risk":               ai_forecast.get("seasonal_risk"),
+        "benchmark_summary":           (ai_forecast.get("benchmark_comparison") or {}).get("summary"),
+    }
+
+    prompt = SYNTHESIS_USER.format(
+        today=_date.today().isoformat(),
+        subscription_summary=json.dumps(subscription_summary, indent=2),
+        health_summary=json.dumps(health_summary, indent=2),
+        forecast_summary=json.dumps(forecast_summary, indent=2),
+    )
+
+    return _safe_parse(_generate(SYNTHESIS_SYSTEM, prompt), {
+        "root_cause":                    "Synthesis unavailable — please retry.",
+        "connected_narrative":           "",
+        "single_most_impactful_action":  "",
+        "if_nothing_changes":            "",
+        "_error": "JSON parse failed",
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Call 7 — Purchase Advisor (Green / Yellow / Red)
 # ─────────────────────────────────────────────────────────────────────────────
 
 PURCHASE_SYSTEM = """\

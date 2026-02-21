@@ -48,6 +48,7 @@ from insights_engine.ai_analyzer import (
     prioritize_all_insights,
     analyze_financial_health,
     generate_benchmark_forecast,
+    synthesize_executive_briefing,
     AI_ENABLED,
 )
 
@@ -108,7 +109,7 @@ def run_user(client, user_id: str, profile: dict) -> None:
     ind_ent["ai_analysis"]              = ai_ind_plans
 
     # ── Stage 4: Master prioritisation ───────────────────────────────────────
-    print("  [4/5] AI prioritisation + health scoring...")
+    print("  [4/6] AI prioritisation + health scoring...")
     all_modules = [saas_waste, price_creep, ad_eff, dup_svc, ind_ent, free_trial, runway, invoices]
     prioritised = prioritize_all_insights(all_modules, user_id, team_size=team_size)
     ai_health   = analyze_financial_health(health_raw, business_context)
@@ -116,8 +117,13 @@ def run_user(client, user_id: str, profile: dict) -> None:
     print(f"        priority_score={prioritised.get('priority_score')}  health_score={ai_health.get('health_score')}")
     print(f"        forecast_confidence={ai_forecast.get('forecast_confidence')}")
 
-    # ── Stage 5: Write to Supabase ────────────────────────────────────────────
-    print("  [5/5] Writing to ai_insights table...")
+    # ── Stage 4b: Executive synthesis (cross-references all three outputs) ───────
+    print("  [5/6] Executive synthesis (connecting waste → health → forecast)...")
+    briefing = synthesize_executive_briefing(prioritised, ai_health, ai_forecast)
+    print(f"        root_cause preview: {str(briefing.get('root_cause', ''))[:80]}")
+
+    # ── Stage 5: Write to Supabase ──────────────────────────────────────────────
+    print("  [6/6] Writing to ai_insights table...")
 
     subscription_record = {
         "generated_at":                  datetime.now(timezone.utc).isoformat(),
@@ -127,6 +133,7 @@ def run_user(client, user_id: str, profile: dict) -> None:
         "total_estimated_monthly_savings": prioritised.get("total_estimated_monthly_savings"),
         "total_estimated_annual_savings":  prioritised.get("total_estimated_annual_savings"),
         "insights":                      prioritised.get("insights", []),
+        "executive_briefing":            briefing,
         # Raw module results attached for frontend drill-down
         "raw": {
             "saas_seat_waste":          saas_waste,
@@ -181,6 +188,8 @@ def run_user(client, user_id: str, profile: dict) -> None:
         "investment_opportunity":    ai_health.get("investment_opportunity"),
         # Improvements
         "top_3_controllable_improvements": ai_health.get("top_3_controllable_improvements", []),
+        # Executive synthesis (cross-references subscription + health + forecast)
+        "executive_briefing": briefing,
     }
 
     _upsert(client, user_id, "subscription_insights",  subscription_record)
