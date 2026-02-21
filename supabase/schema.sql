@@ -130,14 +130,16 @@ create table invoices (
   due_date date,
   status text default 'pending',  -- pending, paid, overdue
   parsed_data jsonb,              -- full Gemini extraction
-  source text,                    -- upload, email
+  source text,                    -- upload, email, seed
   stripe_payment_id text,
+  transaction_id uuid references transactions(id),  -- linked payment transaction
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
 create index idx_invoices_user_due on invoices(user_id, due_date);
 create index idx_invoices_status on invoices(user_id, status);
+create index idx_invoices_transaction on invoices(transaction_id);
 
 -- ============================================
 -- AI INSIGHTS (cached analysis from Claude)
