@@ -21,6 +21,33 @@ OPENAI_MODEL   = os.getenv("OPENAI_MODEL", "gpt-4o")
 ZAPIER_MCP_URL = f"https://actions.zapier.com/mcp/{ZAPIER_API_KEY}/sse"
 
 OUTPUT_DIR = Path(__file__).parent.parent / "output"
+STATE_FILE = Path(__file__).parent.parent / "output" / ".last_pull.json"
+
+
+def save_last_pull(ts: datetime) -> None:
+    """Persist the timestamp of the last successful pull."""
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    STATE_FILE.write_text(json.dumps({"last_pull_utc": ts.isoformat()}))
+
+
+def load_last_pull() -> datetime | None:
+    """Return the UTC datetime of the last successful pull, or None."""
+    if not STATE_FILE.exists():
+        return None
+    try:
+        data = json.loads(STATE_FILE.read_text())
+        return datetime.fromisoformat(data["last_pull_utc"])
+    except Exception:
+        return None
+
+
+def gmail_query_since(since: datetime) -> str:
+    """Build a Gmail search query for emails received after `since`."""
+    return (
+        f"subject:(invoice OR bill OR receipt) "
+        f"has:attachment filename:pdf "
+        f"after:{since.strftime('%Y/%m/%d')}"
+    )
 
 
 def gmail_query_last_n_hours(hours: int = 24) -> str:
@@ -82,8 +109,18 @@ If a field cannot be determined, use null.
 """
 
 
-async def run_agent(since_hours: int = 24) -> list:
-    query = gmail_query_last_n_hours(since_hours)
+async def run_agent(since_hours: int = 24, since_dt: datetime | None = None) -> list:
+    """
+    Pull and parse invoice emails.
+
+    Priority:
+      1. since_dt   — pull everything after this exact datetime
+      2. since_hours — pull the last N hours (default 24)
+    """
+    if since_dt is not None:
+        query = gmail_query_since(since_dt)
+    else:
+        query = gmail_query_last_n_hours(since_hours)
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(gmail_query=query)
     run_ts = datetime.now(timezone.utc)
     print(f"[{run_ts.isoformat()}] Connecting to Zapier MCP …")
@@ -146,6 +183,7 @@ async def run_agent(since_hours: int = 24) -> list:
                     out_file = OUTPUT_DIR / f"invoices_{run_ts.strftime('%Y%m%d_%H%M%S')}.json"
                     out_file.write_text(json.dumps(invoices, indent=2))
                     print(f"Saved {len(invoices)} invoice(s) → {out_file}")
+                    save_last_pull(run_ts)
                     return invoices
 
                 # ── Execute every tool call via MCP ────────────────────────
@@ -174,18 +212,35 @@ async def run_agent(since_hours: int = 24) -> list:
                     })
 
 
-def main(since_hours: int = 24):
-    asyncio.run(run_agent(since_hours=since_hours))
-
-
-if __name__ == "__main__":
+def main() -> None:
     import argparse
     parser = argparse.ArgumentParser(description="Gmail invoice agent")
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         "--hours",
         type=int,
         default=24,
-        help="Look back this many hours for invoice emails (default: 24)",
+        metavar="N",
+        help="Pull emails from the last N hours (default: 24)",
+    )
+    group.add_argument(
+        "--since-last-pull",
+        action="store_true",
+        help="Pull emails received since the last successful run",
     )
     args = parser.parse_args()
-    main(since_hours=args.hours)
+
+    if args.since_last_pull:
+        last = load_last_pull()
+        if last is None:
+            print("No previous pull recorded — falling back to last 24 hours.")
+            asyncio.run(run_agent(since_hours=24))
+        else:
+            print(f"Pulling since last run: {last.isoformat()}")
+            asyncio.run(run_agent(since_dt=last))
+    else:
+        asyncio.run(run_agent(since_hours=args.hours))
+
+
+if __name__ == "__main__":
+    main()
