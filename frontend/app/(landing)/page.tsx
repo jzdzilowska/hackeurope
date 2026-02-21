@@ -258,7 +258,7 @@ function Hero() {
 
                   {/* Cash position hero */}
                   <div className="relative rounded-xl p-6 sm:p-8 mb-6 overflow-hidden" style={{
-                    background: 'linear-gradient(135deg, rgba(80,120,45,0.15) 0%, rgba(55,90,25,0.06) 100%)',
+                    background: 'linear-gradient(135deg, rgba(0,212,160,0.08) 0%, rgba(0,212,160,0.03) 100%)',
                   }}>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">Total Cash on Hand</p>
                     <div className="flex items-end gap-3 mb-3">
