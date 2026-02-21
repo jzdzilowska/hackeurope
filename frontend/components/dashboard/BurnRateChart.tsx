@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, AreaChart, Area,
   XAxis, YAxis, Tooltip, CartesianGrid,
 } from 'recharts'
-import { mockBurnData } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency } from '@/lib/utils'
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -18,20 +18,22 @@ function CustomTooltip({ active, payload, label }: any) {
           <span className="w-2 h-2 rounded-full bg-chart-sage inline-block" />
           <span className="text-text-secondary">Revenue</span>
         </span>
-        <span className="mono text-text-primary">{formatCurrency(payload[0]?.value ?? 0, 'EUR', true)}</span>
+        <span className="mono text-text-primary">{formatCurrency(payload[0]?.value ?? 0, 'USD', true)}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-chart-pink inline-block" />
           <span className="text-text-secondary">Burn</span>
         </span>
-        <span className="mono text-text-primary">{formatCurrency(payload[1]?.value ?? 0, 'EUR', true)}</span>
+        <span className="mono text-text-primary">{formatCurrency(payload[1]?.value ?? 0, 'USD', true)}</span>
       </div>
     </div>
   )
 }
 
 export default function BurnRateChart() {
+  const { burnData } = useDashboard()
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -58,7 +60,7 @@ export default function BurnRateChart() {
 
       <div className="flex-1 h-[180px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={mockBurnData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+          <AreaChart data={burnData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%"   stopColor="#7AC0A8" stopOpacity={0.3} />

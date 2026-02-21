@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
-import { mockInsights, mockBurnData, mockKPIs } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency, cn } from '@/lib/utils'
 import type { InsightCard } from '@/lib/types'
 
@@ -127,12 +127,13 @@ function InsightRow({ card, onDismiss }: { card: InsightCard, onDismiss: (id: st
 }
 
 export default function InsightsPage() {
+  const { insights, kpis } = useDashboard()
   const [dismissed, setDismissed] = useState<string[]>([])
-  const visible = mockInsights.filter(c => !dismissed.includes(c.id))
+  const visible = insights.filter(c => !dismissed.includes(c.id))
 
   const handleDismiss = (id: string) => setDismissed(d => [...d, id])
 
-  const healthScore = mockKPIs.financialHealthScore
+  const healthScore = kpis.financialHealthScore
 
   return (
     <PageShell tag="INTELLIGENCE" title="Insights">
@@ -189,8 +190,8 @@ export default function InsightsPage() {
           {/* Key signals */}
           <div className="col-span-2 grid grid-cols-2 gap-3">
             {[
-              { label: 'Cash runway', value: `${mockKPIs.runway.toFixed(1)} mo`, state: 'warn',    note: 'Below 8 months threshold' },
-              { label: 'Burn trend',  value: `+${mockKPIs.burnTrend}% MoM`,      state: 'warn',    note: 'Spending increased vs last month' },
+              { label: 'Cash runway', value: `${kpis.runway.toFixed(1)} mo`, state: 'warn',    note: 'Below 8 months threshold' },
+              { label: 'Burn trend',  value: `+${kpis.burnTrend}% MoM`,      state: 'warn',    note: 'Spending increased vs last month' },
               { label: 'Revenue',     value: '€23,000',                           state: 'healthy', note: '+7% MoM, on target' },
               { label: 'Net margin',  value: '33.8%',                             state: 'healthy', note: 'Improving for 2nd consecutive month' },
             ].map((sig, i) => (
@@ -254,7 +255,7 @@ export default function InsightsPage() {
               <Tooltip
                 contentStyle={{ background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 12 }}
                 labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}
-                formatter={(v: number) => [formatCurrency(v, 'EUR'), 'Cash']}
+                formatter={(v: number) => [formatCurrency(v, 'USD'), 'Cash']}
               />
               <Area type="monotone" dataKey="cash" stroke="#00D4A0" strokeWidth={2}
                 fill="url(#cashGrad)" dot={false} />

@@ -1,10 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { mockCategories } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency } from '@/lib/utils'
 
 export default function CategoryBreakdown() {
+  const { categories } = useDashboard()
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -18,7 +19,7 @@ export default function CategoryBreakdown() {
       </div>
 
       <div className="space-y-3 flex-1">
-        {mockCategories.map((cat, i) => (
+        {categories.map((cat, i) => (
           <div key={cat.name}>
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
@@ -31,7 +32,7 @@ export default function CategoryBreakdown() {
               <div className="flex items-center gap-2">
                 <span className="text-2xs text-text-muted">{cat.pct.toFixed(0)}%</span>
                 <span className="text-xs mono text-text-primary">
-                  {formatCurrency(cat.amount, 'EUR', true)}
+                  {formatCurrency(cat.amount, 'USD', true)}
                 </span>
               </div>
             </div>
@@ -54,7 +55,7 @@ export default function CategoryBreakdown() {
       <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
         <span className="text-xs text-text-muted">Total this month</span>
         <span className="text-sm font-semibold mono text-text-primary">
-          {formatCurrency(mockCategories.reduce((s, c) => s + c.amount, 0), 'EUR', true)}
+          {formatCurrency(categories.reduce((s, c) => s + c.amount, 0), 'USD', true)}
         </span>
       </div>
     </motion.div>

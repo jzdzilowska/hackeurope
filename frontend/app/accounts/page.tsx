@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RefreshCw, ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
-import { mockAccounts, mockTransactions, mockKPIs } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency, formatDate, formatTimeAgo, cn } from '@/lib/utils'
-import type { HelmCategory } from '@/lib/types'
+import type { HelmCategory, Transaction } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<string, string> = {
   Infrastructure: '#00D4A0', 'SaaS & Tools': '#E87878', Payroll: '#7AC0A8',
@@ -17,8 +17,8 @@ const ALL_CATS: (HelmCategory | 'All')[] = [
   'All', 'Revenue', 'Infrastructure', 'SaaS & Tools', 'Payroll', 'Marketing', 'Office & Rent',
 ]
 
-function groupByDate(txns: typeof mockTransactions) {
-  const groups: Record<string, typeof mockTransactions> = {}
+function groupByDate(txns: Transaction[]) {
+  const groups: Record<string, Transaction[]> = {}
   txns.forEach(t => {
     const label = (() => {
       const d = new Date(t.date), now = new Date()
@@ -36,11 +36,12 @@ function groupByDate(txns: typeof mockTransactions) {
 }
 
 export default function AccountsPage() {
+  const { accounts, transactions, kpis } = useDashboard()
   const [activeFilter, setActiveFilter] = useState<HelmCategory | 'All'>('All')
 
   const filtered = activeFilter === 'All'
-    ? mockTransactions
-    : mockTransactions.filter(t => t.helmCategory === activeFilter)
+    ? transactions
+    : transactions.filter(t => t.helmCategory === activeFilter)
   const grouped = groupByDate(filtered)
 
   return (
@@ -49,7 +50,7 @@ export default function AccountsPage() {
       <div>
         <SectionHeader tag="CONNECTED" title="Bank Accounts" action="Add account" />
         <div className="grid grid-cols-3 gap-3">
-          {mockAccounts.map((acc, i) => (
+          {accounts.map((acc, i) => (
             <motion.div
               key={acc.id}
               initial={{ opacity: 0, y: 12 }}
@@ -130,7 +131,7 @@ export default function AccountsPage() {
             <span className="text-xs text-text-muted">
               Total across accounts:
               <span className="mono font-semibold text-text-primary ml-1.5">
-                {formatCurrency(mockKPIs.totalCashPosition, 'EUR')}
+                {formatCurrency(kpis.totalCashPosition, 'USD')}
               </span>
             </span>
           </div>
@@ -190,7 +191,7 @@ export default function AccountsPage() {
                 {/* Transactions */}
                 {txns.map((txn, i) => {
                   const isCredit = txn.amount > 0
-                  const acc = mockAccounts.find(a => a.id === txn.accountId)
+                  const acc = accounts.find(a => a.id === txn.accountId)
                   return (
                     <motion.div
                       key={txn.id}

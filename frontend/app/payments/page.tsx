@@ -7,7 +7,8 @@ import {
   Zap, ToggleLeft, ToggleRight, Loader2,
 } from 'lucide-react'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
-import { mockRecurring, mockApprovals } from '@/lib/mock-data'
+import { mockRecurring } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency, formatDate, generateStripeRef, cn } from '@/lib/utils'
 
 const STATUS_META = {
@@ -26,6 +27,7 @@ const USAGE_DOT = {
 type ApproveState = 'idle' | 'loading' | 'approved'
 
 export default function PaymentsPage() {
+  const { approvals } = useDashboard()
   const [approveStates, setApproveStates] = useState<Record<string, ApproveState>>({})
   const [stripeRefs, setStripeRefs]       = useState<Record<string, string>>({})
   const [autoPayMap, setAutoPayMap]       = useState<Record<string, boolean>>(
@@ -51,7 +53,7 @@ export default function PaymentsPage() {
       {/* ── KPI strip ── */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { abbr: 'MR', label: 'Monthly Recurring', value: formatCurrency(total, 'EUR', true), sub: `${mockRecurring.length} subscriptions` },
+          { abbr: 'MR', label: 'Monthly Recurring', value: formatCurrency(total, 'USD', true), sub: `${mockRecurring.length} subscriptions` },
           { abbr: 'AC', label: 'Active',             value: String(active),                    sub: 'auto-pay or confirmed' },
           { abbr: 'UR', label: 'Under Review',       value: String(review),                    sub: 'idle seats detected', warn: review > 0 },
           { abbr: 'PA', label: 'Pending Approval',   value: String(pending),                   sub: 'awaiting sign-off',   urgent: pending > 0 },
@@ -179,7 +181,7 @@ export default function PaymentsPage() {
       <div>
         <SectionHeader tag="APPROVALS" title="Awaiting Sign-Off" />
         <div className="grid grid-cols-2 gap-3">
-          {mockApprovals.map((appr, i) => {
+          {approvals.map((appr, i) => {
             const state = approveStates[appr.id] ?? 'idle'
             const ref   = stripeRefs[appr.id]
             return (
@@ -211,7 +213,7 @@ export default function PaymentsPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold mono text-text-primary">
-                      {formatCurrency(appr.expectedAmount, 'EUR', true)}
+                      {formatCurrency(appr.expectedAmount, 'USD', true)}
                     </p>
                     <p className="text-2xs text-text-disabled">due {formatDate(appr.expectedDate)}</p>
                   </div>
@@ -222,16 +224,16 @@ export default function PaymentsPage() {
                   <div className="flex-1">
                     <p className="text-2xs text-text-disabled">Last paid</p>
                     <p className="text-xs mono font-medium text-text-secondary">
-                      {formatCurrency(appr.lastPaidAmount, 'EUR', true)} on {formatDate(appr.lastPaidDate)}
+                      {formatCurrency(appr.lastPaidAmount, 'USD', true)} on {formatDate(appr.lastPaidDate)}
                     </p>
                   </div>
                   <ArrowUpRight size={13} className="text-text-disabled" />
                   <div className="flex-1 text-right">
                     <p className="text-2xs text-text-disabled">Expected</p>
                     <p className="text-xs mono font-medium text-text-primary">
-                      {formatCurrency(appr.expectedAmount, 'EUR', true)}
+                      {formatCurrency(appr.expectedAmount, 'USD', true)}
                       {appr.expectedAmountMax > appr.expectedAmount &&
-                        <span className="text-text-disabled"> – {formatCurrency(appr.expectedAmountMax, 'EUR', true)}</span>
+                        <span className="text-text-disabled"> – {formatCurrency(appr.expectedAmountMax, 'USD', true)}</span>
                       }
                     </p>
                   </div>

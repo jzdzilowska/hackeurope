@@ -12,7 +12,7 @@ import InsightCards         from '@/components/dashboard/InsightCards'
 import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
 import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
 import AIChat               from '@/components/dashboard/AIChat'
-import { mockOrg, mockApprovals, mockAccounts } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 
 // ── Editorial section header component ──────────────────────────────────
 function SectionHeader({
@@ -45,8 +45,9 @@ function SectionHeader({
 }
 
 export default function DashboardPage() {
+  const { org, approvals, accounts } = useDashboard()
   const [chatOpen, setChatOpen] = useState(false)
-  const pendingCount = mockApprovals.filter(a => a.status === 'pending').length
+  const pendingCount = approvals.filter(a => a.status === 'pending').length
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -59,7 +60,7 @@ export default function DashboardPage() {
         <div className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 bg-background/80 backdrop-blur-md border-b border-border/30">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-disabled mb-0.5">
-              {mockOrg.name}
+              {org.name}
             </p>
             <h1 className="text-base font-bold text-text-primary tracking-tight">Overview</h1>
           </div>
@@ -154,7 +155,7 @@ export default function DashboardPage() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
             </span>
             <span className="text-2xs text-text-secondary font-medium">
-              {mockAccounts.length} accounts live
+              {accounts.length} accounts live
             </span>
             <span className="text-2xs text-text-disabled">·</span>
             <span className="text-2xs text-text-disabled">synced 2m ago</span>

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, Clock, SkipForward, Loader2, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
 import { cn, formatCurrency, formatRelativeDate, generateStripeRef } from '@/lib/utils'
-import { mockApprovals } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 import type { PaymentApproval } from '@/lib/types'
 
 type CardState = 'idle' | 'loading' | 'approved' | 'skipped'
@@ -82,17 +82,17 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
         <div>
           <p className="text-2xs text-text-muted mb-0.5">Expected amount</p>
           <p className="text-lg font-bold mono text-text-primary">
-            {formatCurrency(approval.expectedAmount, 'EUR')}
+            {formatCurrency(approval.expectedAmount, 'USD')}
           </p>
           {approval.expectedAmountMax > approval.expectedAmount && (
-            <p className="text-2xs text-text-muted">up to {formatCurrency(approval.expectedAmountMax, 'EUR', true)}</p>
+            <p className="text-2xs text-text-muted">up to {formatCurrency(approval.expectedAmountMax, 'USD', true)}</p>
           )}
         </div>
         <div className="text-right">
           <p className="text-2xs text-text-muted mb-0.5">Due date</p>
           <p className="text-sm font-medium text-text-primary">{formatRelativeDate(approval.expectedDate)}</p>
           <p className="text-2xs text-text-muted">
-            Last: {formatCurrency(approval.lastPaidAmount, 'EUR', true)}
+            Last: {formatCurrency(approval.lastPaidAmount, 'USD', true)}
           </p>
         </div>
       </div>
@@ -165,7 +165,7 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
 }
 
 export default function ApprovalQueue() {
-  const [approvals] = useState(mockApprovals)
+  const { approvals } = useDashboard()
 
   return (
     <motion.div

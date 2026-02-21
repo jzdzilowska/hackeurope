@@ -4,7 +4,7 @@ import { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import Sidebar from './Sidebar'
-import { mockAccounts } from '@/lib/mock-data'
+import { useDashboard } from '@/lib/dashboard-context'
 
 interface PageShellProps {
   /** Tiny all-caps tag above the heading */
@@ -44,6 +44,8 @@ export function SectionHeader({
 }
 
 export default function PageShell({ tag, title, topBarRight, children }: PageShellProps) {
+  const { accounts } = useDashboard()
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar />
@@ -82,7 +84,7 @@ export default function PageShell({ tag, title, topBarRight, children }: PageShe
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
             </span>
             <span className="text-2xs text-text-secondary font-medium">
-              {mockAccounts.length} accounts live
+              {accounts.length} accounts live
             </span>
             <span className="text-2xs text-text-disabled">·</span>
             <span className="text-2xs text-text-disabled">synced 2m ago</span>
