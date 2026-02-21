@@ -25,10 +25,10 @@ function InsightCardItem({ card, onDismiss }: { card: InsightCard; onDismiss: (i
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.96, y: 8 }}
+      initial={{ opacity: 0, scale: 0.97, y: 8 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.94, y: -8 }}
-      transition={{ duration: 0.25 }}
+      exit={{ opacity: 0, scale: 0.95, y: -8 }}
+      transition={{ duration: 0.22 }}
       className="card-hover flex-shrink-0 w-[260px] p-4 flex flex-col gap-3 relative group"
     >
       {/* Dismiss button */}
@@ -40,7 +40,7 @@ function InsightCardItem({ card, onDismiss }: { card: InsightCard; onDismiss: (i
       </button>
 
       {/* Header */}
-      <div className="flex items-start gap-2 pr-4">
+      <div className="flex items-start gap-2.5 pr-5">
         <div className={cn('p-1.5 rounded-md border flex-shrink-0', urgencyStyles[card.urgency])}>
           {iconMap[card.type]}
         </div>
@@ -86,22 +86,27 @@ export default function InsightCards() {
           ))}
         </AnimatePresence>
 
-        {/* Aurora "ask anything" CTA card — matches reference image's gradient card */}
+        {/* Sage-cream "ask anything" CTA card */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
+          initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
+          transition={{ duration: 0.35, delay: 0.25 }}
           className="flex-shrink-0 w-[180px] rounded-card overflow-hidden cursor-pointer group relative"
-          style={{ background: 'linear-gradient(135deg, #D9F060 0%, #F5EFA0 38%, #F0E6C8 65%, #E8DDD0 100%)' }}
+          style={{
+            background: 'linear-gradient(135deg, #C8D870 0%, #DCE8A0 38%, #EEE8D0 65%, #F0EBE4 100%)',
+          }}
         >
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-          <div className="relative z-10 p-4 h-full flex flex-col justify-between" style={{ minHeight: '140px' }}>
-            <div className="w-7 h-7 rounded-lg bg-black/10 flex items-center justify-center">
-              <span className="text-black/70 text-sm font-bold">+</span>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/6 transition-colors" />
+          <div className="relative z-10 p-4 h-full flex flex-col justify-between" style={{ minHeight: '150px' }}>
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: 'rgba(0,0,0,0.10)' }}
+            >
+              <span className="text-black/60 text-sm font-bold">+</span>
             </div>
             <div>
-              <p className="text-2xs text-black/50 font-medium mb-0.5">Ask HELM</p>
-              <p className="text-sm font-semibold text-black/80 leading-tight">Any financial question</p>
+              <p className="text-2xs text-black/45 font-medium mb-0.5">Ask HELM</p>
+              <p className="text-sm font-semibold text-black/75 leading-tight">Any financial question</p>
             </div>
           </div>
         </motion.div>
