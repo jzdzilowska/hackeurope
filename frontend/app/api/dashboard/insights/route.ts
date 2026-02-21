@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
       monthlyBurns.set(month, (monthlyBurns.get(month) || 0) + Number(t.amount));
     });
 
-    const sortedMonths = [...monthlyBurns.keys()].sort();
+    const sortedMonths = Array.from(monthlyBurns.keys()).sort();
     const recentBurns = sortedMonths.slice(-3).map((m) => monthlyBurns.get(m)!);
     const avgBurn = recentBurns.length > 0
       ? recentBurns.reduce((a, b) => a + b, 0) / recentBurns.length
@@ -120,9 +120,9 @@ export async function GET(req: NextRequest) {
       categoryTotals.set(cat, (categoryTotals.get(cat) || 0) + Number(t.amount));
     });
 
-    const topCategory = [...categoryTotals.entries()].sort((a, b) => b[1] - a[1])[0];
+    const topCategory = Array.from(categoryTotals.entries()).sort((a, b) => b[1] - a[1])[0];
     if (topCategory) {
-      const totalExpenses = [...categoryTotals.values()].reduce((a, b) => a + b, 0);
+      const totalExpenses = Array.from(categoryTotals.values()).reduce((a, b) => a + b, 0);
       const pct = Math.round((topCategory[1] / totalExpenses) * 100);
       if (pct > 30) {
         insights.push({

@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Get institution names from plaid_items
-    const itemIds = [...new Set((dbAccounts || []).map((a) => a.plaid_item_id))];
+    const itemIds = Array.from(new Set((dbAccounts || []).map((a) => a.plaid_item_id)));
     const { data: plaidItems } = await supabase
       .from('plaid_items')
       .select('item_id, institution_name')
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
       monthlyBurns.set(month, (monthlyBurns.get(month) || 0) + Number(t.amount));
     });
 
-    const sortedMonths = [...monthlyBurns.keys()].sort();
+    const sortedMonths = Array.from(monthlyBurns.keys()).sort();
     const recentBurns = sortedMonths.slice(-3).map((m) => monthlyBurns.get(m)!);
 
     const monthlyBurn = recentBurns.length > 0

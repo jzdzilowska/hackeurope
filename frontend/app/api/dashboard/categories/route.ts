@@ -38,9 +38,9 @@ export async function GET(req: NextRequest) {
       categoryTotals.set(cat, (categoryTotals.get(cat) || 0) + Number(t.amount));
     });
 
-    const total = [...categoryTotals.values()].reduce((a, b) => a + b, 0);
+    const total = Array.from(categoryTotals.values()).reduce((a, b) => a + b, 0);
 
-    const categories = [...categoryTotals.entries()]
+    const categories = Array.from(categoryTotals.entries())
       .map(([name, amount]) => ({
         name,
         amount: Math.round(amount * 100) / 100,
