@@ -437,11 +437,30 @@ async def ask_purchase(
         user_id, body.item_description, body.price, body.currency,
     )
 
-    # Lightweight financial snapshot
-    financial_context = await asyncio.to_thread(query_purchase_context, client, user_id)
+    # ── Build financial context ───────────────────────────────────────────────
+    # Prefer the pre-computed financial_health_report from ai_insights (written
+    # by run_ai.py) to avoid re-scanning all transactions on every request.
+    # Falls back to a fresh DB query if no cached report exists yet.
+    cached_health = await asyncio.to_thread(_get_health_cache, client, user_id)
+
+    if cached_health:
+        log.info("[%s] Using cached financial_health_report for purchase context.", user_id)
+        financial_context = {
+            "current_balance":       cached_health.get("net_worth", 0),
+            "avg_monthly_burn":      cached_health.get("avg_monthly_burn", 0),
+            "current_runway_months": round(
+                cached_health.get("net_worth", 0) / cached_health.get("avg_monthly_burn", 1), 1
+            ) if cached_health.get("avg_monthly_burn", 0) > 0 else None,
+            "cost_breakdown":        cached_health.get("cost_breakdown", {}),
+            "health_score":          cached_health.get("health_score"),
+            "top_3_improvements":    cached_health.get("top_3_controllable_improvements", []),
+        }
+    else:
+        log.info("[%s] No cache found — querying fresh purchase context.", user_id)
+        financial_context = await asyncio.to_thread(query_purchase_context, client, user_id)
 
     # Pre-calculate runway after purchase so Gemini has it as a hard number
-    if financial_context["avg_monthly_burn"] > 0:
+    if financial_context.get("avg_monthly_burn", 0) > 0:
         runway_after = round(
             (financial_context["current_balance"] - body.price)
             / financial_context["avg_monthly_burn"],
