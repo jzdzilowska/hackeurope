@@ -27,8 +27,8 @@ export default function Sidebar() {
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #C8D870 0%, #DCE8A0 40%, #EEE8D0 70%, #F0EBE4 100%)',
-              boxShadow: '0 0 14px rgba(200,216,112,0.18)',
+              background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
+              boxShadow: '0 0 14px rgba(0,212,160,0.18)',
             }}
           >
             <Zap size={13} className="text-black" strokeWidth={2.5} />
@@ -42,7 +42,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-surface/60 border border-border/50">
           <div
             className="w-6 h-6 rounded-md border border-accent/20 flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, rgba(200,216,112,0.10) 0%, rgba(220,232,160,0.06) 100%)' }}
+            style={{ background: 'linear-gradient(135deg, rgba(0,212,160,0.10) 0%, rgba(0,212,160,0.06) 100%)' }}
           >
             <span className="text-[10px] font-bold text-accent">
               {mockOrg.name.charAt(0)}

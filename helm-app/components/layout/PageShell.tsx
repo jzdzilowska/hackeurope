@@ -75,8 +75,7 @@ export default function PageShell({ tag, title, topBarRight, children }: PageShe
           className="fixed bottom-5 left-[226px] z-30"
         >
           <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md"
-            style={{ background: 'rgba(13,15,26,0.88)' }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md bg-surface/90"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-40" />

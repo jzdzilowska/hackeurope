@@ -15,7 +15,7 @@ import type { InsightCard } from '@/lib/types'
 const TYPE_META = {
   anomaly:      { icon: AlertTriangle, color: '#F87171', bg: 'rgba(248,113,113,0.08)', label: 'Anomaly'      },
   runway:       { icon: TrendingDown,  color: '#FBBF24', bg: 'rgba(251,191,36,0.08)',  label: 'Runway'       },
-  subscription: { icon: CreditCard,   color: '#A8C940', bg: 'rgba(168,201,64,0.08)',   label: 'Subscription' },
+  subscription: { icon: CreditCard,   color: '#00D4A0', bg: 'rgba(0,212,160,0.08)',   label: 'Subscription' },
   saving:       { icon: Sparkles,     color: '#34D399', bg: 'rgba(52,211,153,0.08)',   label: 'Saving'       },
   margin:       { icon: BarChart3,    color: '#818CF8', bg: 'rgba(129,140,248,0.08)',  label: 'Margin'       },
 }
@@ -150,7 +150,7 @@ export default function InsightsPage() {
             className="card p-6 relative overflow-hidden"
           >
             <div className="pointer-events-none absolute inset-0" style={{
-              background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(168,201,64,0.10) 0%, transparent 65%)',
+              background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(0,212,160,0.10) 0%, transparent 65%)',
             }} />
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-disabled mb-4">
               Overall health
@@ -163,7 +163,7 @@ export default function InsightsPage() {
                 <motion.circle
                   cx="50" cy="50" r="42"
                   fill="none"
-                  stroke={healthScore >= 70 ? '#A8C940' : healthScore >= 50 ? '#FBBF24' : '#F87171'}
+                  stroke={healthScore >= 70 ? '#00D4A0' : healthScore >= 50 ? '#FBBF24' : '#F87171'}
                   strokeWidth="7"
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 42}`}
@@ -243,8 +243,8 @@ export default function InsightsPage() {
             <AreaChart data={RUNWAY_DATA} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="cashGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#A8C940" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="#A8C940" stopOpacity={0.02} />
+                  <stop offset="0%"   stopColor="#00D4A0" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#00D4A0" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
               <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.03)" />
@@ -252,11 +252,11 @@ export default function InsightsPage() {
               <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(v/1000).toFixed(0)}k`} />
               <Tooltip
-                contentStyle={{ background: '#0D0F1A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 12 }}
+                contentStyle={{ background: '#111111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 12 }}
                 labelStyle={{ color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}
                 formatter={(v: number) => [formatCurrency(v, 'EUR'), 'Cash']}
               />
-              <Area type="monotone" dataKey="cash" stroke="#A8C940" strokeWidth={2}
+              <Area type="monotone" dataKey="cash" stroke="#00D4A0" strokeWidth={2}
                 fill="url(#cashGrad)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>

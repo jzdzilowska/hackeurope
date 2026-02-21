@@ -9,31 +9,31 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── Surfaces: deep navy-black ─────────────────────────────
-        background: '#08090F',
+        // ── Surfaces: near-pure black ─────────────────────────────
+        background: '#0A0A0A',
         surface: {
-          DEFAULT: '#0D0F1A',
-          raised:  '#131728',
-          high:    '#1A1E30',
+          DEFAULT: '#111111',
+          raised:  '#191919',
+          high:    '#242424',
         },
-        // ── Borders: navy-tinted ─────────────────────────────────
+        // ── Borders: neutral whites ───────────────────────────────
         border: {
-          DEFAULT: '#1C2035',
-          subtle:  '#12152A',
-          focus:   '#2A3055',
+          DEFAULT: '#1E1E1E',
+          subtle:  '#141414',
+          focus:   '#2E2E2E',
         },
-        // ── Accent: muted sage-lime — organic, not neon ──────────
+        // ── Accent: bright teal ───────────────────────────────────
         accent: {
-          DEFAULT: '#A8C940',
-          hover:   '#BAD94E',
-          soft:    '#D4E890',
-          muted:   'rgba(168,201,64,0.10)',
-          glow:    'rgba(168,201,64,0.16)',
+          DEFAULT: '#00D4A0',
+          hover:   '#00BF90',
+          soft:    '#7FEDD4',
+          muted:   'rgba(0,212,160,0.10)',
+          glow:    'rgba(0,212,160,0.18)',
         },
         // ── Semantic ─────────────────────────────────────────────
         success: {
-          DEFAULT: '#5EA87A',
-          muted:   'rgba(94,168,122,0.12)',
+          DEFAULT: '#00C87A',
+          muted:   'rgba(0,200,122,0.12)',
         },
         warning: {
           DEFAULT: '#C49040',
@@ -43,21 +43,21 @@ const config: Config = {
           DEFAULT: '#B85858',
           muted:   'rgba(184,88,88,0.12)',
         },
-        // ── Chart — muted pastels, navy-tuned ────────────────────
+        // ── Chart — updated to teal-first palette ─────────────────
         chart: {
-          lime:     '#A8C940',
-          pink:     '#B87890',
-          sage:     '#68A880',
-          sky:      '#6890B8',
-          amber:    '#B89050',
-          lavender: '#8080B0',
+          lime:     '#00D4A0',
+          pink:     '#E87878',
+          sage:     '#7AC0A8',
+          sky:      '#6898C8',
+          amber:    '#C89850',
+          lavender: '#8888C0',
         },
         // ── Text ─────────────────────────────────────────────────
         text: {
-          primary:   '#E8EAF2',
-          secondary: '#7880A0',
-          muted:     '#4A5070',
-          disabled:  '#30364A',
+          primary:   '#F0F0F0',
+          secondary: '#999999',
+          muted:     '#666666',
+          disabled:  '#444444',
         },
       },
 
@@ -81,11 +81,11 @@ const config: Config = {
       },
 
       boxShadow: {
-        card:         '0 1px 3px rgba(0,0,4,0.8), 0 0 0 1px rgba(255,255,255,0.04)',
-        'card-hover': '0 8px 24px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.07)',
-        glow:         '0 0 32px rgba(168,201,64,0.14)',
-        'glow-sm':    '0 0 16px rgba(168,201,64,0.10)',
-        'teal-glow':  '0 0 80px rgba(40,110,80,0.16)',
+        card:         '0 1px 3px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04)',
+        'card-hover': '0 8px 24px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.07)',
+        glow:         '0 0 32px rgba(0,212,160,0.14)',
+        'glow-sm':    '0 0 16px rgba(0,212,160,0.10)',
+        'teal-glow':  '0 0 80px rgba(0,180,130,0.16)',
       },
 
       animation: {
@@ -114,15 +114,17 @@ const config: Config = {
       },
 
       backgroundImage: {
-        'atmo-glow':       'radial-gradient(ellipse 65% 50% at 85% 0%, rgba(40,100,70,0.22) 0%, rgba(25,70,50,0.10) 40%, transparent 70%)',
-        'atmo-glow-left':  'radial-gradient(ellipse 45% 40% at 0% 40%, rgba(30,80,55,0.12) 0%, transparent 55%)',
-        'atmo-center':     'radial-gradient(ellipse 80% 60% at 50% -5%, rgba(35,90,65,0.16) 0%, transparent 60%)',
-        'sage-cream':      'linear-gradient(135deg, #C8D870 0%, #DCE8A0 40%, #EEE8D0 70%, #F0EBE4 100%)',
-        'sage-cream-sm':   'linear-gradient(135deg, #B8C860 0%, #CCE090 60%, #E0D8C0 100%)',
+        // Atmospheric sage-olive bloom — matches Image 1's diffuse glow
+        'atmo-glow':       'radial-gradient(ellipse 70% 55% at 88% 0%, rgba(80,120,45,0.35) 0%, rgba(55,90,25,0.14) 45%, transparent 70%)',
+        'atmo-glow-left':  'radial-gradient(ellipse 45% 40% at 0% 40%, rgba(55,90,25,0.12) 0%, transparent 55%)',
+        'atmo-center':     'radial-gradient(ellipse 80% 60% at 50% -5%, rgba(70,105,35,0.15) 0%, transparent 60%)',
+        // Teal gradient — replaces sage-cream; used for logo, CTA buttons
+        'sage-cream':      'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
+        'sage-cream-sm':   'linear-gradient(135deg, #00C090 0%, #60D9BC 60%, #B0EAD8 100%)',
         'saas-card':       'linear-gradient(135deg, rgba(60,90,140,0.15) 0%, rgba(40,65,110,0.06) 100%)',
         'physical-card':   'linear-gradient(135deg, rgba(120,90,50,0.15) 0%, rgba(90,65,35,0.06) 100%)',
         'shimmer-gradient':'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',
-        'surface-gradient':'linear-gradient(180deg, #131728 0%, #0D0F1A 100%)',
+        'surface-gradient':'linear-gradient(180deg, #191919 0%, #111111 100%)',
       },
     },
   },

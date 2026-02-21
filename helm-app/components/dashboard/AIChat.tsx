@@ -62,7 +62,7 @@ function BotMessage({ content, isStreaming }: { content: string; isStreaming: bo
     <div className="flex gap-2.5">
       {/* Avatar */}
       <div className="w-6 h-6 rounded-md bg-aurora-card flex items-center justify-center flex-shrink-0 mt-0.5"
-           style={{ background: 'linear-gradient(135deg, #C8D870 0%, #DCE8A0 40%, #EEE8D0 70%, #F0EBE4 100%)' }}>
+           style={{ background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)' }}>
         <span className="text-2xs font-bold text-black">H</span>
       </div>
       <div className="flex-1 text-xs text-text-secondary leading-relaxed">
@@ -150,7 +150,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
             <div className="px-5 py-4 border-b border-border/60 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="w-6 h-6 rounded-md flex items-center justify-center"
-                     style={{ background: 'linear-gradient(135deg, #C8D870 0%, #DCE8A0 40%, #EEE8D0 70%, #F0EBE4 100%)' }}>
+                     style={{ background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)' }}>
                   <span className="text-2xs font-bold text-black">H</span>
                 </div>
                 <div>
@@ -186,7 +186,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
               {loading && (
                 <div className="flex gap-2.5">
                   <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                       style={{ background: 'linear-gradient(135deg, #C8D870 0%, #DCE8A0 40%, #EEE8D0 70%, #F0EBE4 100%)' }}>
+                       style={{ background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)' }}>
                     <span className="text-2xs font-bold text-black">H</span>
                   </div>
                   <div className="flex items-center gap-1 py-1">

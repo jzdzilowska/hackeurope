@@ -14,7 +14,7 @@ export default function CashPositionHero() {
   return (
     <div
       className="relative overflow-hidden rounded-card border border-border/60"
-      style={{ minHeight: '200px', background: '#0A0C14' }}
+      style={{ minHeight: '200px', background: '#111111' }}
     >
       {/* Deep atmospheric bloom — top-right, like reference Image 1 */}
       <div
@@ -22,7 +22,7 @@ export default function CashPositionHero() {
         style={{
           top: '-60px', right: '-60px',
           width: '380px', height: '320px',
-          background: 'radial-gradient(ellipse at center, rgba(42,105,72,0.55) 0%, rgba(28,75,52,0.25) 40%, transparent 72%)',
+          background: 'radial-gradient(ellipse at center, rgba(80,120,45,0.50) 0%, rgba(55,90,25,0.22) 40%, transparent 72%)',
           filter: 'blur(52px)',
         }}
       />
@@ -32,7 +32,7 @@ export default function CashPositionHero() {
         style={{
           bottom: '-40px', left: '0px',
           width: '240px', height: '200px',
-          background: 'radial-gradient(ellipse at center, rgba(22,55,80,0.30) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(55,85,30,0.22) 0%, transparent 70%)',
           filter: 'blur(36px)',
         }}
       />
@@ -43,7 +43,7 @@ export default function CashPositionHero() {
         style={{
           background: `
             linear-gradient(125deg,
-              rgba(38,95,65,0.12) 0%,
+              rgba(70,110,35,0.10) 0%,
               rgba(18,28,48,0.04) 35%,
               rgba(8,10,18,0.0) 60%,
               rgba(22,40,60,0.08) 100%

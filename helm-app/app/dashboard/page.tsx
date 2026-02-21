@@ -81,7 +81,7 @@ export default function DashboardPage() {
             <button
               onClick={() => setChatOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-black text-xs font-semibold hover:brightness-105 active:scale-[0.98] transition-all"
-              style={{ background: 'linear-gradient(135deg, #C8D870 0%, #DCE8A0 40%, #EEE8D0 70%, #F0EBE4 100%)' }}
+              style={{ background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)' }}
             >
               <MessageSquare size={11} />
               Ask HELM
@@ -147,8 +147,7 @@ export default function DashboardPage() {
           className="fixed bottom-5 left-[226px] z-30"
         >
           <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md"
-            style={{ background: 'rgba(13,15,26,0.88)' }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md bg-surface/90"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-40" />

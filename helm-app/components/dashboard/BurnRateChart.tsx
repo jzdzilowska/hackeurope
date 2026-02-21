@@ -61,12 +61,12 @@ export default function BurnRateChart() {
           <AreaChart data={mockBurnData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#A8D6B8" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#A8D6B8" stopOpacity={0.0} />
+                <stop offset="0%"   stopColor="#7AC0A8" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#7AC0A8" stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#F2AABB" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#F2AABB" stopOpacity={0.0} />
+                <stop offset="0%"   stopColor="#E87878" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#E87878" stopOpacity={0.0} />
               </linearGradient>
             </defs>
 
@@ -92,20 +92,20 @@ export default function BurnRateChart() {
             <Area
               type="monotone"
               dataKey="revenue"
-              stroke="#A8D6B8"
+              stroke="#7AC0A8"
               strokeWidth={2}
               fill="url(#revenueGrad)"
               dot={false}
-              activeDot={{ r: 4, fill: '#A8D6B8', strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: '#7AC0A8', strokeWidth: 0 }}
             />
             <Area
               type="monotone"
               dataKey="burn"
-              stroke="#F2AABB"
+              stroke="#E87878"
               strokeWidth={2}
               fill="url(#burnGrad)"
               dot={false}
-              activeDot={{ r: 4, fill: '#F2AABB', strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: '#E87878', strokeWidth: 0 }}
             />
           </AreaChart>
         </ResponsiveContainer>
