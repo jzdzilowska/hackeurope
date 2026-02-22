@@ -13,13 +13,27 @@ type CardState = 'idle' | 'loading' | 'approved' | 'skipped'
 function ApprovalCard({ approval }: { approval: PaymentApproval }) {
   const [state, setState] = useState<CardState>('idle')
   const [stripeRef, setStripeRef] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     setState('loading')
-    setTimeout(() => {
-      setStripeRef(generateStripeRef())
+    setError(null)
+    try {
+      const res = await fetch('/api/stripe/invoice-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approvalId: approval.id }),
+      })
+
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error ?? 'Stripe payment failed')
+
+      setStripeRef(json?.stripeRef || generateStripeRef())
       setState('approved')
-    }, 1400)
+    } catch (err) {
+      setState('idle')
+      setError(err instanceof Error ? err.message : 'Stripe payment failed')
+    }
   }
   const handleSkip = () => setState('skipped')
 
@@ -160,6 +174,10 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
           </motion.p>
         )}
       </AnimatePresence>
+
+      {error && state === 'idle' && (
+        <p className="mt-2 text-2xs text-danger">{error}</p>
+      )}
     </motion.div>
   )
 }

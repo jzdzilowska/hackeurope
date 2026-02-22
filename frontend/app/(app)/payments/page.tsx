@@ -32,18 +32,73 @@ export default function PaymentsPage() {
   const [autoPayMap, setAutoPayMap]       = useState<Record<string, boolean>>(
     Object.fromEntries(mockRecurring.map(r => [r.id, r.autoPayEnabled]))
   )
+  const [autoPayIds, setAutoPayIds]       = useState<Record<string, string>>({})
+  const [autoPayLoading, setAutoPayLoading] = useState<Record<string, boolean>>({})
 
   const total   = mockRecurring.reduce((s, r) => s + r.averageAmount, 0)
   const active  = mockRecurring.filter(r => r.status === 'active').length
   const review  = mockRecurring.filter(r => r.status === 'under_review').length
   const pending = mockRecurring.filter(r => r.status === 'pending_approval').length
 
-  const handleApprove = (id: string) => {
+  const handleApprove = async (id: string) => {
+    const approval = approvals.find(a => a.id === id)
+    if (!approval) return
+
     setApproveStates(s => ({ ...s, [id]: 'loading' }))
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/stripe/invoice-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approvalId: approval.id }),
+      })
+
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error ?? 'Stripe payment failed')
+
       setApproveStates(s => ({ ...s, [id]: 'approved' }))
-      setStripeRefs(r => ({ ...r, [id]: generateStripeRef() }))
-    }, 1400)
+      setStripeRefs(r => ({ ...r, [id]: json?.stripeRef || generateStripeRef() }))
+    } catch {
+      setApproveStates(s => ({ ...s, [id]: 'idle' }))
+    }
+  }
+
+  const handleAutoPayToggle = async (recurringId: string) => {
+    const recurring = mockRecurring.find(r => r.id === recurringId)
+    if (!recurring) return
+
+    const enable = !autoPayMap[recurringId]
+    setAutoPayLoading(m => ({ ...m, [recurringId]: true }))
+
+    try {
+      const res = await fetch('/api/stripe/autopay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recurringId,
+          enable,
+          autoPayId: autoPayIds[recurringId],
+          merchantName: recurring.merchantName,
+          amount: recurring.averageAmount,
+          currency: recurring.currency,
+        }),
+      })
+
+      const json = await res.json()
+      if (!res.ok) throw new Error(json?.error ?? 'Auto-pay update failed')
+
+      setAutoPayMap(m => ({ ...m, [recurringId]: enable }))
+      if (enable && json?.autoPayId) {
+        setAutoPayIds(m => ({ ...m, [recurringId]: json.autoPayId }))
+      }
+      if (!enable) {
+        setAutoPayIds(m => {
+          const { [recurringId]: _, ...rest } = m
+          return rest
+        })
+      }
+    } finally {
+      setAutoPayLoading(m => ({ ...m, [recurringId]: false }))
+    }
   }
 
   return (
@@ -161,13 +216,16 @@ export default function PaymentsPage() {
 
                 {/* Auto-pay toggle */}
                 <button
-                  onClick={() => setAutoPayMap(m => ({ ...m, [r.id]: !m[r.id] }))}
+                  onClick={() => handleAutoPayToggle(r.id)}
                   className="flex items-center justify-center transition-colors"
                   title={autoPay ? 'Disable auto-pay' : 'Enable auto-pay'}
+                  disabled={autoPayLoading[r.id]}
                 >
-                  {autoPay
-                    ? <ToggleRight size={22} className="text-accent" />
-                    : <ToggleLeft size={22} className="text-text-disabled hover:text-text-muted" />
+                  {autoPayLoading[r.id]
+                    ? <Loader2 size={18} className="animate-spin text-text-muted" />
+                    : autoPay
+                      ? <ToggleRight size={22} className="text-accent" />
+                      : <ToggleLeft size={22} className="text-text-disabled hover:text-text-muted" />
                   }
                 </button>
               </motion.div>
