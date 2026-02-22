@@ -5,10 +5,10 @@ import { motion } from 'framer-motion'
 import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
-import KPICards             from '@/components/dashboard/KPICards'
-import BurnRateChart        from '@/components/dashboard/BurnRateChart'
-import CategoryBreakdown    from '@/components/dashboard/CategoryBreakdown'
-import InsightCards         from '@/components/dashboard/InsightCards'
+import CashflowChart        from '@/components/dashboard/CashflowChart'
+import InsightsSummary      from '@/components/dashboard/InsightsSummary'
+import RestockForecast      from '@/components/dashboard/RestockForecast'
+import SurplusChart         from '@/components/dashboard/SurplusChart'
 import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
 import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
 import AIChat               from '@/components/dashboard/AIChat'
@@ -99,32 +99,28 @@ export default function DashboardPage() {
             <CashPositionHero />
           </div>
 
-          {/* Section 2: KPI metrics */}
+          {/* Section 2: Analytics grid — cashflow, insights, restock, surplus */}
           <div>
-            <SectionHeader tag="METRICS" title="Key Indicators" action="View all" />
-            <KPICards />
-          </div>
-
-          {/* Section 3: Burn + categories */}
-          <div>
-            <SectionHeader tag="ANALYSIS" title="Spend Breakdown" action="Export" />
+            <SectionHeader tag="ANALYTICS" title="Financial Intelligence" />
             <div className="grid grid-cols-3 gap-4">
+              {/* Row 1: Cashflow (wide) + Insights (narrow) */}
               <div className="col-span-2">
-                <BurnRateChart />
+                <CashflowChart />
               </div>
               <div className="col-span-1">
-                <CategoryBreakdown />
+                <InsightsSummary />
+              </div>
+              {/* Row 2: Restock (narrow) + Surplus (wide) */}
+              <div className="col-span-1">
+                <RestockForecast />
+              </div>
+              <div className="col-span-2">
+                <SurplusChart />
               </div>
             </div>
           </div>
 
-          {/* Section 4: AI insights */}
-          <div>
-            <SectionHeader tag="AI" title="Insights" action="Refresh" />
-            <InsightCards />
-          </div>
-
-          {/* Section 5: Payments + approvals */}
+          {/* Section 3: Payments + approvals */}
           <div>
             <SectionHeader tag="PAYMENTS" title="Upcoming & Approvals" action="All payments" />
             <div className="grid grid-cols-3 gap-4">
