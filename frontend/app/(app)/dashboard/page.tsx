@@ -82,7 +82,7 @@ export default function DashboardPage() {
             <button
               onClick={() => setChatOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-black text-xs font-semibold hover:brightness-105 active:scale-[0.98] transition-all"
-              style={{ background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)' }}
+              style={{ background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 40%, #9A9692 70%, #D8D4D0 100%)' }}
             >
               <MessageSquare size={11} />
               Ask HELM

@@ -94,7 +94,7 @@ export default function InsightCards() {
           transition={{ duration: 0.35, delay: 0.25 }}
           className="flex-shrink-0 w-[180px] rounded-card overflow-hidden cursor-pointer group relative"
           style={{
-            background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 38%, #E8D4B0 65%, #F8F2E8 100%)',
+            background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 38%, #9A9692 65%, #D8D4D0 100%)',
           }}
         >
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/6 transition-colors" />

@@ -29,12 +29,9 @@ export default function Sidebar() {
         <div className="flex items-center gap-2.5">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)',
-              boxShadow: '0 0 14px rgba(184,147,90,0.18)',
-            }}
+            style={{ background: '#1C1B18' }}
           >
-            <Zap size={13} className="text-black" strokeWidth={2.5} />
+            <Zap size={13} style={{ color: '#F0EDE8' }} strokeWidth={2.5} />
           </div>
           <span className="text-sm font-semibold tracking-tight text-text-primary">HELM</span>
         </div>
@@ -45,7 +42,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-background border border-border/60">
           <div
             className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(184,147,90,0.10)' }}
+            style={{ background: 'rgba(44,41,38,0.10)' }}
           >
             <span className="text-[10px] font-bold text-accent">
               {mockOrg.name.charAt(0)}

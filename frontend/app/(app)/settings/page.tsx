@@ -243,9 +243,9 @@ export default function SettingsPage() {
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-text-primary flex-shrink-0"
                 style={{
                   background: member.active
-                    ? 'linear-gradient(135deg, rgba(184,147,90,0.12) 0%, rgba(184,147,90,0.06) 100%)'
+                    ? 'linear-gradient(135deg, rgba(44,41,38,0.12) 0%, rgba(44,41,38,0.06) 100%)'
                     : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${member.active ? 'rgba(184,147,90,0.25)' : 'rgba(255,255,255,0.08)'}`,
+                  border: `1px solid ${member.active ? 'rgba(44,41,38,0.25)' : 'rgba(255,255,255,0.08)'}`,
                 }}
               >
                 {member.initials}

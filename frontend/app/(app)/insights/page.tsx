@@ -96,7 +96,7 @@ interface SubData {
 
 function ScorePill({ score, max = 25 }: { score: number; max?: number }) {
   const pct = score / max
-  const color = pct >= 0.7 ? '#B8935A' : pct >= 0.4 ? '#C49040' : '#B85858'
+  const color = pct >= 0.7 ? '#2C2926' : pct >= 0.4 ? '#C49040' : '#B85858'
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex-1 h-1 rounded-full bg-surface-raised overflow-hidden">
@@ -114,7 +114,7 @@ function ScorePill({ score, max = 25 }: { score: number; max?: number }) {
 }
 
 function SeverityDot({ severity }: { severity: string }) {
-  const col = severity === 'critical' ? '#B85858' : severity === 'warning' ? '#C49040' : '#B8935A'
+  const col = severity === 'critical' ? '#B85858' : severity === 'warning' ? '#C49040' : '#2C2926'
   return (
     <span className="relative flex h-2 w-2 flex-shrink-0 mt-1">
       <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-40" style={{ background: col }} />
@@ -149,14 +149,14 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
   monthsRunway: number
 }) {
   const [expanded, setExpanded] = useState(true)
-  const scoreColor = score >= 70 ? '#B8935A' : score >= 40 ? '#C49040' : '#B85858'
+  const scoreColor = score >= 70 ? '#2C2926' : score >= 40 ? '#C49040' : '#B85858'
   const scoreLabel = score >= 70 ? (monthsRunway < 3 ? 'Profitable · Cash Risk' : 'Healthy') : score >= 40 ? 'Needs Attention' : 'At Risk'
   const circumference = 2 * Math.PI * 40
 
   const bullets = briefing ? [
     { icon: Target,   label: 'Root cause',          text: briefing.root_cause,                   color: '#B85858' },
     { icon: Activity, label: 'The full picture',    text: briefing.connected_narrative,          color: '#818CF8' },
-    { icon: Zap,      label: 'Single best action',  text: briefing.single_most_impactful_action, color: '#B8935A' },
+    { icon: Zap,      label: 'Single best action',  text: briefing.single_most_impactful_action, color: '#2C2926' },
     { icon: Clock,    label: 'If nothing changes',  text: briefing.if_nothing_changes,           color: '#C49040' },
   ] : []
 
@@ -169,7 +169,7 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
       style={{ background: 'var(--tooltip-bg)' }}
     >
       <div className="pointer-events-none absolute inset-0" style={{
-        background: 'radial-gradient(ellipse 90% 60% at 100% 0%, rgba(184,147,90,0.07) 0%, transparent 60%)',
+        background: 'radial-gradient(ellipse 90% 60% at 100% 0%, rgba(44,41,38,0.07) 0%, transparent 60%)',
       }} />
 
       <div className="relative flex items-start gap-6 p-6 pb-5">
@@ -292,7 +292,7 @@ function HealthScoreSection({ health }: { health: HealthData }) {
   const costData = health.cost_breakdown ? [
     { name: 'Payroll',  value: health.cost_breakdown.payroll?.pct  ?? 0, color: '#B85858' },
     { name: 'Other',    value: health.cost_breakdown.other?.pct    ?? 0, color: '#C49040' },
-    { name: 'Variable', value: health.cost_breakdown.variable?.pct ?? 0, color: '#B8935A' },
+    { name: 'Variable', value: health.cost_breakdown.variable?.pct ?? 0, color: '#2C2926' },
     { name: 'Fixed',    value: health.cost_breakdown.fixed?.pct    ?? 0, color: '#6898C8' },
   ] : []
 
@@ -382,7 +382,7 @@ function ForecastSection({ health }: { health: HealthData }) {
   const alerts = [
     health.seasonal_risk    && { icon: Calendar,     color: '#C49040', label: 'Seasonal Risk',       text: health.seasonal_risk },
     health.inventory_alert  && { icon: Package,      color: '#6898C8', label: 'Inventory Alert',     text: health.inventory_alert },
-    health.investment_opportunity && { icon: DollarSign, color: '#B8935A', label: 'Capital Opportunity', text: health.investment_opportunity },
+    health.investment_opportunity && { icon: DollarSign, color: '#2C2926', label: 'Capital Opportunity', text: health.investment_opportunity },
   ].filter(Boolean) as Array<{ icon: React.ElementType; color: string; label: string; text: string }>
 
   return (
@@ -417,7 +417,7 @@ function ForecastSection({ health }: { health: HealthData }) {
               <ConfidenceBadge level={health.forecast_confidence ?? 'medium'} />
             </div>
             <div className="flex gap-3">
-              {[{ label: 'Burn', color: '#B85858' }, { label: 'Income', color: '#B8935A' }].map(l => (
+              {[{ label: 'Burn', color: '#B85858' }, { label: 'Income', color: '#2C2926' }].map(l => (
                 <div key={l.label} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: l.color }} />
                   <span className="text-2xs text-text-muted">{l.label}</span>
@@ -443,9 +443,9 @@ function ForecastSection({ health }: { health: HealthData }) {
                   <Cell key={i} fill={entry.actual ? '#B85858' : '#B8585855'} />
                 ))}
               </Bar>
-              <Bar dataKey="income" fill="#B8935A" radius={[3, 3, 0, 0]}>
+              <Bar dataKey="income" fill="#2C2926" radius={[3, 3, 0, 0]}>
                 {chartData.map((entry, i) => (
-                  <Cell key={i} fill={entry.actual ? '#B8935A' : '#B8935A55'} />
+                  <Cell key={i} fill={entry.actual ? '#2C2926' : '#2C292655'} />
                 ))}
               </Bar>
             </BarChart>
@@ -491,7 +491,7 @@ function PriorityInsights({ sub }: { sub: SubData }) {
   const runway = sub.raw?.runway_stress_test
   const runwayMonths = runway?.stressed_runway_months ?? 0
   const runwayPct = Math.min((runwayMonths / 24) * 100, 100)
-  const runwayColor = runwayMonths < 6 ? '#B85858' : runwayMonths < 12 ? '#C49040' : '#B8935A'
+  const runwayColor = runwayMonths < 6 ? '#B85858' : runwayMonths < 12 ? '#C49040' : '#2C2926'
 
   return (
     <div className="grid grid-cols-[1fr_1.6fr] gap-4">
@@ -618,7 +618,7 @@ type Verdict = {
 }
 
 const RISK_CONFIG = {
-  green:  { icon: CheckCircle2, color: '#B8935A', label: 'Approved', bg: 'rgba(184,147,90,0.08)',  border: 'rgba(184,147,90,0.2)'  },
+  green:  { icon: CheckCircle2, color: '#2C2926', label: 'Approved', bg: 'rgba(44,41,38,0.08)',  border: 'rgba(44,41,38,0.2)'  },
   yellow: { icon: AlertCircle,  color: '#C49040', label: 'Caution',  bg: 'rgba(196,144,64,0.08)', border: 'rgba(196,144,64,0.2)' },
   red:    { icon: XCircle,      color: '#B85858', label: 'Rejected', bg: 'rgba(184,88,88,0.08)',  border: 'rgba(184,88,88,0.2)'  },
 }

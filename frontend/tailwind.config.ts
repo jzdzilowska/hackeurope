@@ -43,22 +43,22 @@ const config: Config = {
           DEFAULT: 'rgb(var(--color-danger) / <alpha-value>)',
           muted:   'rgb(var(--color-danger) / 0.10)',
         },
-        // ── Accent: muted warm gold ──────────────────────────────
+        // ── Accent: warm dark charcoal ───────────────────────────
         accent: {
-          DEFAULT: '#B8935A',
-          hover:   '#A67F46',
-          soft:    '#D4B882',
-          muted:   'rgba(184,147,90,0.10)',
-          glow:    'rgba(184,147,90,0.16)',
+          DEFAULT: '#2C2926',
+          hover:   '#1A1815',
+          soft:    '#7A7570',
+          muted:   'rgba(44,41,38,0.07)',
+          glow:    'rgba(44,41,38,0.05)',
         },
-        // ── Chart palette ────────────────────────────────────────
+        // ── Chart palette — desaturated, warm ────────────────────
         chart: {
-          lime:     '#B8935A',
-          pink:     '#C47878',
-          sage:     '#7AA898',
-          sky:      '#6888B8',
-          amber:    '#C4A050',
-          lavender: '#8880B8',
+          lime:     '#4A4642',
+          pink:     '#A08078',
+          sage:     '#6A9080',
+          sky:      '#607888',
+          amber:    '#A09060',
+          lavender: '#787090',
         },
       },
 
@@ -84,9 +84,9 @@ const config: Config = {
       boxShadow: {
         card:         'var(--card-shadow)',
         'card-hover': 'var(--card-shadow-hover)',
-        glow:         '0 0 24px rgba(184,147,90,0.14)',
-        'glow-sm':    '0 0 12px rgba(184,147,90,0.10)',
-        'teal-glow':  '0 0 60px rgba(184,147,90,0.14)',
+        glow:         '0 0 24px rgba(0,0,0,0.08)',
+        'glow-sm':    '0 0 12px rgba(0,0,0,0.06)',
+        'teal-glow':  '0 0 60px rgba(0,0,0,0.06)',
       },
 
       animation: {
@@ -115,9 +115,9 @@ const config: Config = {
       },
 
       backgroundImage: {
-        // Gold gradient — used for logo, CTA buttons
-        'sage-cream':    'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)',
-        'sage-cream-sm': 'linear-gradient(135deg, #A67F46 0%, #C4A870 60%, #DDD0B0 100%)',
+        // Charcoal gradient — used for logo, CTA buttons
+        'sage-cream':    'linear-gradient(135deg, #2C2926 0%, #4A4642 40%, #787470 70%, #B8B4B0 100%)',
+        'sage-cream-sm': 'linear-gradient(135deg, #1A1815 0%, #3A3632 60%, #6A6662 100%)',
         'saas-card':       'linear-gradient(135deg, rgba(60,90,140,0.15) 0%, rgba(40,65,110,0.06) 100%)',
         'physical-card':   'linear-gradient(135deg, rgba(120,90,50,0.15) 0%, rgba(90,65,35,0.06) 100%)',
         'shimmer-gradient':'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',

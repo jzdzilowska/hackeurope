@@ -40,8 +40,8 @@ export default function CashPositionHero() {
             </p>
             {/* Live dot */}
             <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-60" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-40" style={{ backgroundColor: 'rgba(255,255,255,0.7)' }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: 'rgba(255,255,255,0.75)' }} />
             </span>
           </div>
 
@@ -74,7 +74,7 @@ export default function CashPositionHero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.28 }}
               className="flex items-center gap-1.5 mt-3 text-sm font-medium"
-              style={{ color: '#B8935A' }}
+              style={{ color: 'rgba(255,255,255,0.55)' }}
             >
               <TrendingUp size={13} />
               <span>+7.2% vs last month</span>
