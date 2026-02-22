@@ -13,6 +13,7 @@ import SurplusChart         from '@/components/dashboard/SurplusChart'
 import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
 import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
 import AIChat               from '@/components/dashboard/AIChat'
+import VoiceBriefing        from '@/components/dashboard/VoiceBriefing'
 import InvoiceToast         from '@/components/ui/InvoiceToast'
 import { useDashboard }     from '@/lib/dashboard-context'
 
@@ -118,6 +119,9 @@ export default function DashboardPage() {
                 {pendingCount} need approval
               </motion.div>
             )}
+
+            {/* Voice Briefing */}
+            <VoiceBriefing />
 
             {/* Ask HELM */}
             <button
