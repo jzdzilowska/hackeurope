@@ -11,9 +11,9 @@
   --color-surface-raised: 243 244 246;
   --color-surface-high: 232 234 237;
   /* Borders */
-  --color-border: 226 228 232;
-  --color-border-subtle: 236 238 241;
-  --color-border-focus: 203 208 216;
+  --color-border: 210 214 220;
+  --color-border-subtle: 220 223 228;
+  --color-border-focus: 185 192 204;
   /* Text */
   --color-text-primary: 17 24 39;
   --color-text-secondary: 75 85 99;
@@ -24,9 +24,9 @@
   --color-warning: 217 119 6;
   --color-danger: 220 38 38;
   /* Inline-style helpers */
-  --overlay-subtle: rgba(0,0,0,0.03);
-  --overlay-hover: rgba(0,0,0,0.04);
-  --grid-line: rgba(0,0,0,0.06);
+  --overlay-subtle: rgba(0,0,0,0.04);
+  --overlay-hover: rgba(0,0,0,0.06);
+  --grid-line: rgba(0,0,0,0.08);
   --grid-tick: #9CA3AF;
   --cursor-line: rgba(0,0,0,0.08);
   --tooltip-bg: #FFFFFF;
@@ -34,8 +34,8 @@
   --tooltip-label: rgba(0,0,0,0.5);
   --tooltip-item: rgba(0,0,0,0.8);
   --panel-shadow: rgba(0,0,0,0.12);
-  --card-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.03);
-  --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+  --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.08);
   --scrollbar-thumb: #D1D5DB;
   --scrollbar-hover: #9CA3AF;
   --skeleton-from: #E8EAED;
