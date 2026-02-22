@@ -51,14 +51,14 @@ const config: Config = {
           muted:   'rgba(44,41,38,0.07)',
           glow:    'rgba(44,41,38,0.05)',
         },
-        // ── Chart palette — desaturated, warm ────────────────────
+        // ── Chart palette — neon / electric (light mode) ──────────
         chart: {
-          lime:     '#4A4642',
-          pink:     '#A08078',
-          sage:     '#6A9080',
-          sky:      '#607888',
-          amber:    '#A09060',
-          lavender: '#787090',
+          sage:     '#00D87A',   // neon teal-green — inflow / revenue / positive
+          pink:     '#FF4F4F',   // electric coral  — outflow / costs / negative
+          sky:      '#4A88FF',   // electric blue   — balance / trend line
+          lavender: '#9B6AFF',   // electric violet — overhead
+          amber:    '#FFB300',   // neon amber      — restock / secondary
+          lime:     '#4A4642',   // warm gray       — misc
         },
       },
 

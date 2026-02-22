@@ -10,6 +10,13 @@ import { formatCurrency } from '@/lib/utils'
 
 const USER_ID = 'c5cbf7bd-2801-407e-9efe-222d8e93fddc'
 
+const C = {
+  inflows:  '#00D87A',  // neon teal-green
+  overhead: '#9B6AFF',  // electric violet
+  restock:  '#FFB300',  // neon amber
+  surplus:  '#00D87A',  // same as inflows
+}
+
 interface MonthlySnapshot {
   month: string
   snapshotDate: string
@@ -83,7 +90,6 @@ export default function SurplusChart() {
   }))
 
   const summary = data?.summary
-  const surplusLine = summary?.avgSurplus ?? 0
   const floorLine = summary?.consistentFloor ?? 0
 
   return (
@@ -93,7 +99,6 @@ export default function SurplusChart() {
       transition={{ duration: 0.5, delay: 0.3 }}
       className="card p-5 flex flex-col"
     >
-      {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
           <p className="label mb-0.5">Monthly Surplus</p>
@@ -101,15 +106,15 @@ export default function SurplusChart() {
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#0c42b8]" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: C.inflows }} />
             Inflows
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#2c5070]" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: C.overhead }} />
             Overhead
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#9e5a00]" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: C.restock }} />
             Restock
           </span>
         </div>
@@ -126,58 +131,47 @@ export default function SurplusChart() {
               <XAxis
                 dataKey="month"
                 tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
+                axisLine={false} tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
                 tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
+                axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(Math.abs(v) / 1000).toFixed(0)}k`}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
 
-              {/* Positive stack: inflows */}
               <Bar dataKey="inflows" name="Inflows" stackId="pos" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#0c42b8" fillOpacity={d.projected ? 0.4 : 0.75} />
+                  <Cell key={i} fill={C.inflows} fillOpacity={d.projected ? 0.35 : 0.78} />
                 ))}
               </Bar>
 
-              {/* Negative stack: overhead */}
               <Bar dataKey="overhead" name="Overhead" stackId="neg" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#2c5070" fillOpacity={d.projected ? 0.35 : 0.65} />
+                  <Cell key={i} fill={C.overhead} fillOpacity={d.projected ? 0.35 : 0.72} />
                 ))}
               </Bar>
 
-              {/* Negative stack: restock */}
               <Bar dataKey="restock" name="Restock" stackId="neg" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#9e5a00" fillOpacity={d.projected ? 0.35 : 0.65} />
+                  <Cell key={i} fill={C.restock} fillOpacity={d.projected ? 0.35 : 0.72} />
                 ))}
               </Bar>
 
-              {/* Surplus line overlay */}
               <Line
-                type="monotone"
-                dataKey="surplus"
-                name="Surplus"
-                stroke="#0a7030"
-                strokeWidth={2}
-                dot={{ r: 3, fill: '#0a7030', strokeWidth: 0 }}
-                activeDot={{ r: 4, fill: '#0a7030', strokeWidth: 0 }}
+                type="monotone" dataKey="surplus" name="Surplus"
+                stroke={C.surplus} strokeWidth={2}
+                dot={{ r: 3, fill: C.surplus, strokeWidth: 0 }}
+                activeDot={{ r: 4, fill: C.surplus, strokeWidth: 0 }}
               />
 
               <ReferenceLine y={0} stroke="var(--chart-ref-line-dim)" strokeDasharray="3 3" />
               {floorLine > 0 && (
                 <ReferenceLine
                   y={floorLine}
-                  stroke="#0a7030"
-                  strokeOpacity={0.35}
-                  strokeDasharray="5 3"
-                  label={{ value: 'Safe floor', position: 'insideTopLeft', fill: '#0a7030', fontSize: 9, fillOpacity: 0.6 }}
+                  stroke={C.surplus} strokeOpacity={0.35} strokeDasharray="5 3"
+                  label={{ value: 'Safe floor', position: 'insideTopLeft', fill: C.surplus, fontSize: 9, fillOpacity: 0.6 }}
                 />
               )}
             </ComposedChart>
@@ -185,7 +179,6 @@ export default function SurplusChart() {
         </div>
       )}
 
-      {/* Summary stats */}
       {summary && summary.monthsAnalysed > 0 && (
         <div className="mt-4 space-y-3">
           <div className="grid grid-cols-3 gap-2">

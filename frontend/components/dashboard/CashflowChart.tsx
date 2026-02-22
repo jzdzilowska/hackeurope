@@ -10,6 +10,12 @@ import { formatCurrency } from '@/lib/utils'
 
 const USER_ID = 'c5cbf7bd-2801-407e-9efe-222d8e93fddc'
 
+const C = {
+  balance: '#4A88FF',  // electric blue
+  inflow:  '#00D87A',  // neon teal-green
+  outflow: '#FF4F4F',  // electric coral-red
+}
+
 interface CashflowWeek {
   weekStart: string
   balance: number
@@ -63,7 +69,6 @@ export default function CashflowChart() {
   const chartData = weeks.map((w, i) => {
     const isHistorical = w.type === 'historical'
     const isProjection = w.type === 'projection'
-    // Bridge: include last historical point in projected series to avoid gap
     const isLastHistorical = isHistorical && i + 1 < weeks.length && weeks[i + 1].type === 'projection'
     return {
       week: new Date(w.weekStart + 'T00:00:00Z').toLocaleDateString('en', {
@@ -94,15 +99,15 @@ export default function CashflowChart() {
         </div>
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#3030cc' }} />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: C.balance }} />
             Balance
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full bg-success inline-block" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: C.inflow }} />
             Inflow
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#b41230' }} />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: C.outflow }} />
             Outflow
           </span>
         </div>
@@ -118,65 +123,50 @@ export default function CashflowChart() {
             <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
               <defs>
                 <linearGradient id="balanceHistGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3030cc" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="#3030cc" stopOpacity={0.02} />
+                  <stop offset="0%"   stopColor={C.balance} stopOpacity={0.22} />
+                  <stop offset="100%" stopColor={C.balance} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="balanceProjGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3030cc" stopOpacity={0.1} />
-                  <stop offset="100%" stopColor="#3030cc" stopOpacity={0.0} />
+                  <stop offset="0%"   stopColor={C.balance} stopOpacity={0.09} />
+                  <stop offset="100%" stopColor={C.balance} stopOpacity={0.0}  />
                 </linearGradient>
               </defs>
 
               <XAxis
                 dataKey="week"
                 tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
+                axisLine={false} tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
                 tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
+                axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(Math.abs(v) / 1000).toFixed(0)}k`}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
 
-              {/* Historical balance area */}
               <Area
-                type="monotone"
-                dataKey="historicalBalance"
-                stroke="#3030cc"
-                strokeWidth={2}
+                type="monotone" dataKey="historicalBalance"
+                stroke={C.balance} strokeWidth={2}
                 fill="url(#balanceHistGrad)"
-                dot={false}
-                connectNulls={false}
-                name="Balance"
+                dot={false} connectNulls={false} name="Balance"
               />
-              {/* Projected balance area — dashed */}
               <Area
-                type="monotone"
-                dataKey="projectedBalance"
-                stroke="#3030cc"
-                strokeWidth={1.5}
-                strokeDasharray="5 3"
+                type="monotone" dataKey="projectedBalance"
+                stroke={C.balance} strokeWidth={1.5} strokeDasharray="5 3"
                 fill="url(#balanceProjGrad)"
-                dot={false}
-                connectNulls={false}
-                name="Balance (proj.)"
+                dot={false} connectNulls={false} name="Balance (proj.)"
               />
 
-              {/* Inflow bars */}
               <Bar dataKey="inflow" name="Inflow" maxBarSize={6}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#0a7030" fillOpacity={d.projected ? 0.4 : 0.8} />
+                  <Cell key={i} fill={C.inflow} fillOpacity={d.projected ? 0.35 : 0.82} />
                 ))}
               </Bar>
 
-              {/* Outflow bars (negative) */}
               <Bar dataKey="outflow" name="Outflow" maxBarSize={6}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#b41230" fillOpacity={d.projected ? 0.4 : 0.8} />
+                  <Cell key={i} fill={C.outflow} fillOpacity={d.projected ? 0.35 : 0.82} />
                 ))}
               </Bar>
 

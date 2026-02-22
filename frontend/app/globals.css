@@ -6,14 +6,14 @@
 
 :root {
   /* Surfaces — warm gray palette (from reference) */
-  --color-background: 233 232 229;
-  --color-surface: 244 243 240;
-  --color-surface-raised: 250 249 246;
-  --color-surface-high: 222 221 218;
+  --color-background: 234 233 230;
+  --color-surface: 252 251 249;
+  --color-surface-raised: 255 255 253;
+  --color-surface-high: 228 227 224;
   /* Borders — warm neutral */
-  --color-border: 200 199 196;
-  --color-border-subtle: 213 212 209;
-  --color-border-focus: 168 167 164;
+  --color-border: 206 205 202;
+  --color-border-subtle: 218 217 214;
+  --color-border-focus: 172 171 168;
   /* Text — neutral near-black */
   --color-text-primary: 14 14 16;
   --color-text-secondary: 96 94 98;
@@ -96,7 +96,7 @@
   --svg-ring: rgba(255,255,255,0.035);
   --grain-opacity: 0.0;
   /* Cash-card adaptive colours (dark mode) */
-  --cc-bg: #141210;
+  --cc-bg: linear-gradient(145deg, #7A5A0C 0%, #B8820E 32%, #9A7016 58%, #CEA01E 82%, #A07C16 100%);
   --cc-c1: rgba(255,255,255,1);
   --cc-c2: rgba(255,255,255,0.85);
   --cc-c3: rgba(255,255,255,0.80);
