@@ -9,8 +9,8 @@ import { formatCurrency, formatDate, formatTimeAgo, cn } from '@/lib/utils'
 import type { HelmCategory, Transaction } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Infrastructure: '#00D4A0', 'Software & Services': '#E87878', Payroll: '#7AC0A8',
-  Marketing: '#6898C8', 'Office & Rent': '#C89850', Revenue: '#00D4A0', Other: '#888',
+  Infrastructure: '#B8935A', 'Software & Services': '#E87878', Payroll: '#7AC0A8',
+  Marketing: '#6898C8', 'Office & Rent': '#C89850', Revenue: '#B8935A', Other: '#888',
 }
 
 const ALL_CATS: (HelmCategory | 'All')[] = [

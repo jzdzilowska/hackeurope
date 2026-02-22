@@ -85,8 +85,8 @@ function Nav() {
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
-              boxShadow: '0 0 14px rgba(0,212,160,0.18)',
+              background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)',
+              boxShadow: '0 0 14px rgba(184,147,90,0.18)',
             }}
           >
             <Zap size={13} className="text-black" strokeWidth={2.5} />
@@ -168,7 +168,7 @@ function Hero() {
       {/* Background glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 80% 60% at 50% 20%, rgba(0,212,160,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 80% 60% at 50% 20%, rgba(184,147,90,0.12) 0%, transparent 70%)',
         }}
       />
 
@@ -246,7 +246,7 @@ function Hero() {
             {/* Glow behind screenshot */}
             <div className="absolute inset-0 -inset-x-12 -inset-y-8 pointer-events-none"
               style={{
-                background: 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(0,212,160,0.10) 0%, transparent 70%)',
+                background: 'radial-gradient(ellipse 70% 50% at 50% 50%, rgba(184,147,90,0.10) 0%, transparent 70%)',
               }}
             />
             <div
@@ -274,7 +274,7 @@ function Hero() {
 
                   {/* Cash position hero */}
                   <div className="relative rounded-xl p-6 sm:p-8 mb-6 overflow-hidden" style={{
-                    background: 'linear-gradient(135deg, rgba(0,212,160,0.08) 0%, rgba(0,212,160,0.03) 100%)',
+                    background: 'linear-gradient(135deg, rgba(184,147,90,0.08) 0%, rgba(184,147,90,0.03) 100%)',
                   }}>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">Total Cash on Hand</p>
                     <div className="flex items-end gap-3 mb-3">
@@ -499,7 +499,7 @@ function AIDeepDive() {
       {/* Background glow */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none"
         style={{
-          background: 'radial-gradient(circle at 0% 50%, rgba(0,212,160,0.08) 0%, transparent 60%)',
+          background: 'radial-gradient(circle at 0% 50%, rgba(184,147,90,0.08) 0%, transparent 60%)',
         }}
       />
 
@@ -594,7 +594,7 @@ function SocialProof() {
     <section className="py-20 md:py-28 relative">
       <div className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(0,212,160,0.05) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(184,147,90,0.05) 0%, transparent 70%)',
         }}
       />
       <div className="relative max-w-5xl mx-auto px-6 text-center">
@@ -832,7 +832,7 @@ function FinalCTA() {
     <section className="py-20 md:py-28 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 80% 50% at 50% 80%, rgba(0,212,160,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse 80% 50% at 50% 80%, rgba(184,147,90,0.08) 0%, transparent 70%)',
         }}
       />
 
@@ -876,7 +876,7 @@ function Footer() {
               <div
                 className="w-6 h-6 rounded-md flex items-center justify-center"
                 style={{
-                  background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
+                  background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)',
                 }}
               >
                 <Zap size={11} className="text-black" strokeWidth={2.5} />

@@ -43,28 +43,28 @@ const config: Config = {
           DEFAULT: 'rgb(var(--color-danger) / <alpha-value>)',
           muted:   'rgb(var(--color-danger) / 0.10)',
         },
-        // ── Accent: bright teal (same in both themes) ───────────
+        // ── Accent: muted warm gold ──────────────────────────────
         accent: {
-          DEFAULT: '#00D4A0',
-          hover:   '#00BF90',
-          soft:    '#7FEDD4',
-          muted:   'rgba(0,212,160,0.10)',
-          glow:    'rgba(0,212,160,0.18)',
+          DEFAULT: '#B8935A',
+          hover:   '#A67F46',
+          soft:    '#D4B882',
+          muted:   'rgba(184,147,90,0.10)',
+          glow:    'rgba(184,147,90,0.16)',
         },
-        // ── Chart palette (works on both backgrounds) ───────────
+        // ── Chart palette ────────────────────────────────────────
         chart: {
-          lime:     '#00D4A0',
-          pink:     '#E87878',
-          sage:     '#7AC0A8',
-          sky:      '#6898C8',
-          amber:    '#C89850',
-          lavender: '#8888C0',
+          lime:     '#B8935A',
+          pink:     '#C47878',
+          sage:     '#7AA898',
+          sky:      '#6888B8',
+          amber:    '#C4A050',
+          lavender: '#8880B8',
         },
       },
 
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+        mono: ['DM Mono', 'Menlo', 'monospace'],
       },
 
       fontSize: {
@@ -72,21 +72,21 @@ const config: Config = {
       },
 
       borderRadius: {
-        card:  '14px',
+        card:  '18px',
         pill:  '999px',
         sm:    '6px',
-        md:    '9px',
-        lg:    '12px',
-        xl:    '16px',
-        '2xl': '20px',
+        md:    '10px',
+        lg:    '14px',
+        xl:    '18px',
+        '2xl': '24px',
       },
 
       boxShadow: {
         card:         'var(--card-shadow)',
         'card-hover': 'var(--card-shadow-hover)',
-        glow:         '0 0 24px rgba(0,212,160,0.16)',
-        'glow-sm':    '0 0 12px rgba(0,212,160,0.12)',
-        'teal-glow':  '0 0 60px rgba(0,180,130,0.18)',
+        glow:         '0 0 24px rgba(184,147,90,0.14)',
+        'glow-sm':    '0 0 12px rgba(184,147,90,0.10)',
+        'teal-glow':  '0 0 60px rgba(184,147,90,0.14)',
       },
 
       animation: {
@@ -115,9 +115,9 @@ const config: Config = {
       },
 
       backgroundImage: {
-        // Teal gradient — used for logo, CTA buttons
-        'sage-cream':      'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
-        'sage-cream-sm':   'linear-gradient(135deg, #00C090 0%, #60D9BC 60%, #B0EAD8 100%)',
+        // Gold gradient — used for logo, CTA buttons
+        'sage-cream':    'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)',
+        'sage-cream-sm': 'linear-gradient(135deg, #A67F46 0%, #C4A870 60%, #DDD0B0 100%)',
         'saas-card':       'linear-gradient(135deg, rgba(60,90,140,0.15) 0%, rgba(40,65,110,0.06) 100%)',
         'physical-card':   'linear-gradient(135deg, rgba(120,90,50,0.15) 0%, rgba(90,65,35,0.06) 100%)',
         'shimmer-gradient':'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%)',

@@ -22,16 +22,16 @@ export default function Sidebar() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <aside className="w-[210px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/50 bg-background/95 backdrop-blur-sm z-20">
+    <aside className="w-[220px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/40 bg-surface z-20">
 
       {/* ── Logo ── */}
-      <div className="px-6 pt-7 pb-6">
+      <div className="px-6 pt-8 pb-6">
         <div className="flex items-center gap-2.5">
           <div
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
-              boxShadow: '0 0 14px rgba(0,212,160,0.18)',
+              background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)',
+              boxShadow: '0 0 14px rgba(184,147,90,0.18)',
             }}
           >
             <Zap size={13} className="text-black" strokeWidth={2.5} />
@@ -41,58 +41,57 @@ export default function Sidebar() {
       </div>
 
       {/* ── Org pill ── */}
-      <div className="px-4 mb-8">
-        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-surface/60 border border-border/50">
+      <div className="px-4 mb-7">
+        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-background border border-border/60">
           <div
-            className="w-6 h-6 rounded-md border border-accent/20 flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, rgba(0,212,160,0.10) 0%, rgba(0,212,160,0.06) 100%)' }}
+            className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(184,147,90,0.10)' }}
           >
             <span className="text-[10px] font-bold text-accent">
               {mockOrg.name.charAt(0)}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-text-primary truncate leading-tight">{mockOrg.name}</p>
-            <p className="text-2xs text-text-muted">{mockOrg.employeeCount} people</p>
+            <p className="text-[13px] font-medium text-text-primary truncate leading-tight">{mockOrg.name}</p>
+            <p className="text-[11px] text-text-muted">{mockOrg.employeeCount} people</p>
           </div>
         </div>
       </div>
 
-      {/* ── Scrollable middle: nav + accounts ── */}
+      {/* ── Scrollable middle: nav + stats ── */}
       <div className="flex-1 overflow-y-auto min-h-0 scrollbar-hide">
-        {/* ── Nav — circle-dot style (Dwarf-inspired) ── */}
-        <nav className="px-4 space-y-0.5">
+        {/* ── Nav — circle-dot style ── */}
+        <nav className="px-3 space-y-0.5">
           {navItems.map(({ href, label }) => {
             const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
             return (
               <Link key={href} href={href}>
                 <motion.div
-                  whileHover={{ x: 2 }}
-                  transition={{ duration: 0.12 }}
+                  whileHover={{ x: 1 }}
+                  transition={{ duration: 0.1 }}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors relative group',
                     active
-                      ? 'text-text-primary'
-                      : 'text-text-muted hover:text-text-secondary'
+                      ? 'bg-background text-text-primary'
+                      : 'text-text-muted hover:text-text-secondary hover:bg-background/60'
                   )}
                 >
                   {/* Circle dot indicator */}
                   <div className={cn(
-                    'w-[18px] h-[18px] rounded-full border flex items-center justify-center flex-shrink-0 transition-all',
+                    'w-[17px] h-[17px] rounded-full border flex items-center justify-center flex-shrink-0 transition-all duration-200',
                     active
-                      ? 'border-accent/60 bg-accent/10'
-                      : 'border-border/60 group-hover:border-border-focus'
+                      ? 'border-accent/50 bg-accent/8'
+                      : 'border-border/50 group-hover:border-border-focus'
                   )}>
                     {active && (
                       <motion.div
                         layoutId="nav-dot"
-                        className="w-1.5 h-1.5 rounded-full bg-accent"
+                        className="w-[5px] h-[5px] rounded-full bg-accent"
                         transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                       />
                     )}
                   </div>
-
-                  <span className={cn('font-medium text-[13px]', active && 'text-text-primary')}>
+                  <span className={cn('font-medium text-[13px]', active ? 'text-text-primary' : '')}>
                     {label}
                   </span>
                 </motion.div>
@@ -102,33 +101,33 @@ export default function Sidebar() {
         </nav>
 
         {/* ── Quick stats ── */}
-        <div className="px-4 mt-6">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-text-disabled px-3 mb-2.5">
+        <div className="px-4 mt-7">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-text-disabled px-3 mb-3">
             Snapshot
           </p>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
-              <TrendingUp size={12} className="text-success flex-shrink-0" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl">
+              <TrendingUp size={11} className="text-success flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-text-disabled leading-tight">Cash</p>
+                <p className="text-[10px] text-text-muted leading-tight">Cash</p>
                 <p className="text-xs font-semibold mono text-text-primary">
                   {formatCurrency(mockKPIs.totalCashPosition, 'EUR', true)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
-              <TrendingDown size={12} className="text-danger flex-shrink-0" />
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl">
+              <TrendingDown size={11} className="text-danger flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-text-disabled leading-tight">Monthly costs</p>
+                <p className="text-[10px] text-text-muted leading-tight">Monthly costs</p>
                 <p className="text-xs font-semibold mono text-text-primary">
                   {formatCurrency(mockKPIs.monthlyBurn, 'EUR', true)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
-              <Receipt size={12} className="text-warning flex-shrink-0" />
+            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl">
+              <Receipt size={11} className="text-warning flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-text-disabled leading-tight">Payables due</p>
+                <p className="text-[10px] text-text-muted leading-tight">Payables due</p>
                 <p className="text-xs font-semibold mono text-text-primary">
                   {formatCurrency(mockKPIs.dueSoon, 'EUR', true)}
                 </p>
@@ -139,26 +138,26 @@ export default function Sidebar() {
 
         {/* ── Connect account CTA ── */}
         <div className="px-4 py-6">
-          <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border/50 hover:border-accent/30 hover:bg-accent/[0.03] transition-all text-xs text-text-disabled hover:text-accent group">
-            <Plus size={12} className="group-hover:text-accent transition-colors" />
+          <button className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-dashed border-border/60 hover:border-accent/30 hover:bg-accent/[0.03] transition-all text-xs text-text-disabled hover:text-accent group">
+            <Plus size={11} className="group-hover:text-accent transition-colors" />
             Connect bank
           </button>
         </div>
       </div>
 
       {/* ── Theme toggle + Settings row ── */}
-      <div className="px-4 pb-5 border-t border-border/30 pt-3 space-y-0.5">
+      <div className="px-3 pb-5 border-t border-border/30 pt-3 space-y-0.5">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-surface-raised/60 transition-colors cursor-pointer text-xs"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-muted hover:text-text-secondary hover:bg-background transition-colors cursor-pointer text-xs"
         >
-          {theme === 'dark' ? <Sun size={13} strokeWidth={1.8} /> : <Moon size={13} strokeWidth={1.8} />}
-          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+          {theme === 'dark' ? <Sun size={12} strokeWidth={1.8} /> : <Moon size={12} strokeWidth={1.8} />}
+          <span className="text-[13px]">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
         </button>
         <Link href="/settings">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-surface-raised/60 transition-colors cursor-pointer">
-            <Settings size={13} strokeWidth={1.8} />
-            <span className="text-xs">Settings</span>
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-text-muted hover:text-text-secondary hover:bg-background transition-colors cursor-pointer">
+            <Settings size={12} strokeWidth={1.8} />
+            <span className="text-[13px]">Settings</span>
           </div>
         </Link>
       </div>

@@ -592,8 +592,8 @@ export default function OnboardingPage() {
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{
-              background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
-              boxShadow: '0 0 20px rgba(0,212,160,0.20)',
+              background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)',
+              boxShadow: '0 0 20px rgba(184,147,90,0.20)',
             }}
           >
             <Zap size={15} className="text-black" strokeWidth={2.5} />
@@ -1066,11 +1066,11 @@ export default function OnboardingPage() {
                   animate={{ scale: [1, 1.35, 1], opacity: [0.3, 0.08, 0.3] }}
                   transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
                   className="absolute w-24 h-24 rounded-full"
-                  style={{ background: 'radial-gradient(circle, rgba(0,212,160,0.28) 0%, transparent 70%)' }}
+                  style={{ background: 'radial-gradient(circle, rgba(184,147,90,0.28) 0%, transparent 70%)' }}
                 />
                 <div
                   className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)' }}
+                  style={{ background: 'linear-gradient(135deg, #B8935A 0%, #D4B882 40%, #E8D4B0 70%, #F8F2E8 100%)' }}
                 >
                   <Zap size={24} className="text-black" strokeWidth={2.5} />
                 </div>

@@ -29,31 +29,23 @@ export default function CashPositionHero() {
     .slice(0, 3)
 
   return (
-    <div
-      className="relative overflow-hidden rounded-card border border-border/60 bg-surface h-full"
-    >
-      {/* Subtle overlay */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: 'var(--overlay-subtle)' }}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 p-7 flex flex-col h-full">
+    <div className="cash-card-grain rounded-card h-full">
+      {/* Content sits above the grain pseudo-element (z-index: 2) */}
+      <div className="relative z-[2] p-7 flex flex-col h-full">
         {/* Top row: label + sync */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-7">
           <div className="flex items-center gap-2">
-            <p className="text-2xs font-medium uppercase tracking-[0.14em] text-text-muted">
+            <p className="text-2xs font-medium uppercase tracking-[0.16em]" style={{ color: 'rgba(255,255,255,0.38)' }}>
               Total cash position
             </p>
             {/* Live dot */}
             <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-50" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-60" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent" />
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-2xs text-text-muted">
+          <div className="flex items-center gap-1.5 text-2xs" style={{ color: 'rgba(255,255,255,0.28)' }}>
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 14 }}
@@ -71,7 +63,8 @@ export default function CashPositionHero() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[3.6rem] leading-none font-bold tracking-tighter text-text-primary mono"
+              className="text-[3.6rem] leading-none font-bold tracking-tighter mono"
+              style={{ color: 'rgba(255,255,255,0.95)' }}
             >
               {formatCurrency(mockKPIs.totalCashPosition, 'EUR')}
             </motion.h1>
@@ -80,7 +73,8 @@ export default function CashPositionHero() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.28 }}
-              className="flex items-center gap-1.5 mt-3 text-success text-sm font-medium"
+              className="flex items-center gap-1.5 mt-3 text-sm font-medium"
+              style={{ color: '#B8935A' }}
             >
               <TrendingUp size={13} />
               <span>+7.2% vs last month</span>
@@ -93,7 +87,11 @@ export default function CashPositionHero() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.4 }}
-              className="mb-1 p-2 rounded-lg border border-border/50 text-text-muted hover:text-text-primary hover:border-border-focus transition-all cursor-pointer"
+              className="mb-1 p-2 rounded-lg transition-all cursor-pointer"
+              style={{
+                border: '1px solid rgba(255,255,255,0.12)',
+                color: 'rgba(255,255,255,0.35)',
+              }}
             >
               <ArrowUpRight size={16} />
             </motion.div>
@@ -105,26 +103,27 @@ export default function CashPositionHero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.38 }}
-          className="flex items-center gap-3 mt-6 pt-5 border-t border-border/30"
+          className="flex items-center gap-3 mt-6 pt-5"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
         >
-          <Building2 size={12} className="text-text-disabled flex-shrink-0" />
+          <Building2 size={12} style={{ color: 'rgba(255,255,255,0.22)' }} className="flex-shrink-0" />
           {institutions.map(([name, inst], i) => (
             <div key={name} className="flex items-center gap-1.5">
-              {i > 0 && <span className="text-text-disabled">·</span>}
+              {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>}
               <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: inst.color }} />
-              <span className="text-2xs text-text-muted">{name}</span>
-              <span className="text-2xs font-semibold mono text-text-secondary">
+              <span className="text-2xs" style={{ color: 'rgba(255,255,255,0.38)' }}>{name}</span>
+              <span className="text-2xs font-semibold mono" style={{ color: 'rgba(255,255,255,0.62)' }}>
                 {formatCurrency(inst.total, 'EUR', true)}
               </span>
             </div>
           ))}
           {institutionMap.size > 3 && (
-            <Link href="/accounts" className="text-2xs text-text-disabled hover:text-text-muted transition-colors ml-auto">
+            <Link href="/accounts" className="text-2xs ml-auto transition-colors" style={{ color: 'rgba(255,255,255,0.22)' }}>
               +{institutionMap.size - 3} more →
             </Link>
           )}
           {institutionMap.size <= 3 && (
-            <Link href="/accounts" className="text-2xs text-text-disabled hover:text-text-muted transition-colors ml-auto">
+            <Link href="/accounts" className="text-2xs ml-auto transition-colors" style={{ color: 'rgba(255,255,255,0.22)' }}>
               {mockAccounts.length} accounts →
             </Link>
           )}
