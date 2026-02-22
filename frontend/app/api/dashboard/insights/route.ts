@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { mapPlaidToHelmCategory, type HelmCategory } from '@/lib/dashboard/categories';
 
+export const dynamic = 'force-dynamic';
+
 interface InsightCard {
   id: string;
   type: 'anomaly' | 'saving' | 'runway' | 'subscription' | 'margin';
