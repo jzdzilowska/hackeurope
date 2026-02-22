@@ -574,14 +574,10 @@ function Features() {
                     <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-8 border border-white/10">
                       <Sparkles size={28} className="text-white" />
                     </div>
-                    <h3 className="text-3xl font-bold text-white mb-4">Claude-Powered Reasoning</h3>
+                    <h3 className="text-3xl font-bold text-white mb-4">Gemini-Powered Reasoning</h3>
                     <p className="text-white/60 text-lg leading-relaxed mb-8">
                       Runwave runs concurrent financial detection modules across your transactions — then surfaces structured, prioritised findings.
                     </p>
-                    <div className="inline-flex items-center gap-2 text-white font-semibold group/link cursor-pointer">
-                      <span>Explore the Insights engine</span>
-                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
                   </div>
                   <div className="relative">
                     {/* Mock Insight UI */}
