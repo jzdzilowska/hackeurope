@@ -64,8 +64,10 @@ function AnimatedCounter({ target, suffix = '', prefix = '' }: { target: number;
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { theme, setTheme } = useTheme()
 
+  useEffect(() => { setMounted(true) }, [])
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll)
@@ -108,7 +110,7 @@ function Nav() {
             className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-raised/60 transition-colors"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun size={16} strokeWidth={1.8} /> : <Moon size={16} strokeWidth={1.8} />}
+            {mounted && theme === 'dark' ? <Sun size={16} strokeWidth={1.8} /> : <Moon size={16} strokeWidth={1.8} />}
           </button>
           <Link href="/onboarding" className="text-sm text-text-muted hover:text-text-primary transition-colors">
             Sign in
@@ -141,8 +143,8 @@ function Nav() {
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="flex items-center gap-2 text-sm text-text-secondary"
           >
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            {mounted && theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            {mounted && theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
           <hr className="border-border/30" />
           <Link href="/onboarding" className="block text-sm text-text-secondary">Sign in</Link>
