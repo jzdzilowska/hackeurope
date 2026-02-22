@@ -57,7 +57,7 @@ async function fetchExtraData(): Promise<{
   return { fixedCosts, surplusSummary, restockData }
 }
 
-export default function VoiceBriefing() {
+export default function VoiceBriefing({ onBriefingEnd }: { onBriefingEnd?: () => void } = {}) {
   const { org, accounts, kpis, burnData, categories, insights, approvals, recurring } = useDashboard()
 
   const [state, setState]       = useState<BriefingState>('idle')
@@ -114,7 +114,7 @@ export default function VoiceBriefing() {
 
       const audio = new Audio(url)
       audioRef.current  = audio
-      audio.onended     = () => setState('idle')
+      audio.onended     = () => { setState('idle'); onBriefingEnd?.() }
       audio.onerror     = () => { setState('error'); setErrorMsg('Playback failed') }
 
       setState('playing')

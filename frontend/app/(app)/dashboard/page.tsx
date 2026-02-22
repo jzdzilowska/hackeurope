@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
+import { MessageSquare, Bell, ArrowUpRight, Mic } from 'lucide-react'
 import Link                 from 'next/link'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
@@ -14,6 +14,7 @@ import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
 import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
 import AIChat               from '@/components/dashboard/AIChat'
 import VoiceBriefing        from '@/components/dashboard/VoiceBriefing'
+import VoiceAgent           from '@/components/dashboard/VoiceAgent'
 import InvoiceToast         from '@/components/ui/InvoiceToast'
 import { useDashboard }     from '@/lib/dashboard-context'
 
@@ -86,7 +87,9 @@ export default function DashboardPage() {
     lastSynced,
   } = useDashboard()
 
-  const [chatOpen, setChatOpen] = useState(false)
+  const [chatOpen, setChatOpen]             = useState(false)
+  const [voiceAgentOpen, setVoiceAgentOpen] = useState(false)
+  const [voiceAutoGreet, setVoiceAutoGreet] = useState(false)
   const syncLabel = useSyncLabel(lastSynced)
   const pendingCount = approvals.filter(a => a.status === 'pending').length
 
@@ -120,7 +123,7 @@ export default function DashboardPage() {
               </motion.div>
             )}
 
-            {/* Ask Runwave */}
+            {/* Ask Runwave (text chat) */}
             <button
               onClick={() => setChatOpen(true)}
               className="glass-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill text-text-primary text-xs font-semibold active:scale-[0.97] transition-all"
@@ -130,7 +133,19 @@ export default function DashboardPage() {
             </button>
 
             {/* Voice briefing */}
-            <VoiceBriefing />
+            <VoiceBriefing onBriefingEnd={() => {
+              setVoiceAutoGreet(true)
+              setVoiceAgentOpen(true)
+            }} />
+
+            {/* Voice chat */}
+            <button
+              onClick={() => { setVoiceAutoGreet(false); setVoiceAgentOpen(true) }}
+              className="glass-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill text-text-primary text-xs font-semibold active:scale-[0.97] transition-all"
+            >
+              <Mic size={11} className="text-text-muted" />
+              Chat
+            </button>
           </div>
         </div>
 
@@ -214,6 +229,13 @@ export default function DashboardPage() {
 
       {/* ── AI Chat sliding panel ── */}
       <AIChat open={chatOpen} onClose={() => setChatOpen(false)} />
+
+      {/* ── Voice agent ── */}
+      <VoiceAgent
+        open={voiceAgentOpen}
+        onClose={() => setVoiceAgentOpen(false)}
+        autoGreet={voiceAutoGreet}
+      />
 
       {/* ── Live invoice toast — bottom right ── */}
       <InvoiceToast invoice={newInvoiceAlert} onDismiss={clearInvoiceAlert} />
