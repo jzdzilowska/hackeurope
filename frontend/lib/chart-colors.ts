@@ -1,7 +1,5 @@
 /**
- * Theme-aware chart palettes.
- * Light: lighter and more saturated.
- * Dark: less saturated (muted).
+ * Chart palettes. Same colors in light and dark mode (dark palette used for both).
  */
 export type ChartTheme = 'light' | 'dark'
 
@@ -76,6 +74,6 @@ const DARK: DashboardChartColors = {
   cursor: 'rgba(255,255,255,0.05)',
 }
 
-export function getChartColors(theme: ChartTheme | undefined): DashboardChartColors {
-  return theme === 'dark' ? DARK : LIGHT
+export function getChartColors(_theme?: ChartTheme): DashboardChartColors {
+  return DARK
 }

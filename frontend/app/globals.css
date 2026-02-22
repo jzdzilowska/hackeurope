@@ -26,9 +26,13 @@
   /* Inline-style helpers */
   --overlay-subtle: rgba(0,0,0,0.03);
   --overlay-hover: rgba(0,0,0,0.05);
-  --grid-line: rgba(0,0,0,0.06);
-  --grid-tick: #9A9AA4;
-  --cursor-line: rgba(0,0,0,0.06);
+  /* Chart: same visual weight as dark mode (opacity/tone) */
+  --grid-line: rgba(0,0,0,0.035);
+  --grid-tick: #605C56;
+  --cursor-line: rgba(0,0,0,0.05);
+  --chart-ref-line: rgba(0,0,0,0.08);
+  --chart-ref-line-dim: rgba(0,0,0,0.06);
+  --chart-label: #605C56;
   --tooltip-bg: #FFFFFF;
   --tooltip-border: rgba(0,0,0,0.08);
   --tooltip-label: rgba(0,0,0,0.4);
@@ -64,6 +68,9 @@
   --grid-line: rgba(255,255,255,0.035);
   --grid-tick: #605C56;
   --cursor-line: rgba(255,255,255,0.05);
+  --chart-ref-line: rgba(255,255,255,0.15);
+  --chart-ref-line-dim: rgba(255,255,255,0.06);
+  --chart-label: #605C56;
   --tooltip-bg: #1A1918;
   --tooltip-border: rgba(255,255,255,0.08);
   --tooltip-label: rgba(255,255,255,0.4);

@@ -122,18 +122,18 @@ export default function CashflowChart() {
 
               <XAxis
                 dataKey="week"
-                tick={{ fill: '#686868', fontSize: 10 }}
+                tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fill: '#686868', fontSize: 10 }}
+                tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={v => `€${(Math.abs(v) / 1000).toFixed(0)}k`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
 
               {/* Historical balance area */}
               <Area
@@ -176,12 +176,12 @@ export default function CashflowChart() {
               {todayLabel && (
                 <ReferenceLine
                   x={todayLabel}
-                  stroke="rgba(255,255,255,0.15)"
+                  stroke="var(--chart-ref-line)"
                   strokeDasharray="4 2"
-                  label={{ value: 'Today', position: 'top', fill: '#686868', fontSize: 10 }}
+                  label={{ value: 'Today', position: 'top', fill: 'var(--chart-label)', fontSize: 10 }}
                 />
               )}
-              <ReferenceLine y={0} stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="var(--chart-ref-line-dim)" strokeDasharray="3 3" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

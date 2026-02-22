@@ -125,18 +125,18 @@ export default function SurplusChart() {
             <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
               <XAxis
                 dataKey="month"
-                tick={{ fill: '#686868', fontSize: 10 }}
+                tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fill: '#686868', fontSize: 10 }}
+                tick={{ fill: 'var(--grid-tick)', fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={v => `€${(Math.abs(v) / 1000).toFixed(0)}k`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
 
               {/* Positive stack: inflows */}
               <Bar dataKey="inflows" name="Inflows" stackId="pos" maxBarSize={18}>
@@ -170,7 +170,7 @@ export default function SurplusChart() {
                 activeDot={{ r: 4, fill: '#0a7030', strokeWidth: 0 }}
               />
 
-              <ReferenceLine y={0} stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
+              <ReferenceLine y={0} stroke="var(--chart-ref-line-dim)" strokeDasharray="3 3" />
               {floorLine > 0 && (
                 <ReferenceLine
                   y={floorLine}

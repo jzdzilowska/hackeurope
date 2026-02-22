@@ -128,18 +128,18 @@ export default function RestockForecast() {
             <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <XAxis
                 dataKey="week"
-                tick={{ fill: '#686868', fontSize: 9 }}
+                tick={{ fill: 'var(--grid-tick)', fontSize: 9 }}
                 axisLine={false}
                 tickLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fill: '#686868', fontSize: 9 }}
+                tick={{ fill: 'var(--grid-tick)', fontSize: 9 }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={v => `€${(v / 1000).toFixed(0)}k`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
               <Bar dataKey="sales" name="Sales" maxBarSize={10} fill="#3030cc" fillOpacity={0.7} />
               <Line
                 type="monotone"
