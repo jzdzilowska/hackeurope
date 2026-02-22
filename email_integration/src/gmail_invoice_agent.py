@@ -70,11 +70,18 @@ def _pdf_bytes_to_text(pdf_bytes: bytes) -> str:
 def extract_text_from_tool_result(raw: str) -> str:
     stripped = raw.strip()
 
+    # Raw PDF bytes returned directly as a string
+    if stripped.startswith("%PDF-"):
+        return _pdf_bytes_to_text(stripped.encode("latin-1", errors="replace"))
+
     # Already base64-encoded PDF bytes
     if stripped.startswith(_PDF_B64_PREFIX):
         return _pdf_bytes_to_text(base64.b64decode(stripped))
 
-    # Zapier may return {"results": "https://zapier.com/engine/hydrate/..."} for large payloads
+    # Zapier may return hydrate URLs for large payloads in several shapes:
+    #   {"results": "https://zapier.com/engine/hydrate/..."}
+    #   {"results": {"attachment": "https://..."}}
+    #   {"results": [{"attachment": "https://..."}]}
     if "zapier.com/engine/hydrate" in stripped:
         try:
             payload = json.loads(stripped)
@@ -83,10 +90,21 @@ def extract_text_from_tool_result(raw: str) -> str:
                 results = payload.get("results", "")
                 if isinstance(results, str) and results.startswith("https://"):
                     hydrate_url = results
+                elif isinstance(results, dict):
+                    candidate = results.get("attachment") or results.get("url") or ""
+                    if isinstance(candidate, str) and candidate.startswith("https://"):
+                        hydrate_url = candidate
+                elif isinstance(results, list) and results:
+                    first = results[0]
+                    if isinstance(first, dict):
+                        candidate = first.get("attachment") or first.get("url") or ""
+                        if isinstance(candidate, str) and candidate.startswith("https://"):
+                            hydrate_url = candidate
             if hydrate_url:
                 content = _fetch_zapier_hydrate(hydrate_url)
-                # Hydrated content may itself be base64 PDF
                 content_stripped = content.strip()
+                if content_stripped.startswith("%PDF-"):
+                    return _pdf_bytes_to_text(content_stripped.encode("latin-1", errors="replace"))
                 if content_stripped.startswith(_PDF_B64_PREFIX):
                     return _pdf_bytes_to_text(base64.b64decode(content_stripped))
                 return content
@@ -101,8 +119,12 @@ You are an accounts-payable assistant.  Your job is:
 
 1. Search the user's Gmail inbox for emails that contain invoices.
    Use the query: {gmail_query}
-2. For each result, read the full email (body + metadata).
-3. For each email that has a PDF attachment, download and read the attachment.
+   When calling gmail_find_email, set output_hint to "include attachment filenames".
+2. For each result that has a PDF attachment, look at the attachment filename returned
+   in the email metadata (e.g. "invoice_april.pdf").  Use THAT EXACT filename when
+   calling gmail_get_attachment_by_filename.  Never guess or infer the filename from
+   the email subject or body.
+3. Download and read every PDF attachment found.
 4. Extract the following fields from every invoice you find:
      - vendor_name
      - invoice_number
@@ -112,7 +134,7 @@ You are an accounts-payable assistant.  Your job is:
      - total_amount   (numeric, no symbol)
      - line_items     (list of {{description, quantity, unit_price, total}})
      - payment_status (paid / unpaid / unknown)
-5. Return a JSON array of invoice objects.  Nothing else.
+5. Return a JSON array of invoice objects.  Nothing else — no prose, no markdown.
 
 If a field cannot be determined, use null.
 """
@@ -334,7 +356,7 @@ async def watch_inbox(duration_seconds: int = 300, poll_interval: int = 5):
         new_invoices = []
         for inv in invoices:
             key = "{}|{}".format(
-                inv.get("vendor_name", "").lower().strip(),
+                (inv.get("vendor_name") or "").lower().strip(),
                 inv.get("invoice_number") or inv.get("invoice_date") or "",
             )
             if key not in seen:
