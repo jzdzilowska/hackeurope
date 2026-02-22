@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { mapPlaidToHelmCategory, HELM_CATEGORY_COLORS, type HelmCategory } from '@/lib/dashboard/categories';
+import { mapPlaidToHelmCategory, type HelmCategory } from '@/lib/dashboard/categories';
 
 interface InsightCard {
   id: string;
@@ -13,6 +13,72 @@ interface InsightCard {
   urgency: 'low' | 'medium' | 'high';
 }
 
+// Detects bills that recur at roughly the same time each month.
+// Returns each recurring vendor's average monthly cost and the total fixed-cost sum.
+function detectFixedCosts(
+  txns: Array<{
+    amount: number;
+    date: string;
+    category_primary: string;
+    merchant_name: string | null;
+    name: string | null;
+  }>
+): { recurringVendors: Array<{ vendor: string; avgAmount: number }>; totalFixed: number } {
+  const expenseTxns = txns.filter(
+    (t) =>
+      t.amount > 0 &&
+      t.category_primary !== 'INCOME' &&
+      t.category_primary !== 'TRANSFER_IN' &&
+      t.category_primary !== 'TRANSFER_OUT'
+  );
+
+  const vendorTxns = new Map<
+    string,
+    Array<{ amount: number; dayOfMonth: number; month: string }>
+  >();
+
+  for (const t of expenseTxns) {
+    const vendor = t.merchant_name || t.name;
+    if (!vendor) continue;
+    const d = new Date(t.date + 'T00:00:00Z');
+    const month = t.date.substring(0, 7);
+    const dayOfMonth = d.getUTCDate();
+    if (!vendorTxns.has(vendor)) vendorTxns.set(vendor, []);
+    vendorTxns.get(vendor)!.push({ amount: Number(t.amount), dayOfMonth, month });
+  }
+
+  const recurringVendors: Array<{ vendor: string; avgAmount: number }> = [];
+
+  for (const [vendor, entries] of vendorTxns) {
+    // Must appear in at least 2 distinct calendar months
+    const months = new Set(entries.map((e) => e.month));
+    if (months.size < 2) continue;
+
+    // Day-of-month must be consistent (std dev ≤ 7 days)
+    const days = entries.map((e) => e.dayOfMonth);
+    const meanDay = days.reduce((a, b) => a + b, 0) / days.length;
+    const dayStdDev = Math.sqrt(
+      days.reduce((sum, d) => sum + (d - meanDay) ** 2, 0) / days.length
+    );
+    if (dayStdDev > 7) continue;
+
+    // Amount must be consistent (coefficient of variation ≤ 25%)
+    const amounts = entries.map((e) => e.amount);
+    const meanAmount = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+    if (meanAmount === 0) continue;
+    const amountStdDev = Math.sqrt(
+      amounts.reduce((sum, a) => sum + (a - meanAmount) ** 2, 0) / amounts.length
+    );
+    if (amountStdDev / meanAmount > 0.25) continue;
+
+    recurringVendors.push({ vendor, avgAmount: meanAmount });
+  }
+
+  recurringVendors.sort((a, b) => b.avgAmount - a.avgAmount);
+  const totalFixed = recurringVendors.reduce((s, v) => s + v.avgAmount, 0);
+  return { recurringVendors, totalFixed };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user_id = req.nextUrl.searchParams.get('user_id');
@@ -23,8 +89,6 @@ export async function GET(req: NextRequest) {
     const supabase = createServiceClient();
     const insights: InsightCard[] = [];
     const now = new Date().toISOString();
-
-    // --- Data gathering ---
 
     // Accounts for cash position
     const { data: accounts } = await supabase
@@ -44,7 +108,7 @@ export async function GET(req: NextRequest) {
 
     const { data: txns } = await supabase
       .from('transactions')
-      .select('amount, date, category_primary, merchant_name')
+      .select('amount, date, category_primary, merchant_name, name')
       .eq('user_id', user_id)
       .eq('pending', false)
       .gte('date', threeMonthsAgo.toISOString().split('T')[0]);
@@ -57,13 +121,11 @@ export async function GET(req: NextRequest) {
       monthlyBurns.set(month, (monthlyBurns.get(month) || 0) + Number(t.amount));
     });
 
-    const sortedMonths = Array.from(monthlyBurns.keys()).sort();
+    const sortedMonths = [...monthlyBurns.keys()].sort();
     const recentBurns = sortedMonths.slice(-3).map((m) => monthlyBurns.get(m)!);
     const avgBurn = recentBurns.length > 0
       ? recentBurns.reduce((a, b) => a + b, 0) / recentBurns.length
       : 0;
-
-    // --- Insight generation ---
 
     // 1. Runway warning
     const runway = avgBurn > 0 ? totalCash / avgBurn : 99;
@@ -120,9 +182,9 @@ export async function GET(req: NextRequest) {
       categoryTotals.set(cat, (categoryTotals.get(cat) || 0) + Number(t.amount));
     });
 
-    const topCategory = Array.from(categoryTotals.entries()).sort((a, b) => b[1] - a[1])[0];
+    const topCategory = [...categoryTotals.entries()].sort((a, b) => b[1] - a[1])[0];
     if (topCategory) {
-      const totalExpenses = Array.from(categoryTotals.values()).reduce((a, b) => a + b, 0);
+      const totalExpenses = [...categoryTotals.values()].reduce((a, b) => a + b, 0);
       const pct = Math.round((topCategory[1] / totalExpenses) * 100);
       if (pct > 30) {
         insights.push({
@@ -166,7 +228,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // 5. Large transaction anomaly — find transactions > 2x category average
+    // 5. Large transaction anomaly
     const categoryAvgs = new Map<string, { total: number; count: number }>();
     (txns || []).forEach((t) => {
       if (t.amount <= 0) return;
@@ -196,11 +258,42 @@ export async function GET(req: NextRequest) {
           generatedAt: now,
           urgency: 'medium',
         });
-        break; // Only show one anomaly
+        break;
       }
     }
 
-    return NextResponse.json({ insights });
+    // 6. Fixed costs — recurring bills at the same time each month
+    const { recurringVendors, totalFixed } = detectFixedCosts(txns || []);
+    if (recurringVendors.length > 0) {
+      const topVendors = recurringVendors
+        .slice(0, 3)
+        .map((v) => `${v.vendor} ($${Math.round(v.avgAmount).toLocaleString()})`)
+        .join(', ');
+      const remaining = recurringVendors.length - 3;
+      const vendorSummary =
+        remaining > 0 ? `${topVendors}, and ${remaining} more` : topVendors;
+      insights.push({
+        id: 'ins_fixed_costs',
+        type: 'subscription',
+        headline: `$${Math.round(totalFixed).toLocaleString()}/mo in fixed recurring costs`,
+        body: `Detected ${recurringVendors.length} bill${recurringVendors.length > 1 ? 's' : ''} that recur at the same time each month: ${vendorSummary}.`,
+        actionLabel: 'View recurring',
+        dismissed: false,
+        generatedAt: now,
+        urgency: totalFixed > avgBurn * 0.5 ? 'medium' : 'low',
+      });
+    }
+
+    return NextResponse.json({
+      insights,
+      fixedCosts: {
+        totalMonthly: Math.round(totalFixed * 100) / 100,
+        topExpenses: recurringVendors.slice(0, 3).map((v) => ({
+          vendor: v.vendor,
+          avgMonthly: Math.round(v.avgAmount * 100) / 100,
+        })),
+      },
+    });
   } catch (error: unknown) {
     console.error('Insights failed:', error);
     const message = error instanceof Error ? error.message : 'Insights failed';
