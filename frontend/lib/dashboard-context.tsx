@@ -93,7 +93,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
           fetch(`/api/dashboard/burn-chart?user_id=${USER_ID}`).then(r => r.json()),
           fetch(`/api/dashboard/categories?user_id=${USER_ID}`).then(r => r.json()),
           fetch(`/api/dashboard/insights?user_id=${USER_ID}`).then(r => r.json()),
-          fetch(`/api/dashboard/invoices?user_id=${USER_ID}`).then(r => r.json()),
+          fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
           fetch(`/api/dashboard/transactions?user_id=${USER_ID}&limit=50`).then(r => r.json()),
         ])
 
@@ -125,7 +125,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const poll = async () => {
       try {
-        const json = await fetch(`/api/dashboard/invoices?user_id=${USER_ID}`).then(r => r.json())
+        const json = await fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
         const approvals: PaymentApproval[] = json.approvals ?? []
 
         // Only alert if we already have a baseline count (not on first load)
@@ -133,7 +133,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
           prevApprovalCount.current >= 0 &&
           approvals.length > prevApprovalCount.current
         ) {
-          setInvoiceAlert(approvals[0])
+          // Show the newest invoice (last in the due-date-sorted list, or last overall)
+          setInvoiceAlert(approvals[approvals.length - 1])
         }
 
         prevApprovalCount.current = approvals.length
