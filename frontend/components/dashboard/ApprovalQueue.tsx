@@ -64,7 +64,7 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-text-primary truncate">{approval.merchantName}</p>
-          <p className="text-2xs text-text-muted">{approval.helmCategory}</p>
+          <p className="text-2xs text-text-muted">{approval.runwaveCategory}</p>
         </div>
 
         {/* Status badge */}
