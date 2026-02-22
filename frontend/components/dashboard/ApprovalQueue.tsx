@@ -164,9 +164,15 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
   )
 }
 
+const MAX_VISIBLE = 3
+
 export default function ApprovalQueue() {
   const { approvals: mockApprovals } = useDashboard()
   const [approvals] = useState(mockApprovals)
+  const [expanded, setExpanded] = useState(false)
+
+  const visible = expanded ? approvals : approvals.slice(0, MAX_VISIBLE)
+  const hiddenCount = approvals.length - MAX_VISIBLE
 
   return (
     <motion.div
@@ -181,10 +187,19 @@ export default function ApprovalQueue() {
       </div>
 
       <AnimatePresence mode="popLayout">
-        {approvals.map((approval) => (
+        {visible.map((approval) => (
           <ApprovalCard key={approval.id} approval={approval} />
         ))}
       </AnimatePresence>
+
+      {!expanded && hiddenCount > 0 && (
+        <button
+          onClick={() => setExpanded(true)}
+          className="card p-3 text-center text-xs font-medium text-accent hover:bg-surface-raised transition-colors"
+        >
+          View {hiddenCount} more pending
+        </button>
+      )}
 
       {approvals.length === 0 && (
         <div className="card p-6 text-center">
