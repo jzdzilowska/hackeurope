@@ -84,26 +84,28 @@ function Nav() {
     )}>
       <div className="max-w-6xl mx-auto h-full flex items-center justify-between px-6">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image
-            src="/runwave-logo.png"
-            alt="Runwave"
-            width={28}
-            height={28}
-            className="w-7 h-7 object-contain dark:invert"
-          />
-          <span className="text-sm font-semibold tracking-tight text-text-primary">Runwave</span>
-        </Link>
+        <div className="flex-1 flex items-center">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/runwave-logo.png"
+              alt="Runwave"
+              width={28}
+              height={28}
+              className="w-7 h-7 object-contain dark:invert"
+            />
+            <span className="text-sm font-semibold tracking-tight text-text-primary">Runwave</span>
+          </Link>
+        </div>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center justify-center gap-8">
           <a href="#features" className="text-sm text-text-muted hover:text-text-primary transition-colors">Features</a>
           <a href="#pricing" className="text-sm text-text-muted hover:text-text-primary transition-colors">Pricing</a>
           <a href="#about" className="text-sm text-text-muted hover:text-text-primary transition-colors">About</a>
         </div>
 
         {/* Desktop CTAs */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex flex-1 items-center justify-end gap-4">
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-raised/60 transition-colors"
@@ -116,7 +118,7 @@ function Nav() {
           </Link>
           <Link
             href="/onboarding"
-            className="text-sm font-medium px-4 py-2 rounded-pill bg-accent text-black hover:bg-accent-hover transition-colors"
+            className="text-sm font-medium px-4 py-2 rounded-pill bg-accent text-white hover:bg-accent-hover transition-colors"
           >
             Start free
           </Link>
@@ -149,7 +151,7 @@ function Nav() {
           <Link href="/onboarding" className="block text-sm text-text-secondary">Sign in</Link>
           <Link
             href="/onboarding"
-            className="block text-center text-sm font-medium px-4 py-2.5 rounded-pill bg-accent text-black"
+            className="block text-center text-sm font-medium px-4 py-2.5 rounded-pill bg-accent text-white"
           >
             Start free
           </Link>
@@ -204,7 +206,7 @@ function Hero() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-5">
             <Link
               href="/onboarding"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-pill bg-accent text-black font-semibold text-sm hover:bg-accent-hover transition-all shadow-glow hover:shadow-teal-glow"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-pill bg-accent text-white font-semibold text-sm hover:bg-accent-hover transition-all shadow-glow hover:shadow-teal-glow"
             >
               Start free
               <ArrowRight size={16} />
@@ -318,22 +320,30 @@ function Hero() {
 
 function TrustBar() {
   return (
-    <section className="py-16 border-y border-border/30">
-      <div className="max-w-5xl mx-auto px-6">
+    <section className="py-16 border-y border-border/30 bg-surface-raised/10">
+      <div className="max-w-6xl mx-auto px-6">
         <FadeUp>
-          <p className="text-center text-xs font-medium uppercase tracking-widest text-text-disabled mb-10">
-            Built for wholesale businesses across Europe
+          <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-text-disabled mb-12">
+            Integrated with the core financial stack
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14">
+          <div className="flex flex-wrap items-center justify-center gap-12 sm:gap-24 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
             {[
-              { value: '€2M+', label: 'tracked' },
-              { value: '500+', label: 'invoices processed' },
-              { value: '99.9%', label: 'uptime' },
-              { value: '60-day', label: 'forecasting' },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-xl sm:text-2xl font-bold text-text-primary mono">{stat.value}</p>
-                <p className="text-xs text-text-muted mt-1">{stat.label}</p>
+              { name: 'Plaid', logo: 'https://cdn.brandfetch.io/plaid.com/w/512/h/512/logo', label: 'Data Sync' },
+              { name: 'Gemini', logo: 'https://cdn.brandfetch.io/google.com/w/512/h/512/logo', label: 'Multimodal OCR' },
+              { name: 'Claude', logo: 'https://cdn.brandfetch.io/anthropic.com/w/512/h/512/logo', label: 'Financial Brain' },
+              { name: 'Stripe', logo: 'https://cdn.brandfetch.io/stripe.com/w/512/h/512/logo', label: 'Stripe Billing' },
+            ].map((item) => (
+              <div key={item.name} className="flex flex-col items-center gap-3 group cursor-default">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.logo}
+                  alt={item.name}
+                  width={48}
+                  height={48}
+                  className="rounded-xl"
+                />
+                <span className="text-sm font-bold text-text-primary tracking-tight">{item.name}</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-text-disabled group-hover:text-text-muted transition-colors">{item.label}</span>
               </div>
             ))}
           </div>
@@ -380,28 +390,93 @@ const painPoints = [
 
 function PainPoints() {
   return (
-    <section className="py-20 md:py-28">
-      <div className="max-w-5xl mx-auto px-6">
-        <FadeUp>
-          <p className="text-xs font-semibold uppercase tracking-widest text-text-disabled text-center mb-3">The reality</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-text-primary mb-4">Sound familiar?</h2>
-          <p className="text-center text-text-secondary max-w-xl mx-auto mb-14">
-            Every wholesale business hits these problems. Most discover them too late.
-          </p>
-        </FadeUp>
+    <section className="py-24 md:py-32 relative overflow-hidden bg-surface-raised/30">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {painPoints.map((item, i) => (
-            <FadeUp key={item.title} delay={i * 0.1}>
-              <div className="card p-6 group hover:border-border-focus transition-all duration-200">
-                <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-4', item.bg)}>
-                  <item.icon size={18} className={item.color} />
+      <div className="max-w-6xl mx-auto px-6 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start">
+          {/* Left Column: Sticky Heading */}
+          <div className="lg:col-span-5 lg:sticky lg:top-32">
+            <FadeUp>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-danger/10 border border-danger/20 mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-danger"></span>
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-danger">The Reality Gap</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-[1.1]">
+                Sound familiar? <br />
+                <span className="text-text-muted">It's costing you more than you think.</span>
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed mb-8 max-w-md">
+                Every wholesale business hits these structural problems. By the time they show up in your bank balance, the damage is already done.
+              </p>
+              
+              <div className="relative rounded-2xl overflow-hidden aspect-[4/3] mb-8 border border-border/40 shadow-2xl group">
+                <Image 
+                  src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1000"
+                  alt="Wholesale Warehouse"
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <p className="text-white text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">Built for Wholesale</p>
+                  <p className="text-white/90 text-sm font-medium leading-tight">Designed around the cash flow challenges of wholesale distribution.</p>
                 </div>
-                <h3 className="text-base font-semibold text-text-primary mb-2">{item.title}</h3>
-                <p className="text-sm text-text-secondary leading-relaxed">{item.desc}</p>
+              </div>
+
+              <div className="flex items-center gap-4 py-6 border-t border-border/40">
+                <p className="text-xs text-text-muted font-medium">
+                  Architected for high-volume wholesale operations.
+                </p>
               </div>
             </FadeUp>
-          ))}
+          </div>
+
+          {/* Right Column: Creative Card Grid */}
+          <div className="lg:col-span-7">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {painPoints.map((item, i) => (
+                <FadeUp key={item.title} delay={i * 0.15}>
+                  <div className="group relative bg-surface border border-border/50 rounded-2xl p-6 hover:border-border-focus transition-all duration-300 shadow-sm hover:shadow-xl overflow-hidden h-full flex flex-col">
+                    {/* Background accent glow */}
+                    <div className={cn("absolute top-0 right-0 w-32 h-32 -mr-12 -mt-12 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500", item.bg.replace('10', '40'))} />
+
+                    <div className={cn('w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 duration-500', item.bg)}>
+                      <item.icon size={22} className={item.color} />
+                    </div>
+
+                    <h3 className="text-lg font-bold text-text-primary mb-3 flex items-center justify-between">
+                      {item.title}
+                      <ChevronRight size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-text-disabled" />
+                    </h3>
+                    <p className="text-sm text-text-secondary leading-relaxed mb-8 flex-1">
+                      {item.desc}
+                    </p>
+
+                    {/* Custom severity indicator */}
+                    <div className="pt-4 border-t border-border/30 flex justify-between items-center">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-text-disabled">Risk Impact</span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4].map((s) => (
+                          <div key={s} className={cn(
+                            "w-1.5 h-3 rounded-full transition-all duration-500",
+                            s <= (i === 0 ? 4 : i === 3 ? 4 : 3)
+                              ? (i === 0 || i === 3 ? "bg-danger" : "bg-warning")
+                              : "bg-surface-high group-hover:bg-border"
+                          )} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </FadeUp>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -454,36 +529,121 @@ const features = [
 
 function Features() {
   return (
-    <section id="features" className="py-20 md:py-28">
-      <div className="max-w-5xl mx-auto px-6">
-        <FadeUp>
-          <p className="text-xs font-semibold uppercase tracking-widest text-text-disabled text-center mb-3">Features</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-text-primary mb-4">
-            Everything you need to see your finances clearly
-          </h2>
-          <p className="text-center text-text-secondary max-w-xl mx-auto mb-14">
-            Built specifically for wholesale businesses — not repurposed startup tools.
-          </p>
-        </FadeUp>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {features.map((feat, i) => (
-            <FadeUp key={feat.title} delay={i * 0.08} className={feat.span}>
-              <div className={cn(
-                'card p-6 h-full group hover:border-border-focus transition-all duration-200',
-                feat.featured && 'border-accent/20 bg-accent/[0.03]'
-              )}>
-                <div className={cn(
-                  'w-10 h-10 rounded-xl flex items-center justify-center mb-4',
-                  feat.featured ? 'bg-accent/10' : 'bg-surface-raised'
-                )}>
-                  <feat.icon size={18} className={feat.featured ? 'text-accent' : 'text-text-secondary'} />
-                </div>
-                <h3 className="text-base font-semibold text-text-primary mb-2">{feat.title}</h3>
-                <p className="text-sm text-text-secondary leading-relaxed">{feat.desc}</p>
+    <section id="features" className="py-24 md:py-32 relative overflow-hidden bg-white dark:bg-[#0C0B0A]">
+      <div className="max-w-6xl mx-auto px-6 relative">
+        <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-start">
+          {/* Left Column: Sticky Header */}
+          <div className="lg:w-1/3 lg:sticky lg:top-32">
+            <FadeUp>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-accent/5 border border-accent/10 mb-6">
+                <Sparkles size={12} className="text-accent" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-accent">Feature Set v2.0</span>
+              </div>
+              <h2 className="text-4xl font-bold text-text-primary mb-6 leading-tight">
+                Everything you need to <span className="text-sage-cream">dominate your niche.</span>
+              </h2>
+              <p className="text-lg text-text-secondary leading-relaxed mb-8">
+                Runwave isn't a general ledger. It's a high-precision tool built for the specific physics of wholesale: large orders, slow payments, and thin margins.
+              </p>
+              <div className="space-y-4">
+                {[
+                  { icon: Landmark, label: 'Multi-Bank Sync' },
+                  { icon: ScanLine, label: 'Gemini OCR' },
+                  { icon: LineChart, label: 'Cash Forecasting' }
+                ].map((item, i) => (
+                  <div key={item.label} className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface-raised transition-colors cursor-default group">
+                    <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center border border-border/40 shadow-sm group-hover:border-accent/30">
+                      <item.icon size={14} className="text-text-muted group-hover:text-accent" />
+                    </div>
+                    <span className="text-sm font-semibold text-text-primary">{item.label}</span>
+                  </div>
+                ))}
               </div>
             </FadeUp>
-          ))}
+          </div>
+
+          {/* Right Column: Creative Feature Cards */}
+          <div className="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Card 1: AI Insights (Featured) */}
+            <FadeUp delay={0.1} className="md:col-span-2">
+              <div className="group relative bg-[#141210] rounded-[32px] p-8 sm:p-12 overflow-hidden border border-white/5 shadow-2xl">
+                {/* Animated background gradient */}
+                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-accent/20 rounded-full blur-[100px] -mr-32 -mt-32 opacity-50 group-hover:opacity-80 transition-opacity duration-700" />
+
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                  <div>
+                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-8 border border-white/10">
+                      <Sparkles size={28} className="text-white" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-white mb-4">Claude-Powered Reasoning</h3>
+                    <p className="text-white/60 text-lg leading-relaxed mb-8">
+                      Runwave doesn't just show charts. It reasons about your data. It spots the material cost creep before your quarter-end report even starts.
+                    </p>
+                    <div className="inline-flex items-center gap-2 text-white font-semibold group/link cursor-pointer">
+                      <span>Explore the Insights engine</span>
+                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                  <div className="relative">
+                    {/* Mock Insight UI */}
+                    <div className="bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl transform rotate-2 group-hover:rotate-0 transition-transform duration-500">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-2 h-2 rounded-full bg-danger animate-pulse" />
+                        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Urgent Anomaly</span>
+                      </div>
+                      <p className="text-white text-sm font-semibold mb-2">Freight costs up 24% from DPD</p>
+                      <p className="text-white/50 text-xs leading-relaxed">Your average shipping cost per pallet increased from €42 to €52 this week. Check your surcharge terms.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FadeUp>
+
+            {/* Card 2: Invoice Scanner */}
+            <FadeUp delay={0.2}>
+              <div className="group bg-surface-raised border border-border/50 rounded-[32px] p-8 h-full hover:border-border-focus transition-all duration-300 overflow-hidden relative">
+                <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center mb-6 shadow-sm border border-border/30">
+                  <ScanLine size={22} className="text-text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-text-primary mb-3">Invoice Auto-Pilot</h3>
+                <p className="text-text-secondary text-sm leading-relaxed mb-6">
+                  Forward any invoice to your @runwave.finance address. Gemini parses it, matches it to a bank transaction, and flags any discrepancies.
+                </p>
+                {/* Visual detail */}
+                <div className="mt-auto pt-6 opacity-40 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="flex items-center gap-2 p-2 rounded-lg border border-dashed border-border">
+                    <div className="w-8 h-10 bg-surface-high rounded-sm" />
+                    <div className="flex-1 space-y-1">
+                      <div className="w-2/3 h-2 bg-border rounded-pill" />
+                      <div className="w-1/2 h-2 bg-border/50 rounded-pill" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FadeUp>
+
+            {/* Card 3: AR Tracking */}
+            <FadeUp delay={0.3}>
+              <div className="group bg-surface border border-border/50 rounded-[32px] p-8 h-full hover:border-border-focus transition-all duration-300 shadow-sm overflow-hidden flex flex-col">
+                <div className="w-12 h-12 rounded-xl bg-accent/5 flex items-center justify-center mb-6 border border-accent/10">
+                  <BookOpen size={22} className="text-accent" />
+                </div>
+                <h3 className="text-xl font-bold text-text-primary mb-3">Receivables Matrix</h3>
+                <p className="text-text-secondary text-sm leading-relaxed mb-6">
+                  Stop chasing the wrong people. See exactly who owes you, for how long, and what your weighted DSO looks like across your entire client base.
+                </p>
+                <div className="mt-auto space-y-2">
+                  <div className="h-2 w-full bg-surface-high rounded-pill overflow-hidden">
+                    <div className="h-full w-2/3 bg-success rounded-pill" />
+                  </div>
+                  <div className="flex justify-between text-[10px] font-bold uppercase text-text-disabled">
+                    <span>Paid</span>
+                    <span>€42k Outstanding</span>
+                  </div>
+                </div>
+              </div>
+            </FadeUp>
+          </div>
         </div>
       </div>
     </section>
@@ -581,66 +741,6 @@ function AIDeepDive() {
             </div>
           </FadeUp>
         </div>
-      </div>
-    </section>
-  )
-}
-
-/* ═══════════════════════════════════════════════
-   SECTION 7 — SOCIAL PROOF / METRICS
-   ═══════════════════════════════════════════════ */
-
-function SocialProof() {
-  return (
-    <section className="py-20 md:py-28 relative">
-      <div className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 60% 40% at 50% 50%, rgba(44,41,38,0.05) 0%, transparent 70%)',
-        }}
-      />
-      <div className="relative max-w-5xl mx-auto px-6 text-center">
-        <FadeUp>
-          <p className="text-xs font-semibold uppercase tracking-widest text-text-disabled mb-3">By the numbers</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-14">
-            Trusted by wholesale businesses
-          </h2>
-        </FadeUp>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-          {[
-            { target: 2, prefix: '€', suffix: 'M+', label: 'in transactions tracked' },
-            { target: 88, suffix: '+', label: 'invoices auto-parsed' },
-            { target: 60, suffix: '-day', label: 'cash forecasting' },
-          ].map((stat, i) => (
-            <FadeUp key={stat.label} delay={i * 0.15}>
-              <div className="card p-8">
-                <p className="text-4xl md:text-5xl font-bold text-accent mono mb-2">
-                  <AnimatedCounter target={stat.target} prefix={stat.prefix} suffix={stat.suffix} />
-                </p>
-                <p className="text-sm text-text-muted">{stat.label}</p>
-              </div>
-            </FadeUp>
-          ))}
-        </div>
-
-        {/* Testimonial placeholder */}
-        <FadeUp delay={0.4}>
-          <div className="mt-14 max-w-2xl mx-auto">
-            <p className="text-lg text-text-secondary italic leading-relaxed">
-              "We used to spend the first week of every month figuring out where our money went.
-              Runwave gives us that clarity in real time."
-            </p>
-            <div className="mt-4 flex items-center justify-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-surface-raised flex items-center justify-center text-xs font-bold text-accent">
-                MK
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-medium text-text-primary">Michael Keane</p>
-                <p className="text-xs text-text-muted">Director, Keane Furniture Wholesale</p>
-              </div>
-            </div>
-          </div>
-        </FadeUp>
       </div>
     </section>
   )
@@ -800,7 +900,7 @@ function Pricing() {
                   className={cn(
                     'w-full py-3 rounded-xl text-sm font-semibold transition-all',
                     plan.highlighted
-                      ? 'bg-accent text-black hover:bg-accent-hover shadow-glow-sm'
+                      ? 'bg-accent text-white hover:bg-accent-hover shadow-glow-sm'
                       : 'border border-border/60 text-text-secondary hover:border-border-focus hover:text-text-primary'
                   )}
                 >
@@ -849,7 +949,7 @@ function FinalCTA() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
             <Link
               href="/onboarding"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-pill bg-accent text-black font-semibold text-sm hover:bg-accent-hover transition-all shadow-glow hover:shadow-teal-glow"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-pill bg-accent text-white font-semibold text-sm hover:bg-accent-hover transition-all shadow-glow hover:shadow-teal-glow"
             >
               Start free
               <ArrowRight size={16} />
@@ -874,14 +974,13 @@ function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5 mb-3">
-              <div
-                className="w-6 h-6 rounded-md flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 40%, #9A9692 70%, #D8D4D0 100%)',
-                }}
-              >
-                <Zap size={11} className="text-black" strokeWidth={2.5} />
-              </div>
+              <Image
+                src="/runwave-logo.png"
+                alt="Runwave"
+                width={24}
+                height={24}
+                className="w-6 h-6 object-contain dark:invert"
+              />
               <span className="text-sm font-semibold text-text-primary">Runwave</span>
             </div>
             <p className="text-xs text-text-muted leading-relaxed">
@@ -947,7 +1046,6 @@ export default function LandingPage() {
       <PainPoints />
       <Features />
       <AIDeepDive />
-      <SocialProof />
       <Pricing />
       <FinalCTA />
       <Footer />

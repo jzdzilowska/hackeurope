@@ -14,7 +14,7 @@ import {
 import { cn } from '@/lib/utils'
 
 // ── Types ──────────────────────────────────────────────────────────────
-type Step         = 'type' | 'signin' | 'org' | 'email-scan' | 'connect' | 'syncing' | 'done'
+type Step         = 'type' | 'signin' | 'org' | 'email-scan' | 'plaid-setup' | 'connect' | 'syncing' | 'done'
 type BusinessType = 'saas' | 'physical' | 'services' | 'individual'
 
 interface MockAccount {
@@ -371,6 +371,9 @@ export default function OnboardingPage() {
   const [step, setStep]                     = useState<Step>('type')
   const [bizType, setBizType]               = useState<BusinessType | null>(null)
   const [orgName, setOrgName]               = useState('')
+  const [plaidClientId, setPlaidClientId]   = useState('')
+  const [plaidSecret, setPlaidSecret]       = useState('')
+  const [plaidEnv, setPlaidEnv]             = useState<'sandbox' | 'development' | 'production'>('sandbox')
   const [connectedProviders, setConnectedProviders] = useState<Set<string>>(new Set())
   const [teamSize, setTeamSize]             = useState<string>('')
   const [connectedItems, setConnectedItems] = useState<ConnectedItem[]>([])
@@ -378,6 +381,15 @@ export default function OnboardingPage() {
   const [emailScanStep, setEmailScanStep]   = useState(-1)
   const [plaidOpen, setPlaidOpen]           = useState(false)
   const [kpis, setKpis]                     = useState<{ totalCashPosition: number; runway: number; monthlyBurn: number } | null>(null)
+
+  useEffect(() => {
+    const storedId = localStorage.getItem('plaid_client_id')
+    const storedSecret = localStorage.getItem('plaid_secret')
+    const storedEnv = localStorage.getItem('plaid_env') as any
+    if (storedId) setPlaidClientId(storedId)
+    if (storedSecret) setPlaidSecret(storedSecret)
+    if (storedEnv) setPlaidEnv(storedEnv)
+  }, [])
 
   useEffect(() => {
     if (step === 'done') {
@@ -435,7 +447,7 @@ export default function OnboardingPage() {
     EMAIL_SCAN_STEPS.forEach((s, i) => {
       setTimeout(() => setEmailScanStep(i), s.ms + 400)
     })
-    setTimeout(() => setStep('connect'), 5600)
+    setTimeout(() => setStep('plaid-setup'), 5600)
   }
 
   const startSync = () => {
@@ -493,8 +505,8 @@ export default function OnboardingPage() {
 
         {/* Step dots */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {(['type', 'signin', 'org', 'email-scan', 'connect', 'syncing', 'done'] as Step[]).map((s) => {
-            const stepOrder = ['type', 'signin', 'org', 'email-scan', 'connect', 'syncing', 'done']
+          {(['type', 'signin', 'org', 'email-scan', 'plaid-setup', 'connect', 'syncing', 'done'] as Step[]).map((s) => {
+            const stepOrder = ['type', 'signin', 'org', 'email-scan', 'plaid-setup', 'connect', 'syncing', 'done']
             const current   = stepOrder.indexOf(step)
             const idx       = stepOrder.indexOf(s)
             return (
@@ -837,6 +849,89 @@ export default function OnboardingPage() {
             </motion.div>
           )}
 
+          {/* ── Step: Plaid Setup ── */}
+          {step === 'plaid-setup' && (
+            <motion.div key="plaid-setup"
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }} className="space-y-5"
+            >
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-text-primary mb-1.5">Configure Plaid</h2>
+                <p className="text-sm text-text-muted">Enter your developer credentials to link your banks.</p>
+              </div>
+
+              <div className="card p-6 space-y-4">
+                <div>
+                  <label className="label block mb-2">Plaid Client ID</label>
+                  <input
+                    type="text"
+                    value={plaidClientId}
+                    onChange={e => setPlaidClientId(e.target.value)}
+                    placeholder="65e4..."
+                    className="w-full bg-surface-raised border border-border rounded-lg px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/40 transition-colors font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="label block mb-2">Plaid Secret</label>
+                  <input
+                    type="password"
+                    value={plaidSecret}
+                    onChange={e => setPlaidSecret(e.target.value)}
+                    placeholder="••••••••••••••••"
+                    className="w-full bg-surface-raised border border-border rounded-lg px-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent/40 transition-colors font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="label block mb-2">Environment</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['sandbox', 'development', 'production'] as const).map(env => (
+                      <button
+                        key={env}
+                        onClick={() => setPlaidEnv(env)}
+                        className={cn(
+                          'py-2 rounded-lg border text-xs transition-all capitalize',
+                          plaidEnv === env
+                            ? 'border-accent/50 bg-accent/10 text-accent font-medium'
+                            : 'border-border text-text-secondary hover:border-accent/30 hover:text-accent/80'
+                        )}
+                      >
+                        {env}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep('org')}
+                  className="px-4 py-3 rounded-xl text-sm font-medium border border-border text-text-secondary hover:border-border-focus hover:text-text-primary transition-all"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.setItem('plaid_client_id', plaidClientId)
+                    localStorage.setItem('plaid_secret', plaidSecret)
+                    localStorage.setItem('plaid_env', plaidEnv)
+                    setStep('connect')
+                  }}
+                  disabled={!plaidClientId.trim() || !plaidSecret.trim()}
+                  className={cn(
+                    'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
+                    plaidClientId.trim() && plaidSecret.trim()
+                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      : 'bg-surface-raised text-text-disabled cursor-not-allowed'
+                  )}
+                >
+                  Continue <ArrowRight size={14} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {/* ── Step 3: Connect (mock Plaid) ── */}
           {step === 'connect' && (
             <motion.div key="connect"
@@ -908,7 +1003,7 @@ export default function OnboardingPage() {
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => setStep('org')}
+                  onClick={() => setStep('plaid-setup')}
                   className="px-4 py-3 rounded-xl text-sm font-medium border border-border text-text-secondary hover:border-border-focus hover:text-text-primary transition-all"
                 >
                   Back
