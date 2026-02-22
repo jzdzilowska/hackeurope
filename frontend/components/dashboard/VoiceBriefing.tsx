@@ -140,12 +140,12 @@ export default function VoiceBriefing({ onBriefingEnd }: { onBriefingEnd?: () =>
         whileTap={{ scale: 0.97 }}
         title={isPlaying ? 'Stop briefing' : 'Play daily voice briefing'}
         className={cn(
-          'flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-semibold transition-all border',
+          'glass-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill text-xs font-semibold transition-all',
           isPlaying
-            ? 'bg-accent/10 border-accent/25 text-accent'
+            ? 'text-accent'
             : isError
-            ? 'bg-danger/10 border-danger/25 text-danger'
-            : 'bg-surface-raised border-border/60 text-text-secondary hover:text-text-primary hover:border-border-focus'
+            ? 'text-danger'
+            : 'text-text-primary'
         )}
       >
         {isLoading ? (

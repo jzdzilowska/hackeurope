@@ -187,7 +187,7 @@ function Hero() {
         {/* Headline */}
         <FadeUp delay={0.1}>
           <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight leading-[1.1] mb-6">
-            <span className="text-sage-cream">See your true working capital —</span>
+            <span className="text-sage-cream">See your true working capital,</span>
             <br />
             <span className="text-text-primary">not just your bank balance.</span>
           </h1>
