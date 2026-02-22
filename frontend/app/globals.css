@@ -5,20 +5,20 @@
 @tailwind utilities;
 
 :root {
-  /* Surfaces — off-white */
+  /* Surfaces — off-white, cool-neutral */
   --color-background: 249 249 250;
   --color-surface: 255 255 255;
-  --color-surface-raised: 250 249 247;
-  --color-surface-high: 242 240 237;
-  /* Borders — warm toned */
-  --color-border: 214 210 204;
-  --color-border-subtle: 226 223 218;
-  --color-border-focus: 180 175 168;
-  /* Text — warm near-black */
-  --color-text-primary: 15 14 13;
-  --color-text-secondary: 96 90 82;
-  --color-text-muted: 158 152 143;
-  --color-text-disabled: 206 202 196;
+  --color-surface-raised: 250 250 251;
+  --color-surface-high: 241 241 244;
+  /* Borders — neutral gray */
+  --color-border: 212 211 216;
+  --color-border-subtle: 224 223 228;
+  --color-border-focus: 176 175 182;
+  /* Text — neutral near-black */
+  --color-text-primary: 14 14 16;
+  --color-text-secondary: 96 94 102;
+  --color-text-muted: 154 152 162;
+  --color-text-disabled: 202 201 208;
   /* Semantic */
   --color-success: 22 130 90;
   --color-warning: 186 104 20;
@@ -27,7 +27,7 @@
   --overlay-subtle: rgba(0,0,0,0.03);
   --overlay-hover: rgba(0,0,0,0.05);
   --grid-line: rgba(0,0,0,0.06);
-  --grid-tick: #9E9890;
+  --grid-tick: #9A9AA4;
   --cursor-line: rgba(0,0,0,0.06);
   --tooltip-bg: #FFFFFF;
   --tooltip-border: rgba(0,0,0,0.08);
@@ -36,10 +36,10 @@
   --panel-shadow: rgba(0,0,0,0.10);
   --card-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.05);
   --card-shadow-hover: 0 6px 18px rgba(0,0,0,0.09), 0 0 0 1px rgba(0,0,0,0.07);
-  --scrollbar-thumb: #CCC8C2;
-  --scrollbar-hover: #A8A39C;
-  --skeleton-from: #E8E6E2;
-  --skeleton-mid: #F2F0EC;
+  --scrollbar-thumb: #C8C7CE;
+  --scrollbar-hover: #A5A5AD;
+  --skeleton-from: #E5E4EA;
+  --skeleton-mid: #EFEFF4;
   --svg-ring: rgba(0,0,0,0.05);
   --grain-opacity: 0.0;
 }
@@ -164,6 +164,39 @@
     filter: blur(32px);
     mix-blend-mode: screen;
     animation: orb-drift-2 22s ease-in-out infinite;
+  }
+
+  /* ── Light bank account cards — gray drifting orbs on white surface ── */
+  .bank-card-grain { position: relative; overflow: hidden; }
+  /* Orb 1 — top-right */
+  .bank-card-grain::before {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+    top: -30%;
+    right: -15%;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(circle at center, rgba(148,146,158,0.22) 0%, rgba(148,146,158,0.08) 48%, transparent 72%);
+    filter: blur(24px);
+    animation: orb-drift-1 24s ease-in-out infinite;
+  }
+  /* Orb 2 — bottom-left */
+  .bank-card-grain::after {
+    content: '';
+    position: absolute;
+    width: 55%;
+    height: 55%;
+    border-radius: 50%;
+    bottom: -20%;
+    left: -10%;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(circle at center, rgba(148,146,158,0.15) 0%, rgba(148,146,158,0.05) 52%, transparent 72%);
+    filter: blur(30px);
+    animation: orb-drift-2 30s ease-in-out infinite;
   }
 
   /* ── iOS-style glass pill ── */

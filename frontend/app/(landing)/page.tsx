@@ -91,7 +91,7 @@ function Nav() {
           >
             <Zap size={13} className="text-black" strokeWidth={2.5} />
           </div>
-          <span className="text-sm font-semibold tracking-tight text-text-primary">HELM</span>
+          <span className="text-sm font-semibold tracking-tight text-text-primary">Runwave</span>
         </Link>
 
         {/* Desktop links */}
@@ -514,7 +514,7 @@ function AIDeepDive() {
                 <span className="text-sage-cream">Real wholesale intelligence.</span>
               </h2>
               <p className="text-text-secondary leading-relaxed mb-6">
-                HELM understands suppliers, seasonal cycles, payment terms, and freight costs.
+                Runwave understands suppliers, seasonal cycles, payment terms, and freight costs.
                 Ask it anything about your finances in plain English.
               </p>
               <ul className="space-y-3">
@@ -540,7 +540,7 @@ function AIDeepDive() {
                 <div className="w-6 h-6 rounded-lg bg-accent/10 flex items-center justify-center">
                   <Zap size={11} className="text-accent" />
                 </div>
-                <span className="text-xs font-medium text-text-primary">Ask HELM</span>
+                <span className="text-xs font-medium text-text-primary">Ask Runwave</span>
                 <span className="text-[10px] text-text-disabled ml-auto">Powered by Claude</span>
               </div>
 
@@ -627,7 +627,7 @@ function SocialProof() {
           <div className="mt-14 max-w-2xl mx-auto">
             <p className="text-lg text-text-secondary italic leading-relaxed">
               "We used to spend the first week of every month figuring out where our money went.
-              HELM gives us that clarity in real time."
+              Runwave gives us that clarity in real time."
             </p>
             <div className="mt-4 flex items-center justify-center gap-3">
               <div className="w-8 h-8 rounded-full bg-surface-raised flex items-center justify-center text-xs font-bold text-accent">
@@ -718,7 +718,7 @@ function Pricing() {
         'Priority support',
       ],
       cta: 'Contact us',
-      ctaAction: () => { window.location.href = 'mailto:hello@helm.finance' },
+      ctaAction: () => { window.location.href = 'mailto:hello@runwave.finance' },
       highlighted: false,
     },
   ]
@@ -842,7 +842,7 @@ function FinalCTA() {
             Ready to see your finances clearly?
           </h2>
           <p className="text-text-secondary max-w-xl mx-auto mb-10 leading-relaxed">
-            Join wholesale businesses using HELM to manage cash flow, track invoices,
+            Join wholesale businesses using Runwave to manage cash flow, track invoices,
             and make better decisions.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
@@ -881,7 +881,7 @@ function Footer() {
               >
                 <Zap size={11} className="text-black" strokeWidth={2.5} />
               </div>
-              <span className="text-sm font-semibold text-text-primary">HELM</span>
+              <span className="text-sm font-semibold text-text-primary">Runwave</span>
             </div>
             <p className="text-xs text-text-muted leading-relaxed">
               Financial clarity for wholesale businesses.
@@ -902,7 +902,7 @@ function Footer() {
             <p className="text-xs font-semibold uppercase tracking-widest text-text-disabled mb-4">Company</p>
             <ul className="space-y-2.5">
               <li><a href="#about" className="text-sm text-text-muted hover:text-text-primary transition-colors">About</a></li>
-              <li><a href="mailto:hello@helm.finance" className="text-sm text-text-muted hover:text-text-primary transition-colors">Contact</a></li>
+              <li><a href="mailto:hello@runwave.finance" className="text-sm text-text-muted hover:text-text-primary transition-colors">Contact</a></li>
             </ul>
           </div>
 
@@ -917,7 +917,7 @@ function Footer() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-between pt-8 border-t border-border/30">
-          <p className="text-xs text-text-disabled">&copy; {new Date().getFullYear()} HELM. All rights reserved.</p>
+          <p className="text-xs text-text-disabled">&copy; {new Date().getFullYear()} Runwave. All rights reserved.</p>
           <div className="flex items-center gap-3 mt-3 sm:mt-0">
             <span className="inline-flex items-center gap-1.5 text-[10px] text-text-disabled">
               <Shield size={10} /> 256-bit AES

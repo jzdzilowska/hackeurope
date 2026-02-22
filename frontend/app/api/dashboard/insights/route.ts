@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { mapPlaidToHelmCategory, type HelmCategory } from '@/lib/dashboard/categories';
+import { mapPlaidToRunwaveCategory, type RunwaveCategory } from '@/lib/dashboard/categories';
 
 interface InsightCard {
   id: string;
@@ -175,10 +175,10 @@ export async function GET(req: NextRequest) {
     }
 
     // 3. Top spending category
-    const categoryTotals = new Map<HelmCategory, number>();
+    const categoryTotals = new Map<RunwaveCategory, number>();
     (txns || []).forEach((t) => {
       if (t.amount <= 0 || t.category_primary === 'INCOME' || t.category_primary === 'TRANSFER_IN') return;
-      const cat = mapPlaidToHelmCategory(t.category_primary, t.merchant_name);
+      const cat = mapPlaidToRunwaveCategory(t.category_primary, t.merchant_name);
       categoryTotals.set(cat, (categoryTotals.get(cat) || 0) + Number(t.amount));
     });
 

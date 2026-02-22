@@ -9,7 +9,13 @@ import type { PaymentApproval } from '@/lib/types'
 
 type CardState = 'idle' | 'loading' | 'approved'
 
-function ApprovalCard({ approval }: { approval: PaymentApproval }) {
+function ApprovalCard({
+  approval,
+  className,
+}: {
+  approval: PaymentApproval
+  className?: string
+}) {
   const [state, setState] = useState<CardState>('idle')
   const [stripeRef, setStripeRef] = useState('')
 
@@ -22,50 +28,55 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
   }
 
   return (
-    <div className="card p-5 w-full flex-shrink-0">
+    <div className={cn('card p-4 w-full flex flex-col', className)}>
       {/* Header: logo + name + amount */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-start justify-between mb-2.5">
+        <div className="flex items-center gap-2">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center border border-border/50 flex-shrink-0"
+            className="w-7 h-7 rounded-lg flex items-center justify-center border border-border/50 flex-shrink-0"
             style={{ background: 'var(--overlay-subtle)' }}
           >
             {approval.merchantLogoUrl ? (
-              <img src={approval.merchantLogoUrl} alt="" className="w-5 h-5 rounded object-contain"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+              <img
+                src={approval.merchantLogoUrl}
+                alt=""
+                className="w-4 h-4 rounded object-contain"
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
             ) : (
-              <span className="text-2xs font-bold text-text-muted">{approval.merchantName.slice(0, 2).toUpperCase()}</span>
+              <span className="text-[9px] font-bold text-text-muted">
+                {approval.merchantName.slice(0, 2).toUpperCase()}
+              </span>
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-text-primary truncate">{approval.merchantName}</p>
-            <p className="text-2xs text-text-muted">{approval.helmCategory}</p>
+            <p className="text-xs font-semibold text-text-primary truncate leading-tight">
+              {approval.merchantName}
+            </p>
+            <p className="text-[10px] text-text-muted leading-tight">{approval.runwaveCategory}</p>
           </div>
         </div>
-        <div className="text-right flex-shrink-0">
-          <p className="text-xl font-bold mono text-text-primary">
+        <div className="text-right flex-shrink-0 ml-2">
+          <p className="text-base font-bold mono text-text-primary leading-tight">
             {formatCurrency(approval.expectedAmount, 'EUR', true)}
           </p>
-          <p className="text-2xs text-text-disabled">due {formatDate(approval.expectedDate)}</p>
+          <p className="text-[10px] text-text-disabled leading-tight">due {formatDate(approval.expectedDate)}</p>
         </div>
       </div>
 
       {/* Last paid comparison */}
-      <div className="flex items-center gap-3 mb-4 p-2.5 rounded-lg bg-surface-raised/60 border border-border/30">
-        <div className="flex-1">
-          <p className="text-2xs text-text-disabled">Last paid</p>
-          <p className="text-xs mono font-medium text-text-secondary">
-            {formatCurrency(approval.lastPaidAmount, 'EUR', true)} on {formatDate(approval.lastPaidDate)}
+      <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-surface-raised/60 border border-border/30">
+        <div className="flex-1 min-w-0">
+          <p className="text-[9px] text-text-disabled leading-tight">Last paid</p>
+          <p className="text-[10px] mono font-medium text-text-secondary leading-tight truncate">
+            {formatCurrency(approval.lastPaidAmount, 'EUR', true)}
           </p>
         </div>
-        <ArrowUpRight size={13} className="text-text-disabled flex-shrink-0" />
-        <div className="flex-1 text-right">
-          <p className="text-2xs text-text-disabled">Expected</p>
-          <p className="text-xs mono font-medium text-text-primary">
+        <ArrowUpRight size={11} className="text-text-disabled flex-shrink-0" />
+        <div className="flex-1 min-w-0 text-right">
+          <p className="text-[9px] text-text-disabled leading-tight">Expected</p>
+          <p className="text-[10px] mono font-medium text-text-primary leading-tight truncate">
             {formatCurrency(approval.expectedAmount, 'EUR', true)}
-            {approval.expectedAmountMax > approval.expectedAmount &&
-              <span className="text-text-disabled"> – {formatCurrency(approval.expectedAmountMax, 'EUR', true)}</span>
-            }
           </p>
         </div>
       </div>
@@ -77,31 +88,33 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden mb-3"
+            className="overflow-hidden mb-2"
           >
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-success/6 border border-success/15">
-              <Zap size={11} className="text-success flex-shrink-0" />
-              <span className="text-2xs text-text-muted">Stripe ref</span>
-              <code className="text-2xs mono font-medium text-success ml-auto">{stripeRef}</code>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-success/6 border border-success/15">
+              <Zap size={10} className="text-success flex-shrink-0" />
+              <span className="text-[10px] text-text-muted">Stripe ref</span>
+              <code className="text-[10px] mono font-medium text-success ml-auto">{stripeRef}</code>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Action button */}
+      {/* Action button — mt-auto keeps it at the bottom without a rigid spacer */}
       <button
         onClick={() => state === 'idle' && handleApprove()}
         disabled={state !== 'idle'}
         className={cn(
-          'w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
-          state === 'idle'     ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98]' :
-          state === 'loading'  ? 'bg-accent/60 text-white cursor-wait' :
-                                 'bg-success/12 text-success border border-success/25 cursor-default'
+          'mt-auto w-full py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all',
+          state === 'idle'
+            ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98]'
+            : state === 'loading'
+            ? 'bg-accent/60 text-white cursor-wait'
+            : 'bg-success/12 text-success border border-success/25 cursor-default'
         )}
       >
-        {state === 'idle'    && <><CheckCircle2 size={14} /> Approve & pay via Stripe</>}
-        {state === 'loading' && <><Loader2 size={14} className="animate-spin" /> Processing…</>}
-        {state === 'approved' && <><CheckCircle2 size={14} /> Approved</>}
+        {state === 'idle'     && <><CheckCircle2 size={12} /> Approve & pay via Stripe</>}
+        {state === 'loading'  && <><Loader2 size={12} className="animate-spin" /> Processing…</>}
+        {state === 'approved' && <><CheckCircle2 size={12} /> Approved</>}
       </button>
     </div>
   )
@@ -109,15 +122,12 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
 
 const slideVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? '100%' : '-100%',
+    x: direction >= 0 ? '100%' : '-100%',
     opacity: 0,
   }),
-  center: {
-    x: 0,
-    opacity: 1,
-  },
+  center: { x: 0, opacity: 1 },
   exit: (direction: number) => ({
-    x: direction > 0 ? '-100%' : '100%',
+    x: direction >= 0 ? '-100%' : '100%',
     opacity: 0,
   }),
 }
@@ -125,43 +135,47 @@ const slideVariants = {
 export default function ApprovalQueue() {
   const { approvals: mockApprovals } = useDashboard()
   const [approvals] = useState(mockApprovals)
-  const [index, setIndex] = useState(0)
+  const [slideIndex, setSlideIndex] = useState(0)
   const [direction, setDirection] = useState(0)
 
+  // Group into pairs: every 2 approvals = 1 slide / 1 dot
+  const slides: PaymentApproval[][] = []
+  for (let i = 0; i < approvals.length; i += 2) {
+    slides.push(approvals.slice(i, i + 2))
+  }
+
   const paginate = (newDirection: number) => {
-    const next = index + newDirection
-    if (next < 0 || next >= approvals.length) return
+    const next = slideIndex + newDirection
+    if (next < 0 || next >= slides.length) return
     setDirection(newDirection)
-    setIndex(next)
+    setSlideIndex(next)
   }
 
   const handleDragEnd = (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
-    const swipeThreshold = 40
     const { offset, velocity } = info
-    if (offset.x < -swipeThreshold || velocity.x < -300) {
-      paginate(1)
-    } else if (offset.x > swipeThreshold || velocity.x > 300) {
-      paginate(-1)
-    }
+    if (offset.x < -40 || velocity.x < -300) paginate(1)
+    else if (offset.x > 40 || velocity.x > 300) paginate(-1)
   }
+
+  const currentSlide = slides[slideIndex] ?? []
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.35 }}
-      className="flex flex-col gap-3 w-full min-w-0"
+      className="flex flex-col gap-3 w-full min-w-0 h-full"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between flex-shrink-0">
         <p className="label">Approval queue</p>
         <div className="flex items-center gap-2">
           <span className="badge-accent text-2xs">{approvals.length} pending</span>
-          {approvals.length > 1 && (
+          {slides.length > 1 && (
             <div className="flex items-center gap-0.5">
               <button
                 onClick={() => paginate(-1)}
-                disabled={index === 0}
+                disabled={slideIndex === 0}
                 className="w-5 h-5 rounded-md flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed hover:bg-surface-high"
                 aria-label="Previous"
               >
@@ -169,7 +183,7 @@ export default function ApprovalQueue() {
               </button>
               <button
                 onClick={() => paginate(1)}
-                disabled={index === approvals.length - 1}
+                disabled={slideIndex === slides.length - 1}
                 className="w-5 h-5 rounded-md flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed hover:bg-surface-high"
                 aria-label="Next"
               >
@@ -180,56 +194,64 @@ export default function ApprovalQueue() {
         </div>
       </div>
 
-      {/* Carousel */}
-      <div className="relative overflow-hidden w-full rounded-card">
-        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+      {/* ── Carousel: fills remaining height ── */}
+      <div className="relative flex-1 min-h-0 overflow-hidden">
+        <AnimatePresence initial={false} custom={direction}>
           <motion.div
-            key={approvals[index]?.id ?? index}
+            key={slideIndex}
             custom={direction}
             variants={slideVariants}
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 0.8 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 38, mass: 0.85 }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.12}
+            dragElastic={0.10}
             onDragEnd={handleDragEnd}
-            className="w-full cursor-grab active:cursor-grabbing select-none"
+            className="absolute inset-0 flex flex-col gap-3 cursor-grab active:cursor-grabbing select-none"
             style={{ touchAction: 'pan-y' }}
           >
-            {approvals[index] && (
-              <ApprovalCard approval={approvals[index]} />
+            {currentSlide.map(approval => (
+              <ApprovalCard
+                key={approval.id}
+                approval={approval}
+                className="flex-1 min-h-0"
+              />
+            ))}
+            {/* If only 1 card in slide, fill remaining space visually */}
+            {currentSlide.length === 1 && (
+              <div className="flex-1 min-h-0" />
             )}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Dot indicators */}
-      {approvals.length > 1 && (
-        <div className="flex items-center justify-center gap-1.5 pt-0.5">
-          {approvals.map((_, i) => (
+      {/* ── Dot indicators (1 dot = 2 approvals) ── */}
+      {slides.length > 1 && (
+        <div className="flex items-center justify-center gap-1.5 flex-shrink-0 pb-0.5">
+          {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => {
-                setDirection(i > index ? 1 : -1)
-                setIndex(i)
+                setDirection(i > slideIndex ? 1 : -1)
+                setSlideIndex(i)
               }}
               className={cn(
                 'rounded-full transition-all duration-300',
-                i === index
+                i === slideIndex
                   ? 'w-4 h-1.5 bg-accent'
                   : 'w-1.5 h-1.5 bg-border hover:bg-text-disabled'
               )}
-              aria-label={`Go to approval ${i + 1}`}
+              aria-label={`Slide ${i + 1}`}
             />
           ))}
         </div>
       )}
 
       {approvals.length === 0 && (
-        <div className="card p-6 text-center">
-          <CheckCircle2 size={20} className="text-success mx-auto mb-2" />
+        <div className="card p-6 text-center flex-1 flex flex-col items-center justify-center">
+          <CheckCircle2 size={20} className="text-success mb-2" />
           <p className="text-sm text-text-secondary">All caught up</p>
         </div>
       )}

@@ -33,7 +33,7 @@ export default function Sidebar() {
           >
             <Zap size={13} style={{ color: '#F0EDE8' }} strokeWidth={2.5} />
           </div>
-          <span className="text-sm font-semibold tracking-tight text-text-primary">HELM</span>
+          <span className="text-sm font-semibold tracking-tight text-text-primary">Runwave</span>
         </div>
       </div>
 

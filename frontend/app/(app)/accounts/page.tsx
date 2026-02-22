@@ -6,14 +6,14 @@ import { RefreshCw, ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react'
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
 import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency, formatDate, formatTimeAgo, cn } from '@/lib/utils'
-import type { HelmCategory, Transaction } from '@/lib/types'
+import type { RunwaveCategory, Transaction } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<string, string> = {
   Infrastructure: '#2C2926', 'Software & Services': '#E87878', Payroll: '#7AC0A8',
   Marketing: '#6898C8', 'Office & Rent': '#C89850', Revenue: '#2C2926', Other: '#888',
 }
 
-const ALL_CATS: (HelmCategory | 'All')[] = [
+const ALL_CATS: (RunwaveCategory | 'All')[] = [
   'All', 'Revenue', 'Infrastructure', 'Software & Services', 'Payroll', 'Marketing', 'Office & Rent',
 ]
 
@@ -37,11 +37,11 @@ function groupByDate(txns: Transaction[]) {
 
 export default function AccountsPage() {
   const { accounts: mockAccounts, transactions: mockTransactions, kpis: mockKPIs } = useDashboard()
-  const [activeFilter, setActiveFilter] = useState<HelmCategory | 'All'>('All')
+  const [activeFilter, setActiveFilter] = useState<RunwaveCategory | 'All'>('All')
 
   const filtered = activeFilter === 'All'
     ? mockTransactions
-    : mockTransactions.filter(t => t.helmCategory === activeFilter)
+    : mockTransactions.filter(t => t.runwaveCategory === activeFilter)
   const grouped = groupByDate(filtered)
 
   return (
@@ -56,16 +56,8 @@ export default function AccountsPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08, duration: 0.4, ease: [0.22,1,0.36,1] }}
-              className="relative card p-5 overflow-hidden group hover:border-border-focus transition-all"
+              className="bank-card-grain card p-5 group hover:border-border-focus transition-all"
             >
-              {/* Institution colour bloom */}
-              <div className="pointer-events-none absolute top-0 right-0 w-32 h-32 opacity-40"
-                style={{
-                  background: `radial-gradient(circle at 80% 20%, ${acc.institutionColor}55, transparent 70%)`,
-                  filter: 'blur(18px)',
-                }}
-              />
-
               <div className="relative z-10">
                 {/* Institution badge + sync */}
                 <div className="flex items-start justify-between mb-4">
@@ -224,11 +216,11 @@ export default function AccountsPage() {
                           <span
                             className="inline-flex items-center gap-1 text-2xs font-medium px-1.5 py-0.5 rounded"
                             style={{
-                              background: `${CATEGORY_COLORS[txn.helmCategory] ?? '#888'}18`,
-                              color: CATEGORY_COLORS[txn.helmCategory] ?? '#888',
+                              background: `${CATEGORY_COLORS[txn.runwaveCategory] ?? '#888'}18`,
+                              color: CATEGORY_COLORS[txn.runwaveCategory] ?? '#888',
                             }}
                           >
-                            {txn.helmCategory}
+                            {txn.runwaveCategory}
                           </span>
                           {txn.recurringId && (
                             <span className="text-2xs text-text-disabled">recurring</span>

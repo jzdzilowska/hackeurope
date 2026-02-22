@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { mapPlaidToHelmCategory } from '@/lib/dashboard/categories';
+import { mapPlaidToRunwaveCategory } from '@/lib/dashboard/categories';
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       (invoices || []).map(async (inv) => {
         let lastPaidAmount = Number(inv.amount);
         let lastPaidDate = inv.due_date;
-        let helmCategory: ReturnType<typeof mapPlaidToHelmCategory> = 'Other';
+        let runwaveCategory: ReturnType<typeof mapPlaidToRunwaveCategory> = 'Other';
 
         // Find last transaction matching this vendor
         if (inv.vendor) {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
           if (pastTxns && pastTxns.length > 0) {
             lastPaidAmount = Math.abs(Number(pastTxns[0].amount));
             lastPaidDate = pastTxns[0].date;
-            helmCategory = mapPlaidToHelmCategory(pastTxns[0].category_primary, pastTxns[0].merchant_name);
+            runwaveCategory = mapPlaidToRunwaveCategory(pastTxns[0].category_primary, pastTxns[0].merchant_name);
           }
         }
 
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
           recurringId: inv.id,
           merchantName: inv.vendor || 'Unknown',
           merchantLogoUrl: undefined,
-          helmCategory,
+          runwaveCategory,
           expectedAmount: amount,
           expectedAmountMax: Math.round(amount * 1.1 * 100) / 100,
           expectedDate: inv.due_date,

@@ -78,13 +78,13 @@ export default function DashboardPage() {
               </motion.div>
             )}
 
-            {/* Ask HELM */}
+            {/* Ask Runwave */}
             <button
               onClick={() => setChatOpen(true)}
               className="glass-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill text-text-primary text-xs font-semibold active:scale-[0.97] transition-all"
             >
               <MessageSquare size={11} className="text-text-muted" />
-              Ask HELM
+              Ask Runwave
             </button>
           </div>
         </div>

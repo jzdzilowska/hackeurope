@@ -197,7 +197,7 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
           <div className="flex items-center gap-2 mb-1">
             <Brain size={13} className="text-accent flex-shrink-0" />
             <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-disabled">
-              HELM Intelligence · Executive Briefing
+              Runwave Intelligence · Executive Briefing
             </span>
           </div>
           <h2 className="text-xl font-bold text-text-primary mb-2 leading-tight">Wataru Endo Wholesale</h2>
@@ -665,7 +665,7 @@ function PurchaseAdvisor() {
             <ShoppingCart size={13} className="text-accent" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-disabled">HELM Financial Advisor</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-disabled">Runwave Financial Advisor</p>
             <p className="text-xs font-semibold text-text-primary">Should I buy this?</p>
           </div>
         </div>
@@ -724,7 +724,7 @@ function PurchaseAdvisor() {
               <div>
                 <p className="text-sm font-semibold text-text-muted mb-1">AI Purchase Advisor</p>
                 <p className="text-xs text-text-disabled leading-relaxed">
-                  Enter a purchase above. HELM will evaluate it against your live cash position, runway, and category
+                  Enter a purchase above. Runwave will evaluate it against your live cash position, runway, and category
                   spend — and return a Green / Yellow / Red verdict in seconds.
                 </p>
               </div>

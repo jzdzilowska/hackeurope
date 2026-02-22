@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { mapPlaidToHelmCategory } from '@/lib/dashboard/categories';
+import { mapPlaidToRunwaveCategory } from '@/lib/dashboard/categories';
 
 export async function GET(req: NextRequest) {
   try {
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       date: t.date,
       merchantName: t.merchant_name || t.name || 'Unknown',
       merchantLogoUrl: t.logo_url || undefined,
-      helmCategory: mapPlaidToHelmCategory(t.category_primary, t.merchant_name),
+      runwaveCategory: mapPlaidToRunwaveCategory(t.category_primary, t.merchant_name),
       pending: t.pending || false,
     }));
 

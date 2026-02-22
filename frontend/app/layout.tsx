@@ -3,7 +3,7 @@ import { ThemeProvider } from 'next-themes'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'HELM — Financial control for companies moving fast',
+  title: 'Runwave — Financial control for companies moving fast',
   description: 'AI-powered financial operating layer for wholesale businesses',
 }
 

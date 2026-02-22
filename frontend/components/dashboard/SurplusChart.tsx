@@ -101,15 +101,15 @@ export default function SurplusChart() {
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#3b82f6]" />
+            <span className="w-2 h-2 rounded-full inline-block bg-[#0c42b8]" />
             Inflows
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#64748b]" />
+            <span className="w-2 h-2 rounded-full inline-block bg-[#2c5070]" />
             Overhead
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#f59e0b]" />
+            <span className="w-2 h-2 rounded-full inline-block bg-[#9e5a00]" />
             Restock
           </span>
         </div>
@@ -141,21 +141,21 @@ export default function SurplusChart() {
               {/* Positive stack: inflows */}
               <Bar dataKey="inflows" name="Inflows" stackId="pos" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#3b82f6" fillOpacity={d.projected ? 0.4 : 0.75} />
+                  <Cell key={i} fill="#0c42b8" fillOpacity={d.projected ? 0.4 : 0.75} />
                 ))}
               </Bar>
 
               {/* Negative stack: overhead */}
               <Bar dataKey="overhead" name="Overhead" stackId="neg" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#64748b" fillOpacity={d.projected ? 0.35 : 0.65} />
+                  <Cell key={i} fill="#2c5070" fillOpacity={d.projected ? 0.35 : 0.65} />
                 ))}
               </Bar>
 
               {/* Negative stack: restock */}
               <Bar dataKey="restock" name="Restock" stackId="neg" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#f59e0b" fillOpacity={d.projected ? 0.35 : 0.65} />
+                  <Cell key={i} fill="#9e5a00" fillOpacity={d.projected ? 0.35 : 0.65} />
                 ))}
               </Bar>
 
@@ -164,20 +164,20 @@ export default function SurplusChart() {
                 type="monotone"
                 dataKey="surplus"
                 name="Surplus"
-                stroke="#22c55e"
+                stroke="#0a7030"
                 strokeWidth={2}
-                dot={{ r: 3, fill: '#22c55e', strokeWidth: 0 }}
-                activeDot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }}
+                dot={{ r: 3, fill: '#0a7030', strokeWidth: 0 }}
+                activeDot={{ r: 4, fill: '#0a7030', strokeWidth: 0 }}
               />
 
               <ReferenceLine y={0} stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
               {floorLine > 0 && (
                 <ReferenceLine
                   y={floorLine}
-                  stroke="#22c55e"
+                  stroke="#0a7030"
                   strokeOpacity={0.35}
                   strokeDasharray="5 3"
-                  label={{ value: 'Safe floor', position: 'insideTopLeft', fill: '#22c55e', fontSize: 9, fillOpacity: 0.6 }}
+                  label={{ value: 'Safe floor', position: 'insideTopLeft', fill: '#0a7030', fontSize: 9, fillOpacity: 0.6 }}
                 />
               )}
             </ComposedChart>

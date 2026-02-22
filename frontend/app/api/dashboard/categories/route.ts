@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { mapPlaidToHelmCategory, HELM_CATEGORY_COLORS, type HelmCategory } from '@/lib/dashboard/categories';
+import { mapPlaidToRunwaveCategory, RUNWAVE_CATEGORY_COLORS, type RunwaveCategory } from '@/lib/dashboard/categories';
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,14 +27,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Aggregate by HelmCategory
-    const categoryTotals = new Map<HelmCategory, number>();
+    // Aggregate by RunwaveCategory
+    const categoryTotals = new Map<RunwaveCategory, number>();
 
     (txns || []).forEach((t) => {
       // Skip income categories that slipped through
       if (t.category_primary === 'INCOME' || t.category_primary === 'TRANSFER_IN') return;
 
-      const cat = mapPlaidToHelmCategory(t.category_primary, t.merchant_name);
+      const cat = mapPlaidToRunwaveCategory(t.category_primary, t.merchant_name);
       categoryTotals.set(cat, (categoryTotals.get(cat) || 0) + Number(t.amount));
     });
 
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
         name,
         amount: Math.round(amount * 100) / 100,
         pct: total > 0 ? Math.round((amount / total) * 1000) / 10 : 0,
-        color: HELM_CATEGORY_COLORS[name],
+        color: RUNWAVE_CATEGORY_COLORS[name],
       }))
       .sort((a, b) => b.amount - a.amount);
 

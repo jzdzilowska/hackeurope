@@ -99,7 +99,7 @@ const EMAIL_SCAN_STEPS = [
   { label: 'Scanning inbox for financial documents…',         ms: 1200 },
   { label: 'Finding invoices from suppliers & customers…',     ms: 2500 },
   { label: 'Categorising as payable vs receivable…',          ms: 3500 },
-  { label: 'Importing into HELM…',                            ms: 4300 },
+  { label: 'Importing into Runwave…',                            ms: 4300 },
 ]
 
 // ── Business type cards ─────────────────────────────────────────────────
@@ -301,7 +301,7 @@ function MockPlaidModal({
               >
                 <p className="text-xs text-gray-500 text-center">
                   Enter your {selectedInst.name} online banking credentials.<br />
-                  HELM never stores your login details.
+                  Runwave never stores your login details.
                 </p>
 
                 <div className="space-y-3">
@@ -598,7 +598,7 @@ export default function OnboardingPage() {
           >
             <Zap size={15} className="text-black" strokeWidth={2.5} />
           </div>
-          <span className="text-base font-semibold tracking-tight text-text-primary">HELM</span>
+          <span className="text-base font-semibold tracking-tight text-text-primary">Runwave</span>
         </motion.div>
 
         {/* Step dots */}
@@ -634,7 +634,7 @@ export default function OnboardingPage() {
                   Select your industry
                 </h2>
                 <p className="text-sm text-text-muted">
-                  This shapes how HELM analyses your finances.
+                  This shapes how Runwave analyses your finances.
                 </p>
               </div>
 
@@ -725,7 +725,7 @@ export default function OnboardingPage() {
             >
               <div className="text-center mb-2">
                 <h2 className="text-2xl font-bold text-text-primary mb-1.5">
-                  Sign in to HELM
+                  Sign in to Runwave
                 </h2>
                 <p className="text-sm text-text-muted">
                   Connect your account to get started.
@@ -798,7 +798,7 @@ export default function OnboardingPage() {
               </div>
 
               <p className="text-2xs text-text-muted text-center">
-                By continuing, you agree to HELM&apos;s Terms of Service and Privacy Policy.
+                By continuing, you agree to Runwave&apos;s Terms of Service and Privacy Policy.
               </p>
 
               <div className="flex gap-3">
@@ -1161,7 +1161,7 @@ export default function OnboardingPage() {
                 onClick={() => router.push('/dashboard')}
                 className="w-full py-3 rounded-xl text-sm font-semibold bg-accent text-black hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
-                Open HELM <ArrowRight size={14} />
+                Open Runwave <ArrowRight size={14} />
               </button>
             </motion.div>
           )}

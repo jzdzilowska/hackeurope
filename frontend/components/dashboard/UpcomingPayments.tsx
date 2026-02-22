@@ -39,7 +39,7 @@ function RecurringRow({ r, index }: { r: RecurringPayment; index: number }) {
             <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', usage.dot)} title={usage.label} />
           )}
         </div>
-        <p className="text-2xs text-text-muted">{r.helmCategory} · {r.frequency}</p>
+        <p className="text-2xs text-text-muted">{r.runwaveCategory} · {r.frequency}</p>
       </div>
 
       {/* Next date */}

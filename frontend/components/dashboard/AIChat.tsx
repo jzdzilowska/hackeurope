@@ -155,7 +155,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
                   <span className="text-2xs font-bold text-black">H</span>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">Ask HELM</p>
+                  <p className="text-sm font-semibold text-text-primary">Ask Runwave</p>
                   <p className="text-2xs text-text-muted">Powered by Claude · your data stays private</p>
                 </div>
               </div>

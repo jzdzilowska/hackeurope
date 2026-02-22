@@ -106,7 +106,7 @@ export default function InsightCards() {
               <span className="text-black/60 text-sm font-bold">+</span>
             </div>
             <div>
-              <p className="text-2xs text-black/45 font-medium mb-0.5">Ask HELM</p>
+              <p className="text-2xs text-black/45 font-medium mb-0.5">Ask Runwave</p>
               <p className="text-sm font-semibold text-black/75 leading-tight">Any financial question</p>
             </div>
           </div>

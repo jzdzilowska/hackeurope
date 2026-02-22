@@ -1,4 +1,4 @@
-export type HelmCategory =
+export type RunwaveCategory =
   | 'Infrastructure'
   | 'Software & Services'
   | 'Payroll'
@@ -32,10 +32,10 @@ function merchantMatches(merchantName: string | null, vendors: string[]): boolea
   return vendors.some((v) => lower.includes(v));
 }
 
-export function mapPlaidToHelmCategory(
+export function mapPlaidToRunwaveCategory(
   categoryPrimary: string | null,
   merchantName: string | null,
-): HelmCategory {
+): RunwaveCategory {
   // Payroll detection first — overrides any Plaid category
   if (merchantMatches(merchantName, PAYROLL_VENDORS)) return 'Payroll';
 
@@ -78,7 +78,7 @@ export function mapPlaidToHelmCategory(
   }
 }
 
-export const HELM_CATEGORY_COLORS: Record<HelmCategory, string> = {
+export const RUNWAVE_CATEGORY_COLORS: Record<RunwaveCategory, string> = {
   'Infrastructure': '#3b82f6',
   'Software & Services': '#8b5cf6',
   'Payroll': '#ec4899',

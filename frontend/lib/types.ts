@@ -27,7 +27,7 @@ export interface Account {
 }
 
 // ─── Transactions ────────────────────────────────────────────────────────────
-export type HelmCategory =
+export type RunwaveCategory =
   | 'Infrastructure'
   | 'Software & Services'
   | 'Payroll'
@@ -46,7 +46,7 @@ export interface Transaction {
   date: string             // ISO date
   merchantName: string
   merchantLogoUrl?: string
-  helmCategory: HelmCategory
+  runwaveCategory: RunwaveCategory
   pending: boolean
   recurringId?: string
   autoPayId?: string
@@ -66,7 +66,7 @@ export interface RecurringPayment {
   lastPaymentDate: string
   nextExpectedDate: string
   totalYtd: number
-  helmCategory: HelmCategory
+  runwaveCategory: RunwaveCategory
   status: RecurringStatus
   autoPayEnabled: boolean
   usageFlag?: 'active' | 'low' | 'unused'
@@ -94,7 +94,7 @@ export interface PaymentApproval {
   recurringId: string
   merchantName: string
   merchantLogoUrl?: string
-  helmCategory: HelmCategory
+  runwaveCategory: RunwaveCategory
   expectedAmount: number
   expectedAmountMax: number
   expectedDate: string

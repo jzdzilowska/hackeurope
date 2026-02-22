@@ -39,9 +39,9 @@ interface RestockData {
 }
 
 const confidenceColors: Record<string, string> = {
-  high: '#22c55e',
-  medium: '#f59e0b',
-  low: '#94a3b8',
+  high: '#0a7030',
+  medium: '#9e5a00',
+  low: '#3e5e84',
 }
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -87,7 +87,7 @@ export default function RestockForecast() {
     }))
   })()
 
-  const confColor = data ? confidenceColors[data.confidence] : '#94a3b8'
+  const confColor = data ? confidenceColors[data.confidence] : '#3e5e84'
 
   return (
     <motion.div
@@ -140,12 +140,12 @@ export default function RestockForecast() {
                 tickFormatter={v => `€${(v / 1000).toFixed(0)}k`}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.05)', strokeWidth: 1 }} />
-              <Bar dataKey="sales" name="Sales" maxBarSize={10} fill="#6366f1" fillOpacity={0.7} />
+              <Bar dataKey="sales" name="Sales" maxBarSize={10} fill="#3030cc" fillOpacity={0.7} />
               <Line
                 type="monotone"
                 dataKey="restock"
                 name="Restock"
-                stroke="#f59e0b"
+                stroke="#9e5a00"
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
                 dot={false}

@@ -82,12 +82,12 @@ export default function CashflowChart() {
     >
       <div className="flex items-center justify-between mb-5">
         <div>
-          <p className="label mb-0.5">Cash Position</p>
+          <p className="label mb-0.5">Balance Position</p>
           <p className="text-xs text-text-muted">3-month history · 4-week forecast</p>
         </div>
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#6366f1' }} />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#3030cc' }} />
             Balance
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
@@ -95,7 +95,7 @@ export default function CashflowChart() {
             Inflow
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#f43f5e' }} />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#b41230' }} />
             Outflow
           </span>
         </div>
@@ -111,12 +111,12 @@ export default function CashflowChart() {
             <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
               <defs>
                 <linearGradient id="balanceHistGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="#3030cc" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#3030cc" stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="balanceProjGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity={0.1} />
-                  <stop offset="100%" stopColor="#6366f1" stopOpacity={0.0} />
+                  <stop offset="0%" stopColor="#3030cc" stopOpacity={0.1} />
+                  <stop offset="100%" stopColor="#3030cc" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
 
@@ -139,7 +139,7 @@ export default function CashflowChart() {
               <Area
                 type="monotone"
                 dataKey="historicalBalance"
-                stroke="#6366f1"
+                stroke="#3030cc"
                 strokeWidth={2}
                 fill="url(#balanceHistGrad)"
                 dot={false}
@@ -150,7 +150,7 @@ export default function CashflowChart() {
               <Area
                 type="monotone"
                 dataKey="projectedBalance"
-                stroke="#6366f1"
+                stroke="#3030cc"
                 strokeWidth={1.5}
                 strokeDasharray="5 3"
                 fill="url(#balanceProjGrad)"
@@ -162,14 +162,14 @@ export default function CashflowChart() {
               {/* Inflow bars */}
               <Bar dataKey="inflow" name="Inflow" maxBarSize={6}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#22c55e" fillOpacity={d.projected ? 0.4 : 0.8} />
+                  <Cell key={i} fill="#0a7030" fillOpacity={d.projected ? 0.4 : 0.8} />
                 ))}
               </Bar>
 
               {/* Outflow bars (negative) */}
               <Bar dataKey="outflow" name="Outflow" maxBarSize={6}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#f43f5e" fillOpacity={d.projected ? 0.4 : 0.8} />
+                  <Cell key={i} fill="#b41230" fillOpacity={d.projected ? 0.4 : 0.8} />
                 ))}
               </Bar>
 

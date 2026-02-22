@@ -135,7 +135,7 @@ export default function PaymentsPage() {
                 </div>
 
                 {/* Category */}
-                <p className="text-xs text-text-muted truncate">{r.helmCategory}</p>
+                <p className="text-xs text-text-muted truncate">{r.runwaveCategory}</p>
 
                 {/* Amount */}
                 <div>
@@ -207,7 +207,7 @@ export default function PaymentsPage() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-text-primary">{appr.merchantName}</p>
-                      <p className="text-2xs text-text-muted">{appr.helmCategory}</p>
+                      <p className="text-2xs text-text-muted">{appr.runwaveCategory}</p>
                     </div>
                   </div>
                   <div className="text-right">
