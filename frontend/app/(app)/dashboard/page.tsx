@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
+import Link                 from 'next/link'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
 import CashflowChart        from '@/components/dashboard/CashflowChart'
@@ -41,10 +42,12 @@ function SectionHeader({
   tag,
   title,
   action,
+  href,
 }: {
   tag: string
   title: string
   action?: string
+  href?: string
 }) {
   return (
     <div className="flex items-end justify-between mb-4">
@@ -53,14 +56,20 @@ function SectionHeader({
           {tag}
         </p>
         <h2 className="text-xl font-bold tracking-tight text-text-primary flex items-center gap-1.5">
-          {title}
-          <ArrowUpRight size={16} className="text-text-muted opacity-50" />
+          {href ? (
+            <Link href={href} className="flex items-center gap-1.5 hover:text-accent transition-colors">
+              {title}
+              <ArrowUpRight size={16} className="text-text-muted opacity-50" />
+            </Link>
+          ) : (
+            title
+          )}
         </h2>
       </div>
-      {action && (
-        <button className="text-2xs text-text-muted hover:text-text-secondary transition-colors flex items-center gap-1">
+      {action && href && (
+        <Link href={href} className="text-2xs text-text-muted hover:text-text-secondary transition-colors flex items-center gap-1">
           {action} <ArrowUpRight size={10} />
-        </button>
+        </Link>
       )}
     </div>
   )
@@ -158,7 +167,7 @@ export default function DashboardPage() {
 
           {/* Section 3: Payments + approvals */}
           <div>
-            <SectionHeader tag="PAYMENTS" title="Upcoming & Approvals" action="All payments" />
+            <SectionHeader tag="PAYMENTS" title="Upcoming & Approvals" action="All payments" href="/payments" />
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-2"><UpcomingPayments /></div>
               <div className="col-span-1"><ApprovalQueue /></div>
