@@ -82,186 +82,107 @@ function stripMd(text: string): string {
   return text.replace(/\*\*(.*?)\*\*/g, '$1').replace(/[•·]/g, '').replace(/\s{2,}/g, ' ').trim()
 }
 
-// ── Script generator — mirrors dashboard section order ────────────────────
+// ── Script generator — ~1 minute, urgent/actionable items only ──────────────
 export function generateBriefingScript({
   org,
-  accounts,
   kpis,
   burnData,
-  categories,
   insights,
   approvals,
   recurring,
-  fixedCosts,
-  surplusSummary,
   restockData,
 }: BriefingInput): string {
   const parts: string[] = []
 
-  // ── Greeting ──────────────────────────────────────────────────────────────
-  parts.push(`Good ${timeOfDay()}. Here's your HELM financial briefing for ${org.name}.`)
+  // ── Greeting ────────────────────────────────────────────────────────────
+  parts.push(`Hey, good ${timeOfDay()}! Here's a quick rundown for ${org.name}.`)
 
-  // ═════════════════════════════════════════════════════════════════════════
-  // SECTION 1 — CASH POSITION  (mirrors CashPositionHero + RecurringCosts)
-  // ═════════════════════════════════════════════════════════════════════════
-
-  // Institution breakdown exactly as CashPositionHero shows it
-  const instMap = new Map<string, number>()
-  for (const acc of accounts) {
-    instMap.set(acc.institution, (instMap.get(acc.institution) ?? 0) + acc.currentBalance)
+  // ── Runway (only if concerning) ─────────────────────────────────────────
+  if (kpis.runway < 6) {
+    if (kpis.runway < 3) {
+      parts.push(`So the first thing to flag — you're down to about ${kpis.runway.toFixed(1)} months of runway. That's getting into critical territory, so it's worth addressing sooner rather than later.`)
+    } else {
+      parts.push(`Runway is sitting at around ${kpis.runway.toFixed(1)} months right now — not an emergency, but you're in the amber zone, so worth keeping an eye on.`)
+    }
   }
-  const institutions = [...instMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)
 
-  const instText = institutions
-    .map(([name, total]) => `${name} at ${fmtK(total)}`)
-    .join(', ')
+  // ── Burn spike ──────────────────────────────────────────────────────────
+  if (Math.abs(kpis.burnTrend) >= 10) {
+    if (kpis.burnTrend > 0) {
+      parts.push(`Spending has crept up about ${Math.abs(kpis.burnTrend).toFixed(0)}% from last month — might be worth a quick look at what's driving that.`)
+    } else {
+      parts.push(`Good news on costs — burn is actually down about ${Math.abs(kpis.burnTrend).toFixed(0)}% from last month.`)
+    }
+  }
 
-  const runwayLabel =
-    kpis.runway >= 9 ? 'a strong position'
-    : kpis.runway >= 6 ? 'a healthy position'
-    : kpis.runway >= 3 ? 'the amber zone — monitor carefully'
-    : 'a critical position — immediate action required'
+  // ── Pending approvals ────────────────────────────────────────────────────
+  const pending = approvals.filter(a => a.status === 'pending')
+  if (pending.length > 0) {
+    const top = pending[0]
+    const amount = top.expectedAmountMax > top.expectedAmount
+      ? `somewhere between ${fmtK(top.expectedAmount)} and ${fmtK(top.expectedAmountMax)}`
+      : fmtK(top.expectedAmount)
+    const when = relativeDate(top.expectedDate)
+    if (pending.length === 1) {
+      parts.push(`You've got one payment waiting on your approval — ${top.merchantName}, ${amount}, due ${when}.`)
+    } else {
+      const others = pending.length - 1
+      parts.push(`There are ${pending.length} payments sitting in the approval queue. The one to deal with first is ${top.merchantName} — that's ${amount}, due ${when} — plus ${others} other${others > 1 ? 's' : ''}.`)
+    }
+  }
 
-  parts.push(
-    `Your total cash position is ${fmt(kpis.totalCashPosition)}, ` +
-    `held across ${institutions.length > 0 ? instText : `${accounts.length} accounts`}. ` +
-    `At your current burn rate that gives you ${kpis.runway.toFixed(1)} months of runway — ${runwayLabel}.`
-  )
+  // ── Flagged subscriptions ────────────────────────────────────────────────
+  const flagged = recurring.filter(r => r.usageFlag === 'unused' || r.usageFlag === 'low')
+  if (flagged.length > 0) {
+    const names = flagged.slice(0, 3).map(r => r.merchantName).join(', ')
+    if (flagged.length === 1) {
+      parts.push(`Also, it looks like ${names} hasn't really been used recently — might be worth cancelling that one.`)
+    } else {
+      parts.push(`It also looks like ${names} haven't seen much activity lately. Probably worth reviewing whether you still need those.`)
+    }
+  }
 
-  // Burn rate trend (mirrors the "+x% vs last month" CashPositionHero shows)
-  const burnDir = kpis.burnTrend > 0 ? 'up' : 'down'
-  parts.push(
-    `Monthly burn is ${fmt(kpis.monthlyBurn)}, ${burnDir} ${Math.abs(kpis.burnTrend).toFixed(1)}% versus last month.`
-  )
-
-  // Fixed / recurring costs (mirrors RecurringCosts)
-  if (fixedCosts) {
-    const topVendors = fixedCosts.topExpenses.slice(0, 3)
-    const vendorText = topVendors
-      .map(e => `${e.vendor} at ${fmtK(e.avgMonthly)} per month`)
-      .join(', ')
+  // ── Restock (only high confidence) ──────────────────────────────────────
+  if (restockData && restockData.confidence === 'high' && restockData.dueNextWeek > 0) {
     parts.push(
-      `Fixed monthly obligations total ${fmt(fixedCosts.totalMonthly)}. ` +
-      (vendorText ? `Your top recurring costs are: ${vendorText}.` : '')
+      `Heads up on restock — based on recent sales, you're looking at about ${fmtK(restockData.dueNextWeek)} needed next week ` +
+      `and ${fmtK(restockData.dueNextMonth)} the month after.`
     )
   }
 
-  // ═════════════════════════════════════════════════════════════════════════
-  // SECTION 2 — FINANCIAL INTELLIGENCE  (CashflowChart + RestockForecast + SurplusChart)
-  // ═════════════════════════════════════════════════════════════════════════
+  // ── Top high-urgency insights only ──────────────────────────────────────
+  const urgencyRank: Record<string, number> = { high: 0, medium: 1, low: 2 }
+  const topInsights = insights
+    .filter(i => !i.dismissed && i.urgency !== 'low')
+    .sort((a, b) => urgencyRank[a.urgency] - urgencyRank[b.urgency])
+    .slice(0, 2)
 
-  // Financial health score
-  const healthLabel =
-    kpis.financialHealthScore >= 80 ? 'excellent'
-    : kpis.financialHealthScore >= 60 ? 'moderate'
-    : kpis.financialHealthScore >= 40 ? 'needs attention'
-    : 'critical'
-  parts.push(
-    `Your financial health score is ${kpis.financialHealthScore} out of 100 — ${healthLabel}.`
-  )
+  if (topInsights.length > 0) {
+    const [first, second] = topInsights
+    const firstText = stripMd(first.headline).replace(/\.$/, '').toLowerCase()
+    parts.push(`One more thing worth flagging — ${firstText}.`)
+    if (second) {
+      const secondText = stripMd(second.headline).replace(/\.$/, '').toLowerCase()
+      parts.push(`And also — ${secondText}.`)
+    }
+  }
 
-  // Revenue vs burn trend from burnData (mirrors CashflowChart's 6-month view)
+  // ── Revenue trend (only if significant) ─────────────────────────────────
   if (burnData.length >= 2) {
     const latest = burnData[burnData.length - 1]
     const prev   = burnData[burnData.length - 2]
-    const revGrowth = ((latest.revenue - prev.revenue) / prev.revenue * 100)
-    const revDir    = revGrowth >= 0 ? 'up' : 'down'
-    parts.push(
-      `Revenue in ${latest.month} was ${fmt(latest.revenue)}, ${revDir} ${Math.abs(revGrowth).toFixed(1)}% from ${prev.month}. ` +
-      `Net position was ${fmt(latest.net)}.`
-    )
+    const revGrowth = (latest.revenue - prev.revenue) / prev.revenue * 100
+    if (Math.abs(revGrowth) >= 15) {
+      if (revGrowth >= 0) {
+        parts.push(`Oh, and revenue is up about ${Math.abs(revGrowth).toFixed(0)}% from last month — that's a good sign.`)
+      } else {
+        parts.push(`Also, revenue is down about ${Math.abs(revGrowth).toFixed(0)}% from last month, so that's something to keep an eye on.`)
+      }
+    }
   }
 
-  // Category spend (mirrors SurplusChart / spend breakdown)
-  const topCats = [...categories].sort((a, b) => b.amount - a.amount).slice(0, 3)
-  if (topCats.length > 0) {
-    const catText = topCats.map(c => `${c.name} at ${fmt(c.amount)}`).join(', ')
-    parts.push(`Largest spend categories this month: ${catText}.`)
-  }
-
-  // Restock forecast (mirrors RestockForecast)
-  if (restockData && restockData.confidence !== 'low') {
-    const dueDateStr = relativeDate(restockData.impliedRestockDueDate)
-    parts.push(
-      `Restock forecast: ${fmtK(restockData.dueNextWeek)} due next week and ${fmtK(restockData.dueNextMonth)} due next month. ` +
-      `Based on recent sales, an implied restock of ${fmtK(restockData.impliedRestockFromRecentSales)} is expected ${dueDateStr}.`
-    )
-  }
-
-  // Surplus summary (mirrors SurplusChart stats + interpretation)
-  if (surplusSummary && surplusSummary.monthsAnalysed > 0) {
-    const negWarning =
-      surplusSummary.negativeMonths > 0
-        ? ` You had ${surplusSummary.negativeMonths} negative month${surplusSummary.negativeMonths > 1 ? 's' : ''} out of ${surplusSummary.monthsAnalysed}.`
-        : ''
-    parts.push(
-      `Monthly surplus analysis: average surplus ${fmtK(surplusSummary.avgSurplus)}, safe floor ${fmtK(surplusSummary.consistentFloor)}.${negWarning} ` +
-      stripMd(surplusSummary.interpretation)
-    )
-  }
-
-  // ═════════════════════════════════════════════════════════════════════════
-  // SECTION 3 — PAYMENTS & APPROVALS  (UpcomingPayments + ApprovalQueue)
-  // ═════════════════════════════════════════════════════════════════════════
-
-  // Upcoming recurring payments — sorted by due date, same as UpcomingPayments component
-  const sorted = [...recurring].sort(
-    (a, b) => new Date(a.nextExpectedDate).getTime() - new Date(b.nextExpectedDate).getTime()
-  )
-  const soonest = sorted.slice(0, 3)
-  if (soonest.length > 0) {
-    const totalMonthly = recurring.reduce((s, r) => s + r.averageAmount, 0)
-    parts.push(
-      `You have ${recurring.length} recurring payment${recurring.length !== 1 ? 's' : ''}, totalling ${fmt(totalMonthly)} per month.`
-    )
-    const paymentLines = soonest.map(r =>
-      `${r.merchantName} — ${fmtK(r.averageAmount)} — due ${relativeDate(r.nextExpectedDate)}`
-    )
-    parts.push(`Soonest due: ${paymentLines.join('; ')}.`)
-  }
-
-  // Call out unused / low-usage subscriptions (mirrors the usage dot in UpcomingPayments)
-  const flagged = recurring.filter(r => r.usageFlag === 'unused' || r.usageFlag === 'low')
-  if (flagged.length > 0) {
-    const names = flagged.map(r => `${r.merchantName} (${r.usageFlag})`).join(', ')
-    parts.push(`Subscriptions flagged for low or no usage: ${names}. These may be worth reviewing.`)
-  }
-
-  // Pending approvals (mirrors ApprovalQueue — amount, max, due date)
-  const pending = approvals.filter(a => a.status === 'pending')
-  if (pending.length > 0) {
-    const details = pending.map(a => {
-      const range =
-        a.expectedAmountMax > a.expectedAmount
-          ? `${fmtK(a.expectedAmount)} to ${fmtK(a.expectedAmountMax)}`
-          : fmtK(a.expectedAmount)
-      return `${a.merchantName} — ${range} — due ${relativeDate(a.expectedDate)}`
-    }).join('; ')
-    parts.push(
-      `${pending.length} payment${pending.length !== 1 ? 's' : ''} need${pending.length === 1 ? 's' : ''} your approval: ${details}.`
-    )
-  }
-
-  // ═════════════════════════════════════════════════════════════════════════
-  // INSIGHTS — top alerts by urgency
-  // ═════════════════════════════════════════════════════════════════════════
-  const urgencyRank: Record<string, number> = { high: 0, medium: 1, low: 2 }
-  const activeInsights = insights
-    .filter(i => !i.dismissed)
-    .sort((a, b) => urgencyRank[a.urgency] - urgencyRank[b.urgency])
-    .slice(0, 3)
-
-  if (activeInsights.length > 0) {
-    parts.push(`Top insight${activeInsights.length > 1 ? 's' : ''}:`)
-    activeInsights.forEach((ins, i) => {
-      parts.push(`${i + 1}. ${stripMd(ins.headline)}. ${stripMd(ins.body)}`)
-    })
-  }
-
-  // ── Closing ────────────────────────────────────────────────────────────────
-  parts.push(
-    "That's your HELM briefing. Review the dashboard for the full picture and take action on any flagged items."
-  )
+  // ── Closing ──────────────────────────────────────────────────────────────
+  parts.push("That's everything for now. Full details are on the dashboard whenever you need them.")
 
   return parts.join(' ')
 }
