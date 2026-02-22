@@ -52,7 +52,25 @@ const defaults: DashboardData = {
 const DashboardContext = createContext<DashboardData>(defaults)
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<DashboardData>(defaults)
+  const [data, setData] = useState<DashboardData>(() => {
+    if (typeof window === 'undefined') return defaults
+    const storedName = localStorage.getItem('helm_org_name')
+    const storedSize = localStorage.getItem('helm_team_size')
+    const storedBiz  = localStorage.getItem('helm_biz_type')
+    if (!storedName && !storedSize && !storedBiz) return defaults
+    const bizMap: Record<string, Organisation['businessType']> = {
+      saas: 'software', physical: 'physical_goods', services: 'software', individual: 'software',
+    }
+    return {
+      ...defaults,
+      org: {
+        ...defaults.org,
+        ...(storedName && { name: storedName }),
+        ...(storedSize && { employeeCount: parseInt(storedSize) || defaults.org.employeeCount }),
+        ...(storedBiz && { businessType: bizMap[storedBiz] ?? defaults.org.businessType }),
+      },
+    }
+  })
 
   useEffect(() => {
     async function fetchAll() {

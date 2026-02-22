@@ -15,6 +15,7 @@ import {
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
 import { formatCurrency, cn } from '@/lib/utils'
 import { FALLBACK_HEALTH, FALLBACK_SUBSCRIPTIONS } from '@/lib/insights-fallback'
+import { useDashboard } from '@/lib/dashboard-context'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -141,12 +142,13 @@ function SkeletonBlock({ h = 'h-24', className = '' }: { h?: string; className?:
 
 // ─── Section 1: Executive Briefing ───────────────────────────────────────────
 
-function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRunway }: {
+function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRunway, orgName }: {
   briefing: HealthData['executive_briefing']
   score: number
   savings: number
   profitMarginPct: number
   monthsRunway: number
+  orgName: string
 }) {
   const [expanded, setExpanded] = useState(true)
   const scoreColor = score >= 70 ? '#00D4A0' : score >= 40 ? '#C49040' : '#B85858'
@@ -200,7 +202,7 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
               HELM Intelligence · Executive Briefing
             </span>
           </div>
-          <h2 className="text-xl font-bold text-text-primary mb-2 leading-tight">Wataru Endo Wholesale</h2>
+          <h2 className="text-xl font-bold text-text-primary mb-2 leading-tight">{orgName}</h2>
           <div className="flex items-center gap-3 flex-wrap">
             <span
               className="text-xs font-semibold px-2.5 py-1 rounded-full border"
@@ -809,6 +811,7 @@ function PurchaseAdvisor() {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function InsightsPage() {
+  const { org } = useDashboard()
   const [health, setHealth] = useState<HealthData | null>(null)
   const [sub, setSub] = useState<SubData | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
@@ -867,7 +870,7 @@ export default function InsightsPage() {
   )
 
   return (
-    <PageShell tag="WATARU ENDO WHOLESALE" title="Intelligence Hub" topBarRight={topBarRight}>
+    <PageShell tag={org.name.toUpperCase()} title="Intelligence Hub" topBarRight={topBarRight}>
       {loading ? (
         <div className="space-y-8">
           <SkeletonBlock h="h-56" />
@@ -888,6 +891,7 @@ export default function InsightsPage() {
               savings={sub.total_estimated_monthly_savings}
               profitMarginPct={health.profit_margin_pct}
               monthsRunway={health.avg_monthly_burn > 0 ? Math.round((health.net_worth / health.avg_monthly_burn) * 10) / 10 : 0}
+              orgName={org.name}
             />
           </div>
 

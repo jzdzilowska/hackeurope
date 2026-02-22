@@ -6,7 +6,7 @@ import type {
 // ─── Organisation ─────────────────────────────────────────────────────────────
 export const mockOrg: Organisation = {
   id: 'org_techflow',
-  name: 'TechFlow Labs',
+  name: 'Artisan Home Furnishings',
   logoUrl: undefined,
   employeeCount: 12,
   stripeCustomerId: 'cus_Qx3kLmN8pR2wT',

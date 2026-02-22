@@ -1158,7 +1158,12 @@ export default function OnboardingPage() {
               </div>
 
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={() => {
+                  if (orgName.trim()) localStorage.setItem('helm_org_name', orgName.trim())
+                  if (teamSize) localStorage.setItem('helm_team_size', teamSize)
+                  if (bizType) localStorage.setItem('helm_biz_type', bizType)
+                  router.push('/dashboard')
+                }}
                 className="w-full py-3 rounded-xl text-sm font-semibold bg-accent text-black hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 Open HELM <ArrowRight size={14} />
