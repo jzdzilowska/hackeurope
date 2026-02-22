@@ -46,6 +46,17 @@
   --skeleton-mid: #EFEFF4;
   --svg-ring: rgba(0,0,0,0.05);
   --grain-opacity: 0.0;
+  /* Cash-card adaptive colours (light mode) */
+  --cc-bg: #F3F4F6;
+  --cc-c1: rgba(14,14,16,0.90);
+  --cc-c2: rgba(14,14,16,0.70);
+  --cc-c3: rgba(14,14,16,0.56);
+  --cc-c4: rgba(14,14,16,0.42);
+  --cc-c5: rgba(14,14,16,0.30);
+  --cc-c6: rgba(14,14,16,0.15);
+  --cc-dot: rgba(14,14,16,0.65);
+  --cc-bd: rgba(0,0,0,0.07);
+  --cc-btn-bd: rgba(0,0,0,0.12);
 }
 
 .dark {
@@ -84,6 +95,17 @@
   --skeleton-mid: #272523;
   --svg-ring: rgba(255,255,255,0.035);
   --grain-opacity: 0.0;
+  /* Cash-card adaptive colours (dark mode) */
+  --cc-bg: #141210;
+  --cc-c1: rgba(255,255,255,1);
+  --cc-c2: rgba(255,255,255,0.85);
+  --cc-c3: rgba(255,255,255,0.80);
+  --cc-c4: rgba(255,255,255,0.60);
+  --cc-c5: rgba(255,255,255,0.45);
+  --cc-c6: rgba(255,255,255,0.25);
+  --cc-dot: rgba(255,255,255,0.90);
+  --cc-bd: rgba(255,255,255,0.12);
+  --cc-btn-bd: rgba(255,255,255,0.22);
 }
 
 @layer base {
@@ -134,43 +156,41 @@
   /* ── Mono numbers ── */
   .mono { font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
 
-  /* ── Dark cash card with drifting corner orbs ── */
+  /* ── Cash card — off-white in light, dark in dark ── */
   .cash-card-grain {
-    background-color: #141210;
+    background-color: var(--cc-bg);
     position: relative;
     overflow: hidden;
   }
-  /* Orb 1 — top-right */
-  .cash-card-grain::before {
-    content: '';
+
+  /* Orb visuals — positioned absolutely, moved entirely by Framer */
+  .cash-card-orb-1-visual,
+  .cash-card-orb-2-visual {
     position: absolute;
-    width: 75%;
-    height: 75%;
     border-radius: 50%;
-    top: -25%;
-    right: -15%;
     pointer-events: none;
     z-index: 1;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.05) 40%, transparent 72%);
-    filter: blur(28px);
-    mix-blend-mode: screen;
-    animation: orb-drift-1 18s ease-in-out infinite;
   }
-  /* Orb 2 — bottom-left */
-  .cash-card-grain::after {
-    content: '';
-    position: absolute;
-    width: 65%;
-    height: 65%;
-    border-radius: 50%;
-    bottom: -22%;
-    left: -10%;
-    pointer-events: none;
-    z-index: 1;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 45%, transparent 72%);
+  .cash-card-orb-1-visual {
+    width: 75%; height: 75%;
+    top: -25%; right: -15%;
+    background: radial-gradient(circle at center, rgba(140,138,150,0.30) 0%, rgba(140,138,150,0.10) 42%, transparent 72%);
+    filter: blur(28px);
+  }
+  .cash-card-orb-2-visual {
+    width: 65%; height: 65%;
+    bottom: -22%; left: -10%;
+    background: radial-gradient(circle at center, rgba(140,138,150,0.22) 0%, rgba(140,138,150,0.07) 48%, transparent 72%);
     filter: blur(32px);
+  }
+  /* Dark mode — white screen-blended orbs */
+  .dark .cash-card-orb-1-visual {
+    background: radial-gradient(circle at center, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.05) 40%, transparent 72%);
     mix-blend-mode: screen;
-    animation: orb-drift-2 22s ease-in-out infinite;
+  }
+  .dark .cash-card-orb-2-visual {
+    background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 45%, transparent 72%);
+    mix-blend-mode: screen;
   }
 
   /* ── Light bank account cards — gray drifting orbs on white surface ── */

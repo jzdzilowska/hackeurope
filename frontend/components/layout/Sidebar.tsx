@@ -26,7 +26,7 @@ export default function Sidebar() {
   useEffect(() => setMounted(true), [])
 
   return (
-    <aside className="w-[210px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/50 bg-background/95 backdrop-blur-sm z-20">
+    <aside className="w-[210px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/50 bg-surface/90 backdrop-blur-sm z-20">
 
       {/* ── Logo ── */}
       <div className="px-6 pt-7 pb-6">
