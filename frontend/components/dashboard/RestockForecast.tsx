@@ -40,7 +40,7 @@ interface RestockData {
 
 const confidenceColors: Record<string, string> = {
   high: '#0a7030',
-  medium: '#9e5a00',
+  medium: '#FFB300',
   low: '#3e5e84',
 }
 
@@ -145,7 +145,7 @@ export default function RestockForecast() {
                 type="monotone"
                 dataKey="restock"
                 name="Restock"
-                stroke="#9e5a00"
+                stroke="#FFB300"
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
                 dot={false}
