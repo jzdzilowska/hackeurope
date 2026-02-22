@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -20,6 +21,8 @@ export default function Sidebar() {
   const pathname = usePathname()
   const { org: mockOrg, kpis: mockKPIs } = useDashboard()
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   return (
     <aside className="w-[210px] flex-shrink-0 flex flex-col h-screen sticky top-0 border-r border-border/50 bg-background/95 backdrop-blur-sm z-20">
@@ -151,8 +154,8 @@ export default function Sidebar() {
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-surface-raised/60 transition-colors cursor-pointer text-xs"
         >
-          {theme === 'dark' ? <Sun size={13} strokeWidth={1.8} /> : <Moon size={13} strokeWidth={1.8} />}
-          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+          {mounted && theme === 'dark' ? <Sun size={13} strokeWidth={1.8} /> : <Moon size={13} strokeWidth={1.8} />}
+          <span>{mounted && theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
         </button>
         <Link href="/settings">
           <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-surface-raised/60 transition-colors cursor-pointer">
