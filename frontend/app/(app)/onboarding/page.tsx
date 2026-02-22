@@ -245,7 +245,7 @@ function MockPlaidModal({
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search for your bank..."
-                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                    className="w-full bg-white pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                     autoFocus
                   />
                 </div>
