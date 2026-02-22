@@ -187,17 +187,16 @@ function Hero() {
         {/* Headline */}
         <FadeUp delay={0.1}>
           <h1 className="text-4xl sm:text-5xl md:text-[64px] font-bold tracking-tight leading-[1.1] mb-6">
-            <span className="text-sage-cream">Your wholesale finances.</span>
+            <span className="text-sage-cream">See your true working capital —</span>
             <br />
-            <span className="text-text-primary">Finally clear.</span>
+            <span className="text-text-primary">not just your bank balance.</span>
           </h1>
         </FadeUp>
 
         {/* Subheadline */}
         <FadeUp delay={0.2}>
           <p className="text-base sm:text-lg text-text-secondary max-w-2xl mx-auto mb-10 leading-relaxed">
-            Connect your banks, scan invoices from email, and get AI-powered insights
-            that help you manage cash flow and protect your margins.
+            Connect multiple bank accounts, automatically extract invoices from Gmail, reconstruct historical cash positions, and project your balance forward based on real receivables and payables.
           </p>
         </FadeUp>
 
@@ -361,28 +360,28 @@ const painPoints = [
   {
     icon: Banknote,
     title: 'Cash flow surprises',
-    desc: 'You pay suppliers in 15 days but customers pay you in 60. The gap is killing your margins.',
+    desc: 'You pay suppliers in 15 days but customers pay you in 60. The gap distorts your working capital — and you only see it after the fact.',
     color: 'text-danger',
     bg: 'bg-danger/10',
   },
   {
     icon: ScrollText,
     title: 'Invoice chaos',
-    desc: 'Invoices arrive by email, PDF, post. Matching them to payments is a full-time job.',
+    desc: 'Invoices arrive by email, PDF, post. Runwave parses them automatically and matches them to bank transactions in real time.',
     color: 'text-warning',
     bg: 'bg-warning/10',
   },
   {
     icon: Hourglass,
     title: 'Slow-paying customers',
-    desc: "Three customers are 30+ days late. You find out when you manually check the books.",
+    desc: "Three customers are 30+ days late. Runwave builds a receivables matrix that shows exactly who owes you, how long, and how it impacts cash.",
     color: 'text-chart-amber',
     bg: 'bg-chart-amber/10',
   },
   {
     icon: EyeOff,
     title: 'Hidden cost creep',
-    desc: "Material costs went up 15% but your prices didn't. You discover the margin hit at quarter-end.",
+    desc: "Material costs went up 15% but your prices didn't. Runwave detects price creep and supplier cost changes as they appear in transaction data.",
     color: 'text-chart-pink',
     bg: 'bg-chart-pink/10',
   },
@@ -409,7 +408,7 @@ function PainPoints() {
               </div>
               <h2 className="text-4xl md:text-5xl font-bold text-text-primary mb-6 leading-[1.1]">
                 Sound familiar? <br />
-                <span className="text-text-muted">It's costing you more than you think.</span>
+                <span className="text-text-muted">You're managing cash without seeing the cycle.</span>
               </h2>
               <p className="text-lg text-text-secondary leading-relaxed mb-8 max-w-md">
                 Every wholesale business hits these structural problems. By the time they show up in your bank balance, the damage is already done.
@@ -540,10 +539,10 @@ function Features() {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-accent">Feature Set v2.0</span>
               </div>
               <h2 className="text-4xl font-bold text-text-primary mb-6 leading-tight">
-                Everything you need to <span className="text-sage-cream">dominate your niche.</span>
+                Core financial systems — <span className="text-sage-cream">automated.</span>
               </h2>
               <p className="text-lg text-text-secondary leading-relaxed mb-8">
-                Runwave isn't a general ledger. It's a high-precision tool built for the specific physics of wholesale: large orders, slow payments, and thin margins.
+                Runwave reconstructs your historical cash position, projects forward from structured invoices, models inventory lag, and calculates deployable surplus — automatically.
               </p>
               <div className="space-y-4">
                 {[
@@ -577,7 +576,7 @@ function Features() {
                     </div>
                     <h3 className="text-3xl font-bold text-white mb-4">Claude-Powered Reasoning</h3>
                     <p className="text-white/60 text-lg leading-relaxed mb-8">
-                      Runwave doesn't just show charts. It reasons about your data. It spots the material cost creep before your quarter-end report even starts.
+                      Runwave runs concurrent financial detection modules across your transactions — then surfaces structured, prioritised findings.
                     </p>
                     <div className="inline-flex items-center gap-2 text-white font-semibold group/link cursor-pointer">
                       <span>Explore the Insights engine</span>
@@ -607,7 +606,7 @@ function Features() {
                 </div>
                 <h3 className="text-xl font-bold text-text-primary mb-3">Invoice Auto-Pilot</h3>
                 <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                  Forward any invoice to your @runwave.finance address. Gemini parses it, matches it to a bank transaction, and flags any discrepancies.
+                  Forward any invoice to your @runwave address. Runwave extracts vendor, amount, currency, and due date, writes it to your ledger, and matches it to your bank transactions automatically.
                 </p>
                 {/* Visual detail */}
                 <div className="mt-auto pt-6 opacity-40 group-hover:opacity-100 transition-opacity duration-500">
@@ -630,7 +629,7 @@ function Features() {
                 </div>
                 <h3 className="text-xl font-bold text-text-primary mb-3">Receivables Matrix</h3>
                 <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                  Stop chasing the wrong people. See exactly who owes you, for how long, and what your weighted DSO looks like across your entire client base.
+                  See every outstanding invoice, ageing by customer, weighted DSO, and projected cash impact — updated as payments reconcile.
                 </p>
                 <div className="mt-auto space-y-2">
                   <div className="h-2 w-full bg-surface-high rounded-pill overflow-hidden">
@@ -675,8 +674,7 @@ function AIDeepDive() {
                 <span className="text-sage-cream">Real wholesale intelligence.</span>
               </h2>
               <p className="text-text-secondary leading-relaxed mb-6">
-                Runwave understands suppliers, seasonal cycles, payment terms, and freight costs.
-                Ask it anything about your finances in plain English.
+                Runwave operates on your computed financial state — cash position, surplus model, restock lag, receivables ageing — and answers operational questions in plain English.
               </p>
               <ul className="space-y-3">
                 {[
