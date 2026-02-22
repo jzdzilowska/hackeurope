@@ -32,53 +32,46 @@ interface ConnectedItem {
   accounts:        MockAccount[]
 }
 
-// ── Mock institution data (mirrors Plaid sandbox) ──────────────────────
+// ── Mock institution data (Plaid sandbox test banks) ────────────────────
 const MOCK_INSTITUTIONS = [
   {
-    id:      'ins_bank_of_ireland',
-    name:    'Bank of Ireland',
-    color:   '#003399',
-    abbr:    'BoI',
+    id:      'ins_109508',
+    name:    'First Platypus Bank',
+    color:   '#1A5276',
+    abbr:    'FPB',
     accounts: [
-      { id: 'acc_boi_001', name: 'Business Current', balance: 38200.00, currency: 'EUR', type: 'depository', mask: '4821' },
-      { id: 'acc_boi_002', name: 'Reserve Savings',  balance: 9030.00,  currency: 'EUR', type: 'savings',    mask: '7743' },
+      { id: 'acc_fpb_001', name: 'Plaid Checking', balance: 110.00,  currency: 'USD', type: 'depository', mask: '0000' },
+      { id: 'acc_fpb_002', name: 'Plaid Saving',   balance: 210.00,  currency: 'USD', type: 'savings',    mask: '1111' },
     ],
   },
   {
-    id:      'ins_revolut',
-    name:    'Revolut Business',
-    color:   '#191C1F',
-    abbr:    'Rev',
+    id:      'ins_109509',
+    name:    'First Gingham Credit Union',
+    color:   '#6C3483',
+    abbr:    'FGC',
     accounts: [
-      { id: 'acc_rev_001', name: 'EUR Account',      balance: 28920.00, currency: 'EUR', type: 'depository', mask: '1190' },
-      { id: 'acc_rev_002', name: 'USD Account',      balance: 10000.00, currency: 'USD', type: 'depository', mask: '2204' },
+      { id: 'acc_fgc_001', name: 'Plaid Checking', balance: 1120.00, currency: 'USD', type: 'depository', mask: '2222' },
+      { id: 'acc_fgc_002', name: 'Plaid Saving',   balance: 840.00,  currency: 'USD', type: 'savings',    mask: '3333' },
     ],
   },
   {
-    id:      'ins_wise',
-    name:    'Wise',
-    color:   '#00B9FF',
-    abbr:    'Wise',
+    id:      'ins_109510',
+    name:    'Tattersall Federal Credit Union',
+    color:   '#1E8449',
+    abbr:    'TFC',
     accounts: [
-      { id: 'acc_wise_001', name: 'Wise Business EUR', balance: 12840.00, currency: 'EUR', type: 'depository', mask: '9901' },
+      { id: 'acc_tfc_001', name: 'Plaid Checking', balance: 2310.00, currency: 'USD', type: 'depository', mask: '4444' },
+      { id: 'acc_tfc_002', name: 'Plaid Saving',   balance: 1550.00, currency: 'USD', type: 'savings',    mask: '5555' },
     ],
   },
   {
-    id:      'ins_hsbc',
-    name:    'HSBC Business',
-    color:   '#DB0011',
-    abbr:    'HSBC',
+    id:      'ins_109511',
+    name:    'Tartan Bank',
+    color:   '#C0392B',
+    abbr:    'TB',
     accounts: [
-      { id: 'acc_hsbc_001', name: 'Business Current',  balance: 5500.00, currency: 'EUR', type: 'depository', mask: '6612' },
-    ],
-  },
-  {
-    id:      'ins_monzo',
-    name:    'Monzo Business',
-    color:   '#FF3464',
-    abbr:    'Mnz',
-    accounts: [
-      { id: 'acc_mnz_001', name: 'Current Account',    balance: 7200.00, currency: 'GBP', type: 'depository', mask: '3310' },
+      { id: 'acc_tb_001', name: 'Plaid Checking', balance: 5340.00, currency: 'USD', type: 'depository', mask: '6666' },
+      { id: 'acc_tb_002', name: 'Plaid Saving',   balance: 2890.00, currency: 'USD', type: 'savings',    mask: '7777' },
     ],
   },
 ]
