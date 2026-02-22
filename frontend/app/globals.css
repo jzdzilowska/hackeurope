@@ -46,17 +46,17 @@
   --skeleton-mid: #EFEFF4;
   --svg-ring: rgba(0,0,0,0.05);
   --grain-opacity: 0.0;
-  /* Cash-card — silver metallic, black text (light mode) */
-  --cc-bg: linear-gradient(145deg, #C2C4CC 0%, #D4D6DE 28%, #C8CAD2 52%, #DCDEE6 76%, #CCCED6 100%);
-  --cc-c1: rgba(0,0,0,1.00);
-  --cc-c2: rgba(0,0,0,0.90);
-  --cc-c3: rgba(0,0,0,0.75);
-  --cc-c4: rgba(0,0,0,0.60);
-  --cc-c5: rgba(0,0,0,0.45);
-  --cc-c6: rgba(0,0,0,0.28);
-  --cc-dot: rgba(0,0,0,0.85);
-  --cc-bd: rgba(0,0,0,0.20);
-  --cc-btn-bd: rgba(0,0,0,0.25);
+  /* Cash-card — silver metallic, white text (light mode) */
+  --cc-bg: linear-gradient(145deg, #8C8E96 0%, #AAACB4 28%, #9A9CA4 52%, #B4B6BE 76%, #9E9FA8 100%);
+  --cc-c1: rgba(255,255,255,1.00);
+  --cc-c2: rgba(255,255,255,1.00);
+  --cc-c3: rgba(255,255,255,1.00);
+  --cc-c4: rgba(255,255,255,1.00);
+  --cc-c5: rgba(255,255,255,1.00);
+  --cc-c6: rgba(255,255,255,1.00);
+  --cc-dot: rgba(255,255,255,1.00);
+  --cc-bd: rgba(255,255,255,0.80);
+  --cc-btn-bd: rgba(255,255,255,0.80);
 }
 
 .dark {
@@ -159,6 +159,7 @@
   /* ── Cash card — silver in light, dark in dark, with drifting corner orbs ── */
   .cash-card-grain {
     background: var(--cc-bg);
+    color: white;
     border: 1px solid rgba(255,255,255,0.18);
     box-shadow: 0 2px 12px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.35);
     position: relative;

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     }
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}/stream`,
       {
         method: 'POST',
         headers: {
@@ -32,15 +32,14 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_multilingual_v2',
+          model_id: 'eleven_flash_v2_5',
           voice_settings: {
-            stability: 0.3,
-            similarity_boost: 0.7,
-            style: 0.4,
-            use_speaker_boost: true,
+            stability: 0.45,
+            similarity_boost: 0.75,
+            use_speaker_boost: false,
           },
         }),
-        signal: AbortSignal.timeout(30000),
+        signal: AbortSignal.timeout(20000),
       }
     )
 
@@ -53,12 +52,10 @@ export async function POST(req: Request) {
       )
     }
 
-    const audioBuffer = await response.arrayBuffer()
-
-    return new Response(audioBuffer, {
+    // Stream audio directly — no need to buffer the full file first
+    return new Response(response.body, {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Content-Length': audioBuffer.byteLength.toString(),
         'Cache-Control': 'no-store',
       },
     })

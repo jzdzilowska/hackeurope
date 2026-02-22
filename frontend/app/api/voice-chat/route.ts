@@ -4,8 +4,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 
 export const dynamic = 'force-dynamic'
 
+function slimContext(ctx: Record<string, unknown> | null): string {
+  if (!ctx) return 'No data available.'
+  // Only send the fields the voice agent actually needs — keeps the prompt small and fast
+  const slim: Record<string, unknown> = {}
+  const keep = ['org', 'kpis', 'accounts', 'insights', 'recurring', 'approvals']
+  for (const k of keep) if (ctx[k] !== undefined) slim[k] = ctx[k]
+  return JSON.stringify(slim)
+}
+
 function buildSystemPrompt(ctx: Record<string, unknown> | null): string {
-  const data = ctx ? JSON.stringify(ctx, null, 2) : 'No data available.'
+  const data = slimContext(ctx)
   return `You are Runwave, a financial AI assistant built into a voice-enabled business dashboard. You're answering spoken questions out loud — so your responses must sound completely natural when read aloud by a voice assistant.
 
 Strict rules:
@@ -40,10 +49,10 @@ export async function POST(req: Request) {
       try {
         const groq = new Groq({ apiKey: groqKey })
         const result = await groq.chat.completions.create({
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama-3.1-8b-instant',
           messages: [{ role: 'system', content: systemPrompt }, ...messages],
-          max_tokens: 160,
-          temperature: 0.6,
+          max_tokens: 120,
+          temperature: 0.5,
         })
         const reply = result.choices[0].message.content ?? ''
         return NextResponse.json({ reply, model: 'groq' })
