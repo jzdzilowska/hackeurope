@@ -53,7 +53,6 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-text-primary truncate leading-tight">{mockOrg.name}</p>
-            <p className="text-2xs text-text-muted">{mockOrg.employeeCount} people</p>
           </div>
         </div>
       </div>
