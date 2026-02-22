@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
 import Sidebar              from '@/components/layout/Sidebar'
@@ -12,9 +12,31 @@ import SurplusChart         from '@/components/dashboard/SurplusChart'
 import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
 import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
 import AIChat               from '@/components/dashboard/AIChat'
-import { useDashboard } from '@/lib/dashboard-context'
+import InvoiceToast         from '@/components/ui/InvoiceToast'
+import { useDashboard }     from '@/lib/dashboard-context'
 
-// ── Editorial section header component ──────────────────────────────────
+// Computes a human-readable "just now / Xs ago / Xm ago" label,
+// re-evaluated every second so it stays fresh without a page reload.
+function useSyncLabel(lastSynced: Date | null): string {
+  const [label, setLabel] = useState('syncing…')
+
+  useEffect(() => {
+    const compute = () => {
+      if (!lastSynced) { setLabel('syncing…'); return }
+      const diff = Math.floor((Date.now() - lastSynced.getTime()) / 1000)
+      if (diff < 8)        setLabel('just now')
+      else if (diff < 60)  setLabel(`${diff}s ago`)
+      else                 setLabel(`${Math.floor(diff / 60)}m ago`)
+    }
+    compute()
+    const id = setInterval(compute, 1000)
+    return () => clearInterval(id)
+  }, [lastSynced])
+
+  return label
+}
+
+// ── Editorial section header ─────────────────────────────────────────────────
 function SectionHeader({
   tag,
   title,
@@ -45,9 +67,18 @@ function SectionHeader({
 }
 
 export default function DashboardPage() {
-  const { org: mockOrg, approvals: mockApprovals, accounts: mockAccounts } = useDashboard()
+  const {
+    org,
+    accounts,
+    approvals,
+    newInvoiceAlert,
+    clearInvoiceAlert,
+    lastSynced,
+  } = useDashboard()
+
   const [chatOpen, setChatOpen] = useState(false)
-  const pendingCount = mockApprovals.filter(a => a.status === 'pending').length
+  const syncLabel = useSyncLabel(lastSynced)
+  const pendingCount = approvals.filter(a => a.status === 'pending').length
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -60,15 +91,16 @@ export default function DashboardPage() {
         <div className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 bg-background/80 backdrop-blur-md border-b border-border/30">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-disabled mb-0.5">
-              {mockOrg.name}
+              {org.name}
             </p>
             <h1 className="text-base font-bold text-text-primary tracking-tight">Overview</h1>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Approval badge */}
+            {/* Approval badge — count updates live as invoices arrive */}
             {pendingCount > 0 && (
               <motion.div
+                key={pendingCount}
                 initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-accent/8 border border-accent/18 text-xs font-medium text-accent cursor-pointer hover:bg-accent/12 transition-colors"
@@ -128,43 +160,47 @@ export default function DashboardPage() {
           <div>
             <SectionHeader tag="PAYMENTS" title="Upcoming & Approvals" action="All payments" />
             <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
-                <UpcomingPayments />
-              </div>
-              <div className="col-span-1">
-                <ApprovalQueue />
-              </div>
+              <div className="col-span-2"><UpcomingPayments /></div>
+              <div className="col-span-1"><ApprovalQueue /></div>
             </div>
           </div>
 
           <div className="h-4" />
         </div>
 
-        {/* ── Live status widget — bottom left (Dwarf-inspired) ── */}
+        {/* ── Live status widget ── */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.4 }}
           className="fixed bottom-5 left-[226px] z-30"
         >
-          <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md bg-surface/90"
-          >
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md bg-surface/90">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-40" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
             </span>
             <span className="text-2xs text-text-secondary font-medium">
-              {mockAccounts.length} accounts live
+              {accounts.length} accounts live
             </span>
             <span className="text-2xs text-text-disabled">·</span>
-            <span className="text-2xs text-text-disabled">synced 2m ago</span>
+            <motion.span
+              key={syncLabel}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-2xs text-text-disabled"
+            >
+              {syncLabel}
+            </motion.span>
           </div>
         </motion.div>
       </div>
 
       {/* ── AI Chat sliding panel ── */}
       <AIChat open={chatOpen} onClose={() => setChatOpen(false)} />
+
+      {/* ── Live invoice toast — bottom right ── */}
+      <InvoiceToast invoice={newInvoiceAlert} onDismiss={clearInvoiceAlert} />
     </div>
   )
 }
