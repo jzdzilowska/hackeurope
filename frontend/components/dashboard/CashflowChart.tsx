@@ -78,7 +78,7 @@ export default function CashflowChart() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="card p-5 flex flex-col"
+      className="card p-5 flex flex-col h-full"
     >
       <div className="flex items-center justify-between mb-5">
         <div>
@@ -102,11 +102,11 @@ export default function CashflowChart() {
       </div>
 
       {loading ? (
-        <div className="h-[200px] flex items-center justify-center">
+        <div className="flex-1 min-h-[200px] flex items-center justify-center">
           <p className="text-xs text-text-disabled animate-pulse">Loading cash flow…</p>
         </div>
       ) : (
-        <div className="h-[200px]">
+        <div className="flex-1 min-h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
               <defs>

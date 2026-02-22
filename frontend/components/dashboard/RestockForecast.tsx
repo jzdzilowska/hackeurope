@@ -94,7 +94,7 @@ export default function RestockForecast() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="card p-5 flex flex-col"
+      className="card p-5 flex flex-col h-full"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -113,17 +113,17 @@ export default function RestockForecast() {
       </div>
 
       {loading ? (
-        <div className="h-[140px] flex items-center justify-center">
+        <div className="flex-1 min-h-[140px] flex items-center justify-center">
           <p className="text-xs text-text-disabled animate-pulse">Analysing patterns…</p>
         </div>
       ) : !data || data.confidence === 'low' ? (
-        <div className="h-[140px] flex flex-col items-center justify-center gap-2 text-center">
+        <div className="flex-1 min-h-[140px] flex flex-col items-center justify-center gap-2 text-center">
           <AlertCircle size={20} className="text-text-disabled" />
           <p className="text-xs text-text-muted">Insufficient sales data to detect lag pattern.</p>
           <p className="text-[10px] text-text-disabled">Need ≥ 4 weeks of sales & supplier activity.</p>
         </div>
       ) : (
-        <div className="h-[140px]">
+        <div className="flex-1 min-h-[140px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <XAxis

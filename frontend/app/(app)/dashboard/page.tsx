@@ -109,12 +109,12 @@ export default function DashboardPage() {
           {/* Section 2: Analytics grid — cashflow, restock, surplus */}
           <div>
             <SectionHeader tag="ANALYTICS" title="Financial Intelligence" />
-            <div className="grid grid-cols-3 gap-4">
-              {/* Row 1: Cashflow (wide) + Restock (narrow) */}
-              <div className="col-span-2">
+            <div className="grid grid-cols-3 gap-4 grid-rows-[auto_auto]">
+              {/* Row 1: Cashflow (wide) + Restock (narrow) — matched height */}
+              <div className="col-span-2 [&>*]:h-full">
                 <CashflowChart />
               </div>
-              <div className="col-span-1">
+              <div className="col-span-1 [&>*]:h-full">
                 <RestockForecast />
               </div>
               {/* Row 2: Surplus (full width) */}

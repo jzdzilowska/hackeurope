@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { TrendingUp, RefreshCw, ArrowUpRight } from 'lucide-react'
+import { TrendingUp, RefreshCw, ArrowUpRight, Building2 } from 'lucide-react'
 import { formatCurrency, formatTimeAgo } from '@/lib/utils'
 import { useDashboard } from '@/lib/dashboard-context'
 
@@ -12,10 +13,24 @@ export default function CashPositionHero() {
     mockAccounts[0]?.lastSynced ?? new Date().toISOString()
   )
 
+  // Deduplicate institutions and sum balances
+  const institutionMap = new Map<string, { color: string; total: number; count: number }>()
+  for (const acc of mockAccounts) {
+    const existing = institutionMap.get(acc.institution)
+    if (existing) {
+      existing.total += acc.currentBalance
+      existing.count += 1
+    } else {
+      institutionMap.set(acc.institution, { color: acc.institutionColor, total: acc.currentBalance, count: 1 })
+    }
+  }
+  const institutions = [...institutionMap.entries()]
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 3)
+
   return (
     <div
-      className="relative overflow-hidden rounded-card border border-border/60 bg-surface"
-      style={{ minHeight: '200px' }}
+      className="relative overflow-hidden rounded-card border border-border/60 bg-surface h-full"
     >
       {/* Subtle overlay */}
       <div
@@ -24,7 +39,7 @@ export default function CashPositionHero() {
       />
 
       {/* Content */}
-      <div className="relative z-10 p-7">
+      <div className="relative z-10 p-7 flex flex-col h-full">
         {/* Top row: label + sync */}
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -50,7 +65,7 @@ export default function CashPositionHero() {
         </div>
 
         {/* Hero number */}
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between flex-1">
           <div>
             <motion.h1
               initial={{ opacity: 0, y: 14 }}
@@ -72,43 +87,47 @@ export default function CashPositionHero() {
             </motion.div>
           </div>
 
-          {/* ArrowUpRight — editorial ↗ CTA */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.4 }}
-            className="mb-1 p-2 rounded-lg border border-border/50 text-text-muted hover:text-text-primary hover:border-border-focus transition-all cursor-pointer"
-          >
-            <ArrowUpRight size={16} />
-          </motion.div>
+          {/* ArrowUpRight — routes to accounts page */}
+          <Link href="/accounts">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
+              className="mb-1 p-2 rounded-lg border border-border/50 text-text-muted hover:text-text-primary hover:border-border-focus transition-all cursor-pointer"
+            >
+              <ArrowUpRight size={16} />
+            </motion.div>
+          </Link>
         </div>
 
-        {/* Account breakdown strip */}
+        {/* Compact account summary */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.38 }}
-          className="flex items-center gap-2 flex-wrap mt-6 pt-5 border-t border-border/30"
+          className="flex items-center gap-3 mt-6 pt-5 border-t border-border/30"
         >
-          {mockAccounts.map((acc, i) => (
-            <motion.div
-              key={acc.id}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.28, delay: 0.45 + i * 0.07 }}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-border/50 bg-surface-high/40 hover:bg-surface-high/60 hover:border-border-focus transition-all cursor-default"
-            >
-              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: acc.institutionColor }} />
-              <span className="text-2xs text-text-muted">{acc.institution}</span>
+          <Building2 size={12} className="text-text-disabled flex-shrink-0" />
+          {institutions.map(([name, inst], i) => (
+            <div key={name} className="flex items-center gap-1.5">
+              {i > 0 && <span className="text-text-disabled">·</span>}
+              <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: inst.color }} />
+              <span className="text-2xs text-text-muted">{name}</span>
               <span className="text-2xs font-semibold mono text-text-secondary">
-                {formatCurrency(acc.currentBalance, acc.currency, true)}
+                {formatCurrency(inst.total, 'EUR', true)}
               </span>
-            </motion.div>
+            </div>
           ))}
-
-          <span className="text-2xs text-text-disabled ml-auto">
-            {mockAccounts.length} institutions
-          </span>
+          {institutionMap.size > 3 && (
+            <Link href="/accounts" className="text-2xs text-text-disabled hover:text-text-muted transition-colors ml-auto">
+              +{institutionMap.size - 3} more →
+            </Link>
+          )}
+          {institutionMap.size <= 3 && (
+            <Link href="/accounts" className="text-2xs text-text-disabled hover:text-text-muted transition-colors ml-auto">
+              {mockAccounts.length} accounts →
+            </Link>
+          )}
         </motion.div>
       </div>
     </div>
