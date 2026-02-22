@@ -142,12 +142,13 @@ function SkeletonBlock({ h = 'h-24', className = '' }: { h?: string; className?:
 
 // ─── Section 1: Executive Briefing ───────────────────────────────────────────
 
-function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRunway, orgName }: {
+function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRunway, stressedRunwayMonths, orgName }: {
   briefing: HealthData['executive_briefing']
   score: number
   savings: number
   profitMarginPct: number
   monthsRunway: number
+  stressedRunwayMonths: number | null
   orgName: string
 }) {
   const [expanded, setExpanded] = useState(true)
@@ -230,7 +231,9 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
             </div>
             <div className="flex-1 px-3 py-2 text-center">
               <p className="text-[10px] text-text-disabled uppercase tracking-widest">Stressed runway</p>
-              <p className="text-sm font-bold mono text-danger">−0.3 mo</p>
+              <p className={`text-sm font-bold mono ${stressedRunwayMonths !== null && stressedRunwayMonths < 3 ? 'text-danger' : stressedRunwayMonths !== null && stressedRunwayMonths < 6 ? 'text-warning' : 'text-text-primary'}`}>
+                {stressedRunwayMonths !== null ? `${stressedRunwayMonths.toFixed(1)} mo` : `${monthsRunway.toFixed(1)} mo`}
+              </p>
             </div>
           </div>
         </div>
@@ -918,6 +921,7 @@ export default function InsightsPage() {
               savings={sub.total_estimated_monthly_savings}
               profitMarginPct={health.profit_margin_pct}
               monthsRunway={health.avg_monthly_burn > 0 ? Math.round((health.net_worth / health.avg_monthly_burn) * 10) / 10 : 0}
+              stressedRunwayMonths={sub.raw?.runway_stress_test?.stressed_runway_months ?? null}
               orgName={org.name}
             />
           </div>
