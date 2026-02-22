@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['logo.clearbit.com'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'logo.clearbit.com', pathname: '/**' },
+    ],
   },
 }
 

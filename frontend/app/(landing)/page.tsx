@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion, useInView, useAnimation } from 'framer-motion'
 import {
   Zap, ArrowRight, Check, Landmark, Sparkles, ScrollText,
@@ -82,15 +83,13 @@ function Nav() {
       <div className="max-w-6xl mx-auto h-full flex items-center justify-between px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 40%, #9A9692 70%, #D8D4D0 100%)',
-              boxShadow: '0 0 14px rgba(44,41,38,0.18)',
-            }}
-          >
-            <Zap size={13} className="text-black" strokeWidth={2.5} />
-          </div>
+          <Image
+            src="/runwave-logo.png"
+            alt="Runwave"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain dark:invert"
+          />
           <span className="text-sm font-semibold tracking-tight text-text-primary">Runwave</span>
         </Link>
 

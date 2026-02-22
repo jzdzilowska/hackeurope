@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Settings, Zap, Plus, Sun, Moon, TrendingUp, TrendingDown, Receipt } from 'lucide-react'
@@ -26,15 +27,16 @@ export default function Sidebar() {
 
       {/* ── Logo ── */}
       <div className="px-6 pt-8 pb-6">
-        <div className="flex items-center gap-2.5">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: '#1C1B18' }}
-          >
-            <Zap size={13} style={{ color: '#F0EDE8' }} strokeWidth={2.5} />
-          </div>
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <Image
+            src="/runwave-logo.png"
+            alt="Runwave"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain dark:invert"
+          />
           <span className="text-sm font-semibold tracking-tight text-text-primary">Runwave</span>
-        </div>
+        </Link>
       </div>
 
       {/* ── Org pill ── */}

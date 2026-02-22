@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckCircle2, Loader2, ArrowRight, Zap, X,
@@ -589,15 +590,13 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-center gap-2.5 mb-10"
         >
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 40%, #9A9692 70%, #D8D4D0 100%)',
-              boxShadow: '0 0 20px rgba(44,41,38,0.20)',
-            }}
-          >
-            <Zap size={15} className="text-black" strokeWidth={2.5} />
-          </div>
+          <Image
+            src="/runwave-logo.png"
+            alt="Runwave"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain dark:invert"
+          />
           <span className="text-base font-semibold tracking-tight text-text-primary">Runwave</span>
         </motion.div>
 
