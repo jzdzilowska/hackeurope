@@ -33,8 +33,8 @@ interface ConnectedItem {
   accounts:        MockAccount[]
 }
 
-// ── Mock institution data (Plaid sandbox test banks) ────────────────────
-const MOCK_INSTITUTIONS = [
+// ── Fallback institution data (used if API fetch fails) ────────────────
+const FALLBACK_INSTITUTIONS = [
   {
     id:      'ins_109508',
     name:    'First Platypus Bank',
@@ -45,37 +45,41 @@ const MOCK_INSTITUTIONS = [
       { id: 'acc_fpb_002', name: 'Plaid Saving',   balance: 210.00,  currency: 'USD', type: 'savings',    mask: '1111' },
     ],
   },
-  {
-    id:      'ins_109509',
-    name:    'First Gingham Credit Union',
-    color:   '#6C3483',
-    abbr:    'FGC',
-    accounts: [
-      { id: 'acc_fgc_001', name: 'Plaid Checking', balance: 1120.00, currency: 'USD', type: 'depository', mask: '2222' },
-      { id: 'acc_fgc_002', name: 'Plaid Saving',   balance: 840.00,  currency: 'USD', type: 'savings',    mask: '3333' },
-    ],
-  },
-  {
-    id:      'ins_109510',
-    name:    'Tattersall Federal Credit Union',
-    color:   '#1E8449',
-    abbr:    'TFC',
-    accounts: [
-      { id: 'acc_tfc_001', name: 'Plaid Checking', balance: 2310.00, currency: 'USD', type: 'depository', mask: '4444' },
-      { id: 'acc_tfc_002', name: 'Plaid Saving',   balance: 1550.00, currency: 'USD', type: 'savings',    mask: '5555' },
-    ],
-  },
-  {
-    id:      'ins_109511',
-    name:    'Tartan Bank',
-    color:   '#C0392B',
-    abbr:    'TB',
-    accounts: [
-      { id: 'acc_tb_001', name: 'Plaid Checking', balance: 5340.00, currency: 'USD', type: 'depository', mask: '6666' },
-      { id: 'acc_tb_002', name: 'Plaid Saving',   balance: 2890.00, currency: 'USD', type: 'savings',    mask: '7777' },
-    ],
-  },
 ]
+
+// ── Build institution list from real API data ──────────────────────────
+function buildInstitutionsFromAPI(accounts: Array<{
+  id: string; plaidItemId: string; name: string; institution: string;
+  institutionColor: string; type: string; currency: string;
+  currentBalance: number;
+}>) {
+  const grouped = new Map<string, typeof accounts>()
+  for (const acc of accounts) {
+    const key = acc.plaidItemId
+    if (!grouped.has(key)) grouped.set(key, [])
+    grouped.get(key)!.push(acc)
+  }
+
+  return Array.from(grouped.entries()).map(([itemId, accs]) => {
+    const first = accs[0]
+    const name = first.institution
+    const abbr = name.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase()
+    return {
+      id:      itemId,
+      name,
+      color:   first.institutionColor,
+      abbr,
+      accounts: accs.map(a => ({
+        id:       a.id,
+        name:     a.name,
+        balance:  a.currentBalance,
+        currency: a.currency,
+        type:     a.type,
+        mask:     a.id.slice(-4),
+      })),
+    }
+  })
+}
 
 // ── Sync steps ─────────────────────────────────────────────────────────
 const SYNC_STEPS = [
@@ -146,20 +150,22 @@ type PlaidStep = 'picker' | 'connecting' | 'success'
 function MockPlaidModal({
   onClose,
   onConnected,
+  institutions,
 }: {
   onClose: () => void
   onConnected: (item: ConnectedItem) => void
+  institutions: typeof FALLBACK_INSTITUTIONS
 }) {
   const [plaidStep, setPlaidStep]       = useState<PlaidStep>('picker')
-  const [selectedInst, setSelectedInst] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null)
+  const [selectedInst, setSelectedInst] = useState<typeof FALLBACK_INSTITUTIONS[0] | null>(null)
   const [search, setSearch]             = useState('')
   const [progress, setProgress]         = useState(0)
 
-  const filtered = MOCK_INSTITUTIONS.filter(i =>
+  const filtered = institutions.filter(i =>
     i.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const startConnecting = (inst: typeof MOCK_INSTITUTIONS[0]) => {
+  const startConnecting = (inst: typeof FALLBACK_INSTITUTIONS[0]) => {
     setSelectedInst(inst)
     setPlaidStep('connecting')
     let p = 0
@@ -379,8 +385,23 @@ export default function OnboardingPage() {
   const [connectedItems, setConnectedItems] = useState<ConnectedItem[]>([])
   const [syncStep, setSyncStep]             = useState(-1)
   const [emailScanStep, setEmailScanStep]   = useState(-1)
+  const [institutions, setInstitutions]     = useState(FALLBACK_INSTITUTIONS)
   const [plaidOpen, setPlaidOpen]           = useState(false)
+  const [plaidVerifying, setPlaidVerifying] = useState(false)
+  const [verifyStep, setVerifyStep]         = useState(-1)
   const [kpis, setKpis]                     = useState<{ totalCashPosition: number; runway: number; monthlyBurn: number } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/dashboard/overview?user_id=c5cbf7bd-2801-407e-9efe-222d8e93fddc')
+      .then(r => r.json())
+      .then(data => {
+        if (data.accounts?.length) {
+          const built = buildInstitutionsFromAPI(data.accounts)
+          if (built.length > 0) setInstitutions(built)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const storedId = localStorage.getItem('plaid_client_id')
@@ -481,6 +502,7 @@ export default function OnboardingPage() {
           <MockPlaidModal
             onClose={() => setPlaidOpen(false)}
             onConnected={handleConnected}
+            institutions={institutions}
           />
         )}
       </AnimatePresence>
@@ -608,13 +630,13 @@ export default function OnboardingPage() {
                 onClick={() => setStep('signin')}
                 disabled={!bizType}
                 className={cn(
-                  'w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all mt-2',
+                  'w-full py-4 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all mt-2',
                   bizType
-                    ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                    ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98] shadow-[0_0_24px_rgba(44,41,38,0.3)]'
                     : 'bg-surface-raised text-text-disabled cursor-not-allowed'
                 )}
               >
-                Continue <ArrowRight size={14} />
+                Continue <ArrowRight size={16} />
               </button>
             </motion.div>
           )}
@@ -716,7 +738,7 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
                     connectedProviders.size > 0
-                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98]'
                       : 'bg-surface-raised text-text-disabled cursor-not-allowed'
                   )}
                 >
@@ -784,7 +806,7 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
                     orgName.trim() && teamSize
-                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98]'
                       : 'bg-surface-raised text-text-disabled cursor-not-allowed'
                   )}
                 >
@@ -850,7 +872,7 @@ export default function OnboardingPage() {
           )}
 
           {/* ── Step: Plaid Setup ── */}
-          {step === 'plaid-setup' && (
+          {step === 'plaid-setup' && !plaidVerifying && (
             <motion.div key="plaid-setup"
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }} className="space-y-5"
@@ -916,18 +938,92 @@ export default function OnboardingPage() {
                     localStorage.setItem('plaid_client_id', plaidClientId)
                     localStorage.setItem('plaid_secret', plaidSecret)
                     localStorage.setItem('plaid_env', plaidEnv)
-                    setStep('connect')
+                    setPlaidVerifying(true)
+                    setVerifyStep(-1)
+                    const steps = [
+                      { ms: 400 },
+                      { ms: 1400 },
+                      { ms: 2400 },
+                      { ms: 3200 },
+                    ]
+                    steps.forEach((s, i) => {
+                      setTimeout(() => setVerifyStep(i), s.ms)
+                    })
+                    setTimeout(() => {
+                      setPlaidVerifying(false)
+                      setStep('connect')
+                    }, 4200)
                   }}
                   disabled={!plaidClientId.trim() || !plaidSecret.trim()}
                   className={cn(
-                    'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
+                    'flex-1 py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
                     plaidClientId.trim() && plaidSecret.trim()
-                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98] shadow-[0_0_20px_rgba(44,41,38,0.3)]'
                       : 'bg-surface-raised text-text-disabled cursor-not-allowed'
                   )}
                 >
                   Continue <ArrowRight size={14} />
                 </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step: Plaid verifying (loading friction) ── */}
+          {step === 'plaid-setup' && plaidVerifying && (
+            <motion.div key="plaid-verifying"
+              initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="card p-8 text-center space-y-7"
+            >
+              <div className="relative flex items-center justify-center py-2">
+                <motion.div
+                  animate={{ scale: [1, 1.35, 1], opacity: [0.3, 0.08, 0.3] }}
+                  transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute w-24 h-24 rounded-full"
+                  style={{ background: 'radial-gradient(circle, rgba(44,41,38,0.28) 0%, transparent 70%)' }}
+                />
+                <div
+                  className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 40%, #9A9692 70%, #D8D4D0 100%)' }}
+                >
+                  <ShieldCheck size={24} className="text-white" strokeWidth={2} />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-bold text-text-primary mb-1">
+                  Verifying credentials
+                </h3>
+                <p className="text-sm text-text-muted">Establishing a secure connection with Plaid…</p>
+              </div>
+
+              <div className="space-y-2.5 text-left">
+                {[
+                  'Validating API credentials…',
+                  'Connecting to Plaid servers…',
+                  'Configuring bank access permissions…',
+                  'Ready to link accounts',
+                ].map((label, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+                      {verifyStep > i ? (
+                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                          <CheckCircle2 size={14} className="text-success" />
+                        </motion.div>
+                      ) : verifyStep === i ? (
+                        <Loader2 size={13} className="text-accent animate-spin" />
+                      ) : (
+                        <div className="w-1.5 h-1.5 rounded-full bg-border" />
+                      )}
+                    </div>
+                    <span className={cn(
+                      'text-xs transition-colors duration-300',
+                      verifyStep >= i ? 'text-text-primary' : 'text-text-muted'
+                    )}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </motion.div>
           )}
@@ -993,7 +1089,7 @@ export default function OnboardingPage() {
                 className={cn(
                   'w-full py-3.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 transition-all',
                   connectedItems.length === 0
-                    ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                    ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98]'
                     : 'bg-surface border border-border text-text-secondary hover:border-accent/40 hover:text-accent hover:bg-accent/5'
                 )}
               >
@@ -1014,7 +1110,7 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex-1 py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
                     connectedItems.length > 0
-                      ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]'
+                      ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98]'
                       : 'bg-surface-raised text-text-disabled cursor-not-allowed'
                   )}
                 >
@@ -1138,7 +1234,7 @@ export default function OnboardingPage() {
                   if (bizType) localStorage.setItem('helm_biz_type', bizType)
                   router.push('/dashboard')
                 }}
-                className="w-full py-3 rounded-xl text-sm font-semibold bg-accent text-black hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl text-sm font-semibold bg-accent text-white hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 Open Runwave <ArrowRight size={14} />
               </button>
