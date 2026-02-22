@@ -262,8 +262,8 @@ export default function PaymentsPage() {
                   disabled={state !== 'idle'}
                   className={cn(
                     'w-full py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all',
-                    state === 'idle'    ? 'bg-accent text-black hover:bg-accent-hover active:scale-[0.98]' :
-                    state === 'loading' ? 'bg-accent/60 text-black cursor-wait' :
+                    state === 'idle'    ? 'bg-accent text-white hover:bg-accent-hover active:scale-[0.98]' :
+                    state === 'loading' ? 'bg-accent/60 text-white cursor-wait' :
                                          'bg-success/12 text-success border border-success/25 cursor-default'
                   )}
                 >

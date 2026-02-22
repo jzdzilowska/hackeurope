@@ -71,9 +71,9 @@ export default function DashboardPage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-accent/8 border border-accent/18 text-xs font-medium text-accent cursor-pointer hover:bg-accent/12 transition-colors"
+                className="glass-pill flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-medium text-text-secondary cursor-pointer transition-all"
               >
-                <Bell size={11} />
+                <Bell size={11} className="text-text-muted" />
                 {pendingCount} need approval
               </motion.div>
             )}
@@ -81,10 +81,9 @@ export default function DashboardPage() {
             {/* Ask HELM */}
             <button
               onClick={() => setChatOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-black text-xs font-semibold hover:brightness-105 active:scale-[0.98] transition-all"
-              style={{ background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 40%, #9A9692 70%, #D8D4D0 100%)' }}
+              className="glass-pill flex items-center gap-1.5 px-3.5 py-1.5 rounded-pill text-text-primary text-xs font-semibold active:scale-[0.97] transition-all"
             >
-              <MessageSquare size={11} />
+              <MessageSquare size={11} className="text-text-muted" />
               Ask HELM
             </button>
           </div>
@@ -131,7 +130,7 @@ export default function DashboardPage() {
               <div className="col-span-2">
                 <UpcomingPayments />
               </div>
-              <div className="col-span-1">
+              <div className="col-span-1 min-w-0 overflow-hidden">
                 <ApprovalQueue />
               </div>
             </div>

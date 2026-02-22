@@ -90,7 +90,7 @@ export default function SettingsPage() {
                 'flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all',
                 saved
                   ? 'bg-success/12 text-success border border-success/25'
-                  : 'bg-accent text-black hover:bg-accent-hover'
+                  : 'bg-accent text-white hover:bg-accent-hover'
               )}
             >
               {saved ? <><CheckCircle2 size={14} /> Saved</> : 'Save changes'}
