@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, Loader2, Zap, ArrowUpRight } from 'lucide-react'
+import { CheckCircle2, Loader2, Zap, ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn, formatCurrency, formatDate, generateStripeRef } from '@/lib/utils'
 import { useDashboard } from '@/lib/dashboard-context'
 import type { PaymentApproval } from '@/lib/types'
@@ -22,14 +22,7 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
   }
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96, y: -8 }}
-      transition={{ duration: 0.3 }}
-      className="card p-5"
-    >
+    <div className="card p-5 w-full flex-shrink-0">
       {/* Header: logo + name + amount */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2.5">
@@ -110,13 +103,47 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
         {state === 'loading' && <><Loader2 size={14} className="animate-spin" /> Processing…</>}
         {state === 'approved' && <><CheckCircle2 size={14} /> Approved</>}
       </button>
-    </motion.div>
+    </div>
   )
+}
+
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '100%' : '-100%',
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction > 0 ? '-100%' : '100%',
+    opacity: 0,
+  }),
 }
 
 export default function ApprovalQueue() {
   const { approvals: mockApprovals } = useDashboard()
   const [approvals] = useState(mockApprovals)
+  const [index, setIndex] = useState(0)
+  const [direction, setDirection] = useState(0)
+
+  const paginate = (newDirection: number) => {
+    const next = index + newDirection
+    if (next < 0 || next >= approvals.length) return
+    setDirection(newDirection)
+    setIndex(next)
+  }
+
+  const handleDragEnd = (_: unknown, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const swipeThreshold = 40
+    const { offset, velocity } = info
+    if (offset.x < -swipeThreshold || velocity.x < -300) {
+      paginate(1)
+    } else if (offset.x > swipeThreshold || velocity.x > 300) {
+      paginate(-1)
+    }
+  }
 
   return (
     <motion.div
@@ -125,16 +152,80 @@ export default function ApprovalQueue() {
       transition={{ duration: 0.5, delay: 0.35 }}
       className="flex flex-col gap-3 w-full min-w-0"
     >
+      {/* Header */}
       <div className="flex items-center justify-between">
         <p className="label">Approval queue</p>
-        <span className="badge-accent text-2xs">{approvals.length} pending</span>
+        <div className="flex items-center gap-2">
+          <span className="badge-accent text-2xs">{approvals.length} pending</span>
+          {approvals.length > 1 && (
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => paginate(-1)}
+                disabled={index === 0}
+                className="w-5 h-5 rounded-md flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed hover:bg-surface-high"
+                aria-label="Previous"
+              >
+                <ChevronLeft size={12} className="text-text-muted" />
+              </button>
+              <button
+                onClick={() => paginate(1)}
+                disabled={index === approvals.length - 1}
+                className="w-5 h-5 rounded-md flex items-center justify-center transition-colors disabled:opacity-25 disabled:cursor-not-allowed hover:bg-surface-high"
+                aria-label="Next"
+              >
+                <ChevronRight size={12} className="text-text-muted" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <AnimatePresence mode="popLayout">
-        {approvals.map((approval) => (
-          <ApprovalCard key={approval.id} approval={approval} />
-        ))}
-      </AnimatePresence>
+      {/* Carousel */}
+      <div className="relative overflow-hidden w-full rounded-card">
+        <AnimatePresence initial={false} custom={direction} mode="popLayout">
+          <motion.div
+            key={approvals[index]?.id ?? index}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: 'spring', stiffness: 380, damping: 36, mass: 0.8 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.12}
+            onDragEnd={handleDragEnd}
+            className="w-full cursor-grab active:cursor-grabbing select-none"
+            style={{ touchAction: 'pan-y' }}
+          >
+            {approvals[index] && (
+              <ApprovalCard approval={approvals[index]} />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Dot indicators */}
+      {approvals.length > 1 && (
+        <div className="flex items-center justify-center gap-1.5 pt-0.5">
+          {approvals.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setDirection(i > index ? 1 : -1)
+                setIndex(i)
+              }}
+              className={cn(
+                'rounded-full transition-all duration-300',
+                i === index
+                  ? 'w-4 h-1.5 bg-accent'
+                  : 'w-1.5 h-1.5 bg-border hover:bg-text-disabled'
+              )}
+              aria-label={`Go to approval ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
 
       {approvals.length === 0 && (
         <div className="card p-6 text-center">
