@@ -381,7 +381,7 @@ export default function VoiceAgent({ open, onClose, autoGreet = false }: VoiceAg
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-text-primary">Runwave Voice</p>
-                    <p className="text-2xs text-text-muted">Powered by Groq · {org.name}</p>
+                    <p className="text-2xs text-text-muted">Powered by ElevenLabs · {org.name}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
