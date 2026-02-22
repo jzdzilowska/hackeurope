@@ -64,7 +64,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<DashboardData>(defaults)
   const [invoiceAlert, setInvoiceAlert] = useState<PaymentApproval | null>(null)
   const [lastSynced, setLastSynced] = useState<Date | null>(null)
-  const prevApprovalCount = useRef<number>(-1)
+  const seenApprovalIds = useRef<Set<string> | null>(null)
 
   // Initial full fetch on mount
   useEffect(() => {
@@ -98,7 +98,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         ])
 
         const approvals: PaymentApproval[] = invoices.approvals ?? []
-        prevApprovalCount.current = approvals.length
+        seenApprovalIds.current = new Set(approvals.map(a => a.id))
 
         setData(prev => ({
           ...prev,
@@ -128,16 +128,15 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         const json = await fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
         const approvals: PaymentApproval[] = json.approvals ?? []
 
-        // Only alert if we already have a baseline count (not on first load)
-        if (
-          prevApprovalCount.current >= 0 &&
-          approvals.length > prevApprovalCount.current
-        ) {
-          // Show the newest invoice (last in the due-date-sorted list, or last overall)
-          setInvoiceAlert(approvals[approvals.length - 1])
+        // Alert for any invoice ID we haven't seen before (baseline set on initial load)
+        if (seenApprovalIds.current !== null) {
+          const newOnes = approvals.filter(a => !seenApprovalIds.current!.has(a.id))
+          if (newOnes.length > 0) {
+            setInvoiceAlert(newOnes[0])
+          }
         }
 
-        prevApprovalCount.current = approvals.length
+        seenApprovalIds.current = new Set(approvals.map(a => a.id))
         setLastSynced(new Date())
         setData(prev => ({ ...prev, approvals }))
       } catch {
