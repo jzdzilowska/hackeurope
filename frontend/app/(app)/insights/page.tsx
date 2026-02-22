@@ -818,6 +818,9 @@ export default function InsightsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [usingFallback, setUsingFallback] = useState(false)
+  const [isLive, setIsLive] = useState(false)
+  const [aiStale, setAiStale] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -830,19 +833,32 @@ export default function InsightsPage() {
         setHealth(json.health as HealthData)
         setSub(json.subscriptions as SubData)
         setLastUpdated(json.lastUpdated)
+        setIsLive(json.live === true)
+        setAiStale(json.aiStale === true)
         setUsingFallback(false)
       } else {
         setHealth(FALLBACK_HEALTH as unknown as HealthData)
         setSub(FALLBACK_SUBSCRIPTIONS as unknown as SubData)
         setUsingFallback(true)
+        setIsLive(false)
       }
     } catch {
       setHealth(FALLBACK_HEALTH as unknown as HealthData)
       setSub(FALLBACK_SUBSCRIPTIONS as unknown as SubData)
       setUsingFallback(true)
+      setIsLive(false)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRefresh = async () => {
+    // Trigger AI regeneration in background, then fetch fresh live data
+    setRegenerating(true)
+    fetch('/api/insights-data/regenerate', { method: 'POST' })
+      .catch(() => {})
+      .finally(() => setRegenerating(false))
+    await fetchData()
   }
 
   useEffect(() => { fetchData() }, [])
@@ -854,16 +870,27 @@ export default function InsightsPage() {
           Updated {new Date(lastUpdated).toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' })}
         </span>
       )}
+      {isLive && !usingFallback && (
+        <span className="text-2xs text-success/80 bg-success/8 border border-success/20 px-2 py-1 rounded-full flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          Live data
+        </span>
+      )}
+      {aiStale && !usingFallback && (
+        <span className="text-2xs text-accent/80 bg-accent/8 border border-accent/20 px-2 py-1 rounded-full">
+          AI analysis updating…
+        </span>
+      )}
       {usingFallback && (
         <span className="text-2xs text-warning/80 bg-warning/8 border border-warning/20 px-2 py-1 rounded-full">
           Demo data
         </span>
       )}
       <button
-        onClick={fetchData} disabled={loading}
+        onClick={handleRefresh} disabled={loading}
         className="flex items-center gap-1.5 text-2xs text-text-muted hover:text-text-secondary transition-colors"
       >
-        <RefreshCw size={11} className={loading ? 'animate-spin' : ''} />
+        <RefreshCw size={11} className={loading || regenerating ? 'animate-spin' : ''} />
         Refresh
       </button>
     </div>
