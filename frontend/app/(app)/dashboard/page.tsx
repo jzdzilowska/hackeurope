@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
+import Link                 from 'next/link'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
 import CashflowChart        from '@/components/dashboard/CashflowChart'
@@ -12,17 +13,42 @@ import SurplusChart         from '@/components/dashboard/SurplusChart'
 import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
 import ApprovalQueue        from '@/components/dashboard/ApprovalQueue'
 import AIChat               from '@/components/dashboard/AIChat'
-import { useDashboard } from '@/lib/dashboard-context'
+import VoiceBriefing        from '@/components/dashboard/VoiceBriefing'
+import InvoiceToast         from '@/components/ui/InvoiceToast'
+import { useDashboard }     from '@/lib/dashboard-context'
 
-// ── Editorial section header component ──────────────────────────────────
+// Computes a human-readable "just now / Xs ago / Xm ago" label,
+// re-evaluated every second so it stays fresh without a page reload.
+function useSyncLabel(lastSynced: Date | null): string {
+  const [label, setLabel] = useState('syncing…')
+
+  useEffect(() => {
+    const compute = () => {
+      if (!lastSynced) { setLabel('syncing…'); return }
+      const diff = Math.floor((Date.now() - lastSynced.getTime()) / 1000)
+      if (diff < 8)        setLabel('just now')
+      else if (diff < 60)  setLabel(`${diff}s ago`)
+      else                 setLabel(`${Math.floor(diff / 60)}m ago`)
+    }
+    compute()
+    const id = setInterval(compute, 1000)
+    return () => clearInterval(id)
+  }, [lastSynced])
+
+  return label
+}
+
+// ── Editorial section header ─────────────────────────────────────────────────
 function SectionHeader({
   tag,
   title,
   action,
+  href,
 }: {
   tag: string
   title: string
   action?: string
+  href?: string
 }) {
   return (
     <div className="flex items-end justify-between mb-4">
@@ -31,23 +57,38 @@ function SectionHeader({
           {tag}
         </p>
         <h2 className="text-xl font-bold tracking-tight text-text-primary flex items-center gap-1.5">
-          {title}
-          <ArrowUpRight size={16} className="text-text-muted opacity-50" />
+          {href ? (
+            <Link href={href} className="flex items-center gap-1.5 hover:text-accent transition-colors">
+              {title}
+              <ArrowUpRight size={16} className="text-text-muted opacity-50" />
+            </Link>
+          ) : (
+            title
+          )}
         </h2>
       </div>
-      {action && (
-        <button className="text-2xs text-text-muted hover:text-text-secondary transition-colors flex items-center gap-1">
+      {action && href && (
+        <Link href={href} className="text-2xs text-text-muted hover:text-text-secondary transition-colors flex items-center gap-1">
           {action} <ArrowUpRight size={10} />
-        </button>
+        </Link>
       )}
     </div>
   )
 }
 
 export default function DashboardPage() {
-  const { org: mockOrg, approvals: mockApprovals, accounts: mockAccounts } = useDashboard()
+  const {
+    org,
+    accounts,
+    approvals,
+    newInvoiceAlert,
+    clearInvoiceAlert,
+    lastSynced,
+  } = useDashboard()
+
   const [chatOpen, setChatOpen] = useState(false)
-  const pendingCount = mockApprovals.filter(a => a.status === 'pending').length
+  const syncLabel = useSyncLabel(lastSynced)
+  const pendingCount = approvals.filter(a => a.status === 'pending').length
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -60,15 +101,16 @@ export default function DashboardPage() {
         <div className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 bg-background/80 backdrop-blur-md border-b border-border/30">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-disabled mb-0.5">
-              {mockOrg.name}
+              {org.name}
             </p>
             <h1 className="text-base font-bold text-text-primary tracking-tight">Overview</h1>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Approval badge */}
+            {/* Approval badge — count updates live as invoices arrive */}
             {pendingCount > 0 && (
               <motion.div
+                key={pendingCount}
                 initial={{ opacity: 0, scale: 0.85 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="glass-pill flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-medium text-text-secondary cursor-pointer transition-all"
@@ -125,7 +167,7 @@ export default function DashboardPage() {
 
           {/* Section 3: Payments + approvals */}
           <div>
-            <SectionHeader tag="PAYMENTS" title="Upcoming & Approvals" action="All payments" />
+            <SectionHeader tag="PAYMENTS" title="Upcoming & Approvals" action="All payments" href="/payments" />
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-2">
                 <UpcomingPayments />
@@ -139,31 +181,39 @@ export default function DashboardPage() {
           <div className="h-4" />
         </div>
 
-        {/* ── Live status widget — bottom left (Dwarf-inspired) ── */}
+        {/* ── Live status widget ── */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.4 }}
           className="fixed bottom-5 left-[226px] z-30"
         >
-          <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md bg-surface/90"
-          >
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/50 backdrop-blur-md bg-surface/90">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-40" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
             </span>
             <span className="text-2xs text-text-secondary font-medium">
-              {mockAccounts.length} accounts live
+              {accounts.length} accounts live
             </span>
             <span className="text-2xs text-text-disabled">·</span>
-            <span className="text-2xs text-text-disabled">synced 2m ago</span>
+            <motion.span
+              key={syncLabel}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-2xs text-text-disabled"
+            >
+              {syncLabel}
+            </motion.span>
           </div>
         </motion.div>
       </div>
 
       {/* ── AI Chat sliding panel ── */}
       <AIChat open={chatOpen} onClose={() => setChatOpen(false)} />
+
+      {/* ── Live invoice toast — bottom right ── */}
+      <InvoiceToast invoice={newInvoiceAlert} onDismiss={clearInvoiceAlert} />
     </div>
   )
 }

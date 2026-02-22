@@ -15,6 +15,7 @@ import {
 import PageShell, { SectionHeader } from '@/components/layout/PageShell'
 import { formatCurrency, cn } from '@/lib/utils'
 import { FALLBACK_HEALTH, FALLBACK_SUBSCRIPTIONS } from '@/lib/insights-fallback'
+import { useDashboard } from '@/lib/dashboard-context'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -141,12 +142,13 @@ function SkeletonBlock({ h = 'h-24', className = '' }: { h?: string; className?:
 
 // ─── Section 1: Executive Briefing ───────────────────────────────────────────
 
-function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRunway }: {
+function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRunway, orgName }: {
   briefing: HealthData['executive_briefing']
   score: number
   savings: number
   profitMarginPct: number
   monthsRunway: number
+  orgName: string
 }) {
   const [expanded, setExpanded] = useState(true)
   const scoreColor = score >= 70 ? '#2C2926' : score >= 40 ? '#C49040' : '#B85858'
@@ -200,7 +202,7 @@ function ExecutiveBriefing({ briefing, score, savings, profitMarginPct, monthsRu
               Runwave Intelligence · Executive Briefing
             </span>
           </div>
-          <h2 className="text-xl font-bold text-text-primary mb-2 leading-tight">Wataru Endo Wholesale</h2>
+          <h2 className="text-xl font-bold text-text-primary mb-2 leading-tight">{orgName}</h2>
           <div className="flex items-center gap-3 flex-wrap">
             <span
               className="text-xs font-semibold px-2.5 py-1 rounded-full border"
@@ -809,12 +811,16 @@ function PurchaseAdvisor() {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function InsightsPage() {
+  const { org } = useDashboard()
   const [health, setHealth] = useState<HealthData | null>(null)
   const [sub, setSub] = useState<SubData | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [usingFallback, setUsingFallback] = useState(false)
+  const [isLive, setIsLive] = useState(false)
+  const [aiStale, setAiStale] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -827,19 +833,32 @@ export default function InsightsPage() {
         setHealth(json.health as HealthData)
         setSub(json.subscriptions as SubData)
         setLastUpdated(json.lastUpdated)
+        setIsLive(json.live === true)
+        setAiStale(json.aiStale === true)
         setUsingFallback(false)
       } else {
         setHealth(FALLBACK_HEALTH as unknown as HealthData)
         setSub(FALLBACK_SUBSCRIPTIONS as unknown as SubData)
         setUsingFallback(true)
+        setIsLive(false)
       }
     } catch {
       setHealth(FALLBACK_HEALTH as unknown as HealthData)
       setSub(FALLBACK_SUBSCRIPTIONS as unknown as SubData)
       setUsingFallback(true)
+      setIsLive(false)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleRefresh = async () => {
+    // Trigger AI regeneration in background, then fetch fresh live data
+    setRegenerating(true)
+    fetch('/api/insights-data/regenerate', { method: 'POST' })
+      .catch(() => {})
+      .finally(() => setRegenerating(false))
+    await fetchData()
   }
 
   useEffect(() => { fetchData() }, [])
@@ -851,23 +870,34 @@ export default function InsightsPage() {
           Updated {new Date(lastUpdated).toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' })}
         </span>
       )}
+      {isLive && !usingFallback && (
+        <span className="text-2xs text-success/80 bg-success/8 border border-success/20 px-2 py-1 rounded-full flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          Live data
+        </span>
+      )}
+      {aiStale && !usingFallback && (
+        <span className="text-2xs text-accent/80 bg-accent/8 border border-accent/20 px-2 py-1 rounded-full">
+          AI analysis updating…
+        </span>
+      )}
       {usingFallback && (
         <span className="text-2xs text-warning/80 bg-warning/8 border border-warning/20 px-2 py-1 rounded-full">
           Demo data
         </span>
       )}
       <button
-        onClick={fetchData} disabled={loading}
+        onClick={handleRefresh} disabled={loading}
         className="flex items-center gap-1.5 text-2xs text-text-muted hover:text-text-secondary transition-colors"
       >
-        <RefreshCw size={11} className={loading ? 'animate-spin' : ''} />
+        <RefreshCw size={11} className={loading || regenerating ? 'animate-spin' : ''} />
         Refresh
       </button>
     </div>
   )
 
   return (
-    <PageShell tag="WATARU ENDO WHOLESALE" title="Intelligence Hub" topBarRight={topBarRight}>
+    <PageShell tag={org.name.toUpperCase()} title="Intelligence Hub" topBarRight={topBarRight}>
       {loading ? (
         <div className="space-y-8">
           <SkeletonBlock h="h-56" />
@@ -888,6 +918,7 @@ export default function InsightsPage() {
               savings={sub.total_estimated_monthly_savings}
               profitMarginPct={health.profit_margin_pct}
               monthsRunway={health.avg_monthly_burn > 0 ? Math.round((health.net_worth / health.avg_monthly_burn) * 10) / 10 : 0}
+              orgName={org.name}
             />
           </div>
 

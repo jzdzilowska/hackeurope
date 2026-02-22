@@ -3,16 +3,18 @@ import os
 import asyncio
 from dotenv import load_dotenv
 from mcp import ClientSession
-from mcp.client.sse import sse_client
+from mcp.client.streamable_http import streamablehttp_client
 
 load_dotenv()
 
 ZAPIER_API_KEY = os.environ["ZAPIER_API_KEY"]
-ZAPIER_MCP_URL = f"https://actions.zapier.com/mcp/{ZAPIER_API_KEY}/sse"
+ZAPIER_MCP_URL = os.getenv("ZAPIER_MCP_URL", "https://mcp.zapier.com/api/v1/connect")
 
 
 async def main():
-    async with sse_client(url=ZAPIER_MCP_URL) as (read, write):
+    async with streamablehttp_client(
+        ZAPIER_MCP_URL, headers={"Authorization": f"Bearer {ZAPIER_API_KEY}"}
+    ) as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()
             resp = await session.list_tools()

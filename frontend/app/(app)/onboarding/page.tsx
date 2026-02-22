@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   CheckCircle2, Loader2, ArrowRight, Zap, X,
   Cloud, Package, Code2, Truck, BarChart2,
-  ShieldCheck, Server, Lock, Eye, EyeOff, Search,
+  ShieldCheck, Server, Search,
   Briefcase, Users, Clock, User, Wallet, PiggyBank,
   FileText,
 } from 'lucide-react'
@@ -33,53 +33,46 @@ interface ConnectedItem {
   accounts:        MockAccount[]
 }
 
-// ── Mock institution data (mirrors Plaid sandbox) ──────────────────────
+// ── Mock institution data (Plaid sandbox test banks) ────────────────────
 const MOCK_INSTITUTIONS = [
   {
-    id:      'ins_bank_of_ireland',
-    name:    'Bank of Ireland',
-    color:   '#003399',
-    abbr:    'BoI',
+    id:      'ins_109508',
+    name:    'First Platypus Bank',
+    color:   '#1A5276',
+    abbr:    'FPB',
     accounts: [
-      { id: 'acc_boi_001', name: 'Business Current', balance: 38200.00, currency: 'EUR', type: 'depository', mask: '4821' },
-      { id: 'acc_boi_002', name: 'Reserve Savings',  balance: 9030.00,  currency: 'EUR', type: 'savings',    mask: '7743' },
+      { id: 'acc_fpb_001', name: 'Plaid Checking', balance: 110.00,  currency: 'USD', type: 'depository', mask: '0000' },
+      { id: 'acc_fpb_002', name: 'Plaid Saving',   balance: 210.00,  currency: 'USD', type: 'savings',    mask: '1111' },
     ],
   },
   {
-    id:      'ins_revolut',
-    name:    'Revolut Business',
-    color:   '#191C1F',
-    abbr:    'Rev',
+    id:      'ins_109509',
+    name:    'First Gingham Credit Union',
+    color:   '#6C3483',
+    abbr:    'FGC',
     accounts: [
-      { id: 'acc_rev_001', name: 'EUR Account',      balance: 28920.00, currency: 'EUR', type: 'depository', mask: '1190' },
-      { id: 'acc_rev_002', name: 'USD Account',      balance: 10000.00, currency: 'USD', type: 'depository', mask: '2204' },
+      { id: 'acc_fgc_001', name: 'Plaid Checking', balance: 1120.00, currency: 'USD', type: 'depository', mask: '2222' },
+      { id: 'acc_fgc_002', name: 'Plaid Saving',   balance: 840.00,  currency: 'USD', type: 'savings',    mask: '3333' },
     ],
   },
   {
-    id:      'ins_wise',
-    name:    'Wise',
-    color:   '#00B9FF',
-    abbr:    'Wise',
+    id:      'ins_109510',
+    name:    'Tattersall Federal Credit Union',
+    color:   '#1E8449',
+    abbr:    'TFC',
     accounts: [
-      { id: 'acc_wise_001', name: 'Wise Business EUR', balance: 12840.00, currency: 'EUR', type: 'depository', mask: '9901' },
+      { id: 'acc_tfc_001', name: 'Plaid Checking', balance: 2310.00, currency: 'USD', type: 'depository', mask: '4444' },
+      { id: 'acc_tfc_002', name: 'Plaid Saving',   balance: 1550.00, currency: 'USD', type: 'savings',    mask: '5555' },
     ],
   },
   {
-    id:      'ins_hsbc',
-    name:    'HSBC Business',
-    color:   '#DB0011',
-    abbr:    'HSBC',
+    id:      'ins_109511',
+    name:    'Tartan Bank',
+    color:   '#C0392B',
+    abbr:    'TB',
     accounts: [
-      { id: 'acc_hsbc_001', name: 'Business Current',  balance: 5500.00, currency: 'EUR', type: 'depository', mask: '6612' },
-    ],
-  },
-  {
-    id:      'ins_monzo',
-    name:    'Monzo Business',
-    color:   '#FF3464',
-    abbr:    'Mnz',
-    accounts: [
-      { id: 'acc_mnz_001', name: 'Current Account',    balance: 7200.00, currency: 'GBP', type: 'depository', mask: '3310' },
+      { id: 'acc_tb_001', name: 'Plaid Checking', balance: 5340.00, currency: 'USD', type: 'depository', mask: '6666' },
+      { id: 'acc_tb_002', name: 'Plaid Saving',   balance: 2890.00, currency: 'USD', type: 'savings',    mask: '7777' },
     ],
   },
 ]
@@ -148,7 +141,7 @@ const BUSINESS_TYPES = [
 ]
 
 // ── Mock Plaid Link Modal ───────────────────────────────────────────────
-type PlaidStep = 'picker' | 'login' | 'connecting' | 'success'
+type PlaidStep = 'picker' | 'connecting' | 'success'
 
 function MockPlaidModal({
   onClose,
@@ -160,34 +153,25 @@ function MockPlaidModal({
   const [plaidStep, setPlaidStep]       = useState<PlaidStep>('picker')
   const [selectedInst, setSelectedInst] = useState<typeof MOCK_INSTITUTIONS[0] | null>(null)
   const [search, setSearch]             = useState('')
-  const [username, setUsername]         = useState('user_good')
-  const [password, setPassword]         = useState('pass_good')
-  const [showPass, setShowPass]         = useState(false)
-  const [loginError, setLoginError]     = useState(false)
   const [progress, setProgress]         = useState(0)
 
   const filtered = MOCK_INSTITUTIONS.filter(i =>
     i.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleLogin = () => {
-    if (username === 'user_good' && password === 'pass_good') {
-      setPlaidStep('connecting')
-      // Fake progress animation
-      let p = 0
-      const interval = setInterval(() => {
-        p += Math.random() * 22 + 8
-        if (p >= 100) {
-          p = 100
-          clearInterval(interval)
-          setTimeout(() => setPlaidStep('success'), 300)
-        }
-        setProgress(Math.min(p, 100))
-      }, 220)
-    } else {
-      setLoginError(true)
-      setTimeout(() => setLoginError(false), 2000)
-    }
+  const startConnecting = (inst: typeof MOCK_INSTITUTIONS[0]) => {
+    setSelectedInst(inst)
+    setPlaidStep('connecting')
+    let p = 0
+    const interval = setInterval(() => {
+      p += Math.random() * 22 + 8
+      if (p >= 100) {
+        p = 100
+        clearInterval(interval)
+        setTimeout(() => setPlaidStep('success'), 300)
+      }
+      setProgress(Math.min(p, 100))
+    }, 220)
   }
 
   const handleSuccess = () => {
@@ -262,7 +246,7 @@ function MockPlaidModal({
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search for your bank..."
-                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                    className="w-full bg-white pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                     autoFocus
                   />
                 </div>
@@ -273,7 +257,7 @@ function MockPlaidModal({
                   {filtered.map(inst => (
                     <button
                       key={inst.id}
-                      onClick={() => { setSelectedInst(inst); setPlaidStep('login') }}
+                      onClick={() => startConnecting(inst)}
                       className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left group"
                     >
                       <div
@@ -293,100 +277,7 @@ function MockPlaidModal({
               </motion.div>
             )}
 
-            {/* Login form */}
-            {plaidStep === 'login' && selectedInst && (
-              <motion.div key="login"
-                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.18 }}
-                className="p-5 space-y-4"
-              >
-                <p className="text-xs text-gray-500 text-center">
-                  Enter your {selectedInst.name} online banking credentials.<br />
-                  Runwave never stores your login details.
-                </p>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Username</label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={e => setUsername(e.target.value)}
-                      placeholder="user_good"
-                      className={cn(
-                        'w-full px-4 py-3 rounded-xl border text-sm text-gray-800 focus:outline-none focus:ring-2 transition-all',
-                        loginError
-                          ? 'border-red-300 focus:ring-red-100'
-                          : 'border-gray-200 focus:border-blue-400 focus:ring-blue-100'
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Password</label>
-                    <div className="relative">
-                      <input
-                        type={showPass ? 'text' : 'password'}
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleLogin()}
-                        placeholder="pass_good"
-                        className={cn(
-                          'w-full px-4 py-3 pr-11 rounded-xl border text-sm text-gray-800 focus:outline-none focus:ring-2 transition-all',
-                          loginError
-                            ? 'border-red-300 focus:ring-red-100'
-                            : 'border-gray-200 focus:border-blue-400 focus:ring-blue-100'
-                        )}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPass(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <AnimatePresence>
-                    {loginError && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        className="text-xs text-red-500 text-center"
-                      >
-                        Invalid credentials. Use <code className="bg-red-50 px-1 rounded">user_good</code> / <code className="bg-red-50 px-1 rounded">pass_good</code>
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Hint */}
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
-                  <p className="text-xs text-amber-700 text-center">
-                    Sandbox demo — use <strong>user_good</strong> / <strong>pass_good</strong>
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => { setPlaidStep('picker'); setLoginError(false) }}
-                    className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-all"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={handleLogin}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all flex items-center justify-center gap-2"
-                    style={{ background: selectedInst.color }}
-                  >
-                    <Lock size={13} /> Log in securely
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Connecting / MFA simulation */}
+            {/* Connecting animation */}
             {plaidStep === 'connecting' && (
               <motion.div key="connecting"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -1015,17 +906,6 @@ export default function OnboardingPage() {
                 {connectedItems.length === 0 ? 'Connect bank account via Plaid' : '+ Connect another account'}
               </button>
 
-              {/* Sandbox hint */}
-              <div className="card p-3 border-border/40">
-                <p className="text-2xs text-text-muted text-center">
-                  <span className="text-warning font-medium">Sandbox mode</span>
-                  {' '}— use credentials{' '}
-                  <code className="mono bg-surface-raised px-1.5 py-0.5 rounded text-text-secondary">user_good</code>
-                  {' / '}
-                  <code className="mono bg-surface-raised px-1.5 py-0.5 rounded text-text-secondary">pass_good</code>
-                </p>
-              </div>
-
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep('org')}
@@ -1157,7 +1037,12 @@ export default function OnboardingPage() {
               </div>
 
               <button
-                onClick={() => router.push('/dashboard')}
+                onClick={() => {
+                  if (orgName.trim()) localStorage.setItem('helm_org_name', orgName.trim())
+                  if (teamSize) localStorage.setItem('helm_team_size', teamSize)
+                  if (bizType) localStorage.setItem('helm_biz_type', bizType)
+                  router.push('/dashboard')
+                }}
                 className="w-full py-3 rounded-xl text-sm font-semibold bg-accent text-black hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 Open Runwave <ArrowRight size={14} />

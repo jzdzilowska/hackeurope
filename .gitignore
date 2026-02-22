@@ -37,6 +37,13 @@ yarn-error.log*
 .env*
 !.env.local.example
 
+# python
+__pycache__/
+venv/
+
+# supabase
+supabase/.temp/
+
 # vercel
 .vercel
 

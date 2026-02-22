@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { mapAccountType, getInstitutionColor } from '@/lib/dashboard/categories';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const user_id = req.nextUrl.searchParams.get('user_id');
