@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     // Get pending invoices — exclude failed-parse rows (null vendor or zero amount)
     const { data: invoices, error } = await supabase
       .from('invoices')
-      .select('id, vendor, amount, due_date, status, parsed_data, transaction_id')
+      .select('id, vendor, amount, due_date, status, parsed_data, transaction_id, created_at')
       .eq('user_id', user_id)
       .eq('status', 'pending')
       .not('vendor', 'is', null)
@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
           lastPaidAmount,
           lastPaidDate,
           status: 'pending' as const,
+          createdAt: inv.created_at,
         };
       }),
     );

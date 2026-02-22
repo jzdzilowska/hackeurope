@@ -103,6 +103,7 @@ export interface PaymentApproval {
   status: ApprovalStatus
   stripePaymentId?: string
   approvedAt?: string
+  createdAt?: string
 }
 
 // ─── Burn Rate / KPIs ────────────────────────────────────────────────────────

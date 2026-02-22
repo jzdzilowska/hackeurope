@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { MessageSquare, Bell, ArrowUpRight, Mic } from 'lucide-react'
+import { MessageSquare, Bell, ArrowUpRight, Mic, RefreshCw } from 'lucide-react'
 import Link                 from 'next/link'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
@@ -84,6 +84,8 @@ export default function DashboardPage() {
     approvals,
     newInvoiceAlert,
     clearInvoiceAlert,
+    fireToast,
+    refresh,
     lastSynced,
   } = useDashboard()
 
@@ -223,6 +225,13 @@ export default function DashboardPage() {
             >
               {syncLabel}
             </motion.span>
+            <button
+              onClick={refresh}
+              className="text-text-disabled hover:text-accent transition-colors ml-1"
+              title="Refresh"
+            >
+              <RefreshCw size={11} />
+            </button>
           </div>
         </motion.div>
       </div>

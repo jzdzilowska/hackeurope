@@ -37,6 +37,8 @@ interface DashboardData {
   loading: boolean
   // Live update fields
   newInvoiceAlert: PaymentApproval | null
+  fireToast: (inv: PaymentApproval) => void
+  refresh: () => void
   clearInvoiceAlert: () => void
   lastSynced: Date | null
 }
@@ -55,6 +57,8 @@ const defaults: DashboardData = {
   loading: true,
   newInvoiceAlert: null,
   clearInvoiceAlert: () => {},
+  fireToast: () => {},
+  refresh: () => {},
   lastSynced: null,
 }
 
@@ -64,9 +68,78 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<DashboardData>(defaults)
   const [invoiceAlert, setInvoiceAlert] = useState<PaymentApproval | null>(null)
   const [lastSynced, setLastSynced] = useState<Date | null>(null)
-  const seenApprovalIds = useRef<Set<string> | null>(null)
+  // IDs of invoices that existed when the page first loaded — never toast these
+  const knownIds = useRef<Set<string>>(new Set())
 
-  // Initial full fetch on mount
+  const fetchAll = useCallback(async () => {
+    try {
+      const [overview, burn, cats, insights, invoices, txns] = await Promise.all([
+        fetch(`/api/dashboard/overview?user_id=${USER_ID}`).then(r => r.json()),
+        fetch(`/api/dashboard/burn-chart?user_id=${USER_ID}`).then(r => r.json()),
+        fetch(`/api/dashboard/categories?user_id=${USER_ID}`).then(r => r.json()),
+        fetch(`/api/dashboard/insights?user_id=${USER_ID}`).then(r => r.json()),
+        fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
+        fetch(`/api/dashboard/transactions?user_id=${USER_ID}&limit=50`).then(r => r.json()),
+      ])
+
+      const approvals: PaymentApproval[] = invoices.approvals ?? []
+      approvals.forEach(a => knownIds.current.add(a.id))
+
+      setData(prev => ({
+        ...prev,
+        accounts: overview.accounts ?? prev.accounts,
+        kpis: overview.kpis ?? prev.kpis,
+        burnData: burn.data ?? prev.burnData,
+        categories: cats.categories ?? prev.categories,
+        insights: insights.insights ?? prev.insights,
+        approvals,
+        transactions: txns.transactions ?? prev.transactions,
+        loading: false,
+      }))
+      setLastSynced(new Date())
+    } catch (err) {
+      console.error('Dashboard fetch failed, using mock data:', err)
+      setData(prev => ({ ...prev, loading: false }))
+    }
+  }, [])
+
+  // Poll invoices: check for new unseen IDs and fire toast
+  const pollInvoices = useCallback(async () => {
+    try {
+      const json = await fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
+      const approvals: PaymentApproval[] = json.approvals ?? []
+      const freshOnes = approvals.filter(a => !knownIds.current.has(a.id))
+      if (freshOnes.length > 0) {
+        setInvoiceAlert(freshOnes[0])
+        freshOnes.forEach(a => knownIds.current.add(a.id))
+      }
+      setLastSynced(new Date())
+      setData(prev => ({ ...prev, approvals }))
+    } catch (err) {
+      console.error('[invoice poll error]', err)
+    }
+  }, [])
+
+  // Refresh: show toast for the most recent invoice already in the DB
+  const refresh = useCallback(async () => {
+    try {
+      const json = await fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
+      const approvals: PaymentApproval[] = json.approvals ?? []
+      if (approvals.length > 0) {
+        // Sort by createdAt descending, pick the newest
+        const sorted = [...approvals].sort((a, b) => {
+          return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
+        })
+        setInvoiceAlert(sorted[0])
+      }
+      setLastSynced(new Date())
+      setData(prev => ({ ...prev, approvals }))
+    } catch (err) {
+      console.error('[refresh error]', err)
+    }
+  }, [])
+
+  // Initial full fetch on mount — then start the invoice poller
   useEffect(() => {
     const storedName = localStorage.getItem('helm_org_name')
     const storedBiz  = localStorage.getItem('helm_biz_type')
@@ -83,78 +156,23 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         },
       }))
     }
-  }, [])
-
-  useEffect(() => {
-    async function fetchAll() {
-      try {
-        const [overview, burn, cats, insights, invoices, txns] = await Promise.all([
-          fetch(`/api/dashboard/overview?user_id=${USER_ID}`).then(r => r.json()),
-          fetch(`/api/dashboard/burn-chart?user_id=${USER_ID}`).then(r => r.json()),
-          fetch(`/api/dashboard/categories?user_id=${USER_ID}`).then(r => r.json()),
-          fetch(`/api/dashboard/insights?user_id=${USER_ID}`).then(r => r.json()),
-          fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()),
-          fetch(`/api/dashboard/transactions?user_id=${USER_ID}&limit=50`).then(r => r.json()),
-        ])
-
-        const approvals: PaymentApproval[] = invoices.approvals ?? []
-        seenApprovalIds.current = new Set(approvals.map(a => a.id))
-
-        setData(prev => ({
-          ...prev,
-          accounts: overview.accounts ?? prev.accounts,
-          kpis: overview.kpis ?? prev.kpis,
-          burnData: burn.data ?? prev.burnData,
-          categories: cats.categories ?? prev.categories,
-          insights: insights.insights ?? prev.insights,
-          approvals,
-          transactions: txns.transactions ?? prev.transactions,
-          loading: false,
-        }))
-        setLastSynced(new Date())
-      } catch (err) {
-        console.error('Dashboard fetch failed, using mock data:', err)
-        setData(prev => ({ ...prev, loading: false }))
-      }
-    }
 
     fetchAll()
-  }, [])
 
-  // Poll invoices every 5 seconds — triggers toast when a new one arrives
-  useEffect(() => {
-    const poll = async () => {
-      try {
-        const json = await fetch(`/api/dashboard/invoices?user_id=${USER_ID}&_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json())
-        const approvals: PaymentApproval[] = json.approvals ?? []
-
-        // Alert for any invoice ID we haven't seen before (baseline set on initial load)
-        if (seenApprovalIds.current !== null) {
-          const newOnes = approvals.filter(a => !seenApprovalIds.current!.has(a.id))
-          if (newOnes.length > 0) {
-            setInvoiceAlert(newOnes[0])
-          }
-        }
-
-        seenApprovalIds.current = new Set(approvals.map(a => a.id))
-        setLastSynced(new Date())
-        setData(prev => ({ ...prev, approvals }))
-      } catch {
-        // Silent — keep showing existing data
-      }
-    }
-
-    const id = setInterval(poll, 5000)
-    return () => clearInterval(id)
-  }, [])
+    const pollTimer = setInterval(pollInvoices, 5000)
+    return () => clearInterval(pollTimer)
+  }, [fetchAll, pollInvoices])
 
   const clearInvoiceAlert = useCallback(() => setInvoiceAlert(null), [])
+  const fireToast = useCallback((inv: PaymentApproval) => setInvoiceAlert(inv), [])
 
   return (
     <DashboardContext.Provider value={{
       ...data,
       newInvoiceAlert: invoiceAlert,
       clearInvoiceAlert,
+      fireToast,
+      refresh,
       lastSynced,
     }}>
       {children}
