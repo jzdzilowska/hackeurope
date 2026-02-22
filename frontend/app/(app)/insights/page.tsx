@@ -699,7 +699,7 @@ function PurchaseAdvisor() {
               'w-full py-2.5 rounded-lg text-sm font-semibold transition-all',
               loading || !description.trim() || !price
                 ? 'bg-surface-raised text-text-disabled cursor-not-allowed'
-                : 'bg-accent text-black hover:brightness-105 active:scale-[0.98]'
+                : 'bg-accent text-white hover:brightness-105 active:scale-[0.98]'
             )}
           >
             {loading ? (

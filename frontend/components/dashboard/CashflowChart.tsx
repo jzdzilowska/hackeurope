@@ -59,17 +59,24 @@ export default function CashflowChart() {
       .finally(() => setLoading(false))
   }, [])
 
-  const chartData = (data?.weeks ?? []).map(w => ({
-    week: new Date(w.weekStart + 'T00:00:00Z').toLocaleDateString('en', {
-      month: 'short', day: 'numeric',
-    }),
-    balance: w.balance,
-    historicalBalance: w.type === 'historical' ? w.balance : null,
-    projectedBalance: w.type === 'projection' ? w.balance : null,
-    inflow: w.inflow,
-    outflow: -w.outflow,
-    projected: w.type === 'projection',
-  }))
+  const weeks = data?.weeks ?? []
+  const chartData = weeks.map((w, i) => {
+    const isHistorical = w.type === 'historical'
+    const isProjection = w.type === 'projection'
+    // Bridge: include last historical point in projected series to avoid gap
+    const isLastHistorical = isHistorical && i + 1 < weeks.length && weeks[i + 1].type === 'projection'
+    return {
+      week: new Date(w.weekStart + 'T00:00:00Z').toLocaleDateString('en', {
+        month: 'short', day: 'numeric',
+      }),
+      balance: w.balance,
+      historicalBalance: isHistorical ? w.balance : null,
+      projectedBalance: (isProjection || isLastHistorical) ? w.balance : null,
+      inflow: w.inflow,
+      outflow: -w.outflow,
+      projected: isProjection,
+    }
+  })
 
   const todayLabel = chartData.find(d => d.projected)?.week
 

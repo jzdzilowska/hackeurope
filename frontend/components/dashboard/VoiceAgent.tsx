@@ -377,10 +377,10 @@ export default function VoiceAgent({ open, onClose, autoGreet = false }: VoiceAg
                     className="w-6 h-6 rounded-md flex items-center justify-center"
                     style={{ background: 'linear-gradient(135deg, #2C2926 0%, #6A6662 40%, #9A9692 70%, #D8D4D0 100%)' }}
                   >
-                    <span className="text-2xs font-bold text-black">H</span>
+                    <span className="text-2xs font-bold text-black">R</span>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-text-primary">HELM Voice</p>
+                    <p className="text-sm font-semibold text-text-primary">Runwave Voice</p>
                     <p className="text-2xs text-text-muted">Powered by Groq · {org.name}</p>
                   </div>
                 </div>

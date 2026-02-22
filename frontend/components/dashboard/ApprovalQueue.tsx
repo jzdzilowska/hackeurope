@@ -140,7 +140,7 @@ function ApprovalCard({ approval }: { approval: PaymentApproval }) {
           >
             <button
               onClick={handleApprove}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold bg-accent text-black hover:bg-accent-hover active:scale-[0.98] transition-all"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold bg-accent text-white hover:bg-accent-hover active:scale-[0.98] transition-all"
             >
               <CheckCircle2 size={12} />
               Approve & Auto-Pay

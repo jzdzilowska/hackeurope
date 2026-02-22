@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 function buildSystemPrompt(ctx: Record<string, unknown> | null): string {
   const data = ctx ? JSON.stringify(ctx, null, 2) : 'No data available.'
-  return `You are HELM, a financial AI assistant built into a voice-enabled business dashboard. You're answering spoken questions out loud — so your responses must sound completely natural when read aloud by a voice assistant.
+  return `You are Runwave, a financial AI assistant built into a voice-enabled business dashboard. You're answering spoken questions out loud — so your responses must sound completely natural when read aloud by a voice assistant.
 
 Strict rules:
 - Keep responses under 70 words. Be direct and concise.

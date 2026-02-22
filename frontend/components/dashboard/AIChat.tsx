@@ -241,7 +241,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
                   className={cn(
                     'p-1.5 rounded-lg transition-all',
                     input.trim() && !loading
-                      ? 'bg-accent text-black hover:bg-accent-hover'
+                      ? 'bg-accent text-white hover:bg-accent-hover'
                       : 'bg-surface-high text-text-disabled cursor-not-allowed'
                   )}
                 >

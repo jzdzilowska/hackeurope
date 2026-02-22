@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Settings, Zap, Plus, Sun, Moon, TrendingUp, TrendingDown, Receipt } from 'lucide-react'
+import Image from 'next/image'
+import { Settings, Plus, Sun, Moon, TrendingUp, TrendingDown, Receipt } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useDashboard } from '@/lib/dashboard-context'
@@ -30,16 +31,14 @@ export default function Sidebar() {
       {/* ── Logo ── */}
       <div className="px-6 pt-7 pb-6">
         <div className="flex items-center gap-2.5">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{
-              background: 'linear-gradient(135deg, #00D4A0 0%, #7FEDD4 40%, #C0F5E8 70%, #F0FAF8 100%)',
-              boxShadow: '0 0 14px rgba(0,212,160,0.18)',
-            }}
-          >
-            <Zap size={13} className="text-black" strokeWidth={2.5} />
-          </div>
-          <span className="text-sm font-semibold tracking-tight text-text-primary">HELM</span>
+          <Image
+            src="/runwave-logo.png"
+            alt="Runwave"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain dark:invert"
+          />
+          <span className="text-sm font-semibold tracking-tight text-text-primary">Runwave</span>
         </div>
       </div>
 
@@ -75,7 +74,7 @@ export default function Sidebar() {
                     'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors relative group',
                     active
                       ? 'text-text-primary'
-                      : 'text-text-muted hover:text-text-secondary'
+                      : 'text-text-secondary hover:text-text-primary'
                   )}
                 >
                   {/* Circle dot indicator */}
@@ -105,14 +104,14 @@ export default function Sidebar() {
 
         {/* ── Quick stats ── */}
         <div className="px-4 mt-6">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-text-disabled px-3 mb-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-text-muted px-3 mb-2.5">
             Snapshot
           </p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
               <TrendingUp size={12} className="text-success flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-text-disabled leading-tight">Cash</p>
+                <p className="text-[10px] text-text-muted leading-tight">Cash</p>
                 <p className="text-xs font-semibold mono text-text-primary">
                   {formatCurrency(mockKPIs.totalCashPosition, 'EUR', true)}
                 </p>
@@ -121,7 +120,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
               <TrendingDown size={12} className="text-danger flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-text-disabled leading-tight">Monthly costs</p>
+                <p className="text-[10px] text-text-muted leading-tight">Monthly costs</p>
                 <p className="text-xs font-semibold mono text-text-primary">
                   {formatCurrency(mockKPIs.monthlyBurn, 'EUR', true)}
                 </p>
@@ -130,7 +129,7 @@ export default function Sidebar() {
             <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
               <Receipt size={12} className="text-warning flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-text-disabled leading-tight">Payables due</p>
+                <p className="text-[10px] text-text-muted leading-tight">Payables due</p>
                 <p className="text-xs font-semibold mono text-text-primary">
                   {formatCurrency(mockKPIs.dueSoon, 'EUR', true)}
                 </p>
@@ -141,7 +140,7 @@ export default function Sidebar() {
 
         {/* ── Connect account CTA ── */}
         <div className="px-4 py-6">
-          <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border/50 hover:border-accent/30 hover:bg-accent/[0.03] transition-all text-xs text-text-disabled hover:text-accent group">
+          <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border/50 hover:border-accent/30 hover:bg-accent/[0.03] transition-all text-xs text-text-muted hover:text-accent group">
             <Plus size={12} className="group-hover:text-accent transition-colors" />
             Connect bank
           </button>

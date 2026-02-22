@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
 function buildSystemPrompt(ctx: Record<string, unknown> | null): string {
   const data = ctx ? JSON.stringify(ctx, null, 2) : 'No data available yet.'
-  return `You are HELM, a sharp and friendly AI financial assistant built into a business finance dashboard. You have access to real-time financial data for this business.
+  return `You are Runwave, a sharp and friendly AI financial assistant built into a business finance dashboard. You have access to real-time financial data for this business.
 
 Keep responses concise and conversational — you're talking to a busy founder or finance manager, not writing a report. Use bullet points sparingly and only when listing more than 3 items. Be direct, give actual numbers, and flag anything urgent.
 
