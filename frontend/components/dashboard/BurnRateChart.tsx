@@ -7,22 +7,24 @@ import {
 } from 'recharts'
 import { useDashboard } from '@/lib/dashboard-context'
 import { formatCurrency } from '@/lib/utils'
+import { useTheme } from 'next-themes'
+import { getChartColors } from '@/lib/chart-colors'
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, colors }: any) {
   if (!active || !payload?.length) return null
   return (
     <div className="card px-3 py-2.5 text-xs space-y-1 min-w-[140px]">
       <p className="text-text-muted font-medium mb-1.5">{label}</p>
       <div className="flex items-center justify-between gap-4">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-chart-sage inline-block" />
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: colors?.revenue }} />
           <span className="text-text-secondary">Revenue</span>
         </span>
         <span className="mono text-text-primary">{formatCurrency(payload[0]?.value ?? 0, 'EUR', true)}</span>
       </div>
       <div className="flex items-center justify-between gap-4">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-chart-pink inline-block" />
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: colors?.burn }} />
           <span className="text-text-secondary">Costs</span>
         </span>
         <span className="mono text-text-primary">{formatCurrency(payload[1]?.value ?? 0, 'EUR', true)}</span>
@@ -33,6 +35,8 @@ function CustomTooltip({ active, payload, label }: any) {
 
 export default function BurnRateChart() {
   const { burnData: mockBurnData } = useDashboard()
+  const { resolvedTheme } = useTheme()
+  const c = getChartColors(resolvedTheme as any)
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -47,11 +51,11 @@ export default function BurnRateChart() {
         </div>
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full bg-chart-sage inline-block" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.revenue }} />
             Revenue
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full bg-chart-pink inline-block" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.burn }} />
             Costs
           </span>
         </div>
@@ -62,12 +66,12 @@ export default function BurnRateChart() {
           <AreaChart data={mockBurnData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#7AC0A8" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#7AC0A8" stopOpacity={0.0} />
+                <stop offset="0%"   stopColor={c.revenue} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={c.revenue} stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="burnGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#E87878" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#E87878" stopOpacity={0.0} />
+                <stop offset="0%"   stopColor={c.burn} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={c.burn} stopOpacity={0.0} />
               </linearGradient>
             </defs>
 
@@ -88,25 +92,25 @@ export default function BurnRateChart() {
               tickLine={false}
               tickFormatter={(v) => `€${(v / 1000).toFixed(0)}k`}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
+            <Tooltip content={<CustomTooltip colors={c} />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
 
             <Area
               type="monotone"
               dataKey="revenue"
-              stroke="#7AC0A8"
+              stroke={c.revenue}
               strokeWidth={2}
               fill="url(#revenueGrad)"
               dot={false}
-              activeDot={{ r: 4, fill: '#7AC0A8', strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: c.revenue, strokeWidth: 0 }}
             />
             <Area
               type="monotone"
               dataKey="burn"
-              stroke="#E87878"
+              stroke={c.burn}
               strokeWidth={2}
               fill="url(#burnGrad)"
               dot={false}
-              activeDot={{ r: 4, fill: '#E87878', strokeWidth: 0 }}
+              activeDot={{ r: 4, fill: c.burn, strokeWidth: 0 }}
             />
           </AreaChart>
         </ResponsiveContainer>

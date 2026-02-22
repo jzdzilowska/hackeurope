@@ -46,6 +46,17 @@
   --skeleton-mid: #EFEFF4;
   --svg-ring: rgba(0,0,0,0.05);
   --grain-opacity: 0.0;
+  /* Cash-card — silver metallic, white text (light mode) */
+  --cc-bg: linear-gradient(145deg, #8C8E96 0%, #AAACB4 28%, #9A9CA4 52%, #B4B6BE 76%, #9E9FA8 100%);
+  --cc-c1: rgba(255,255,255,1.00);
+  --cc-c2: rgba(255,255,255,1.00);
+  --cc-c3: rgba(255,255,255,1.00);
+  --cc-c4: rgba(255,255,255,1.00);
+  --cc-c5: rgba(255,255,255,1.00);
+  --cc-c6: rgba(255,255,255,1.00);
+  --cc-dot: rgba(255,255,255,1.00);
+  --cc-bd: rgba(255,255,255,0.80);
+  --cc-btn-bd: rgba(255,255,255,0.80);
 }
 
 .dark {
@@ -84,6 +95,17 @@
   --skeleton-mid: #272523;
   --svg-ring: rgba(255,255,255,0.035);
   --grain-opacity: 0.0;
+  /* Cash-card — dark bg, white text (dark mode) */
+  --cc-bg: #141210;
+  --cc-c1: rgba(255,255,255,1.00);
+  --cc-c2: rgba(255,255,255,0.85);
+  --cc-c3: rgba(255,255,255,0.70);
+  --cc-c4: rgba(255,255,255,0.60);
+  --cc-c5: rgba(255,255,255,0.45);
+  --cc-c6: rgba(255,255,255,0.25);
+  --cc-dot: rgba(255,255,255,0.90);
+  --cc-bd: rgba(255,255,255,0.12);
+  --cc-btn-bd: rgba(255,255,255,0.22);
 }
 
 @layer base {
@@ -134,43 +156,57 @@
   /* ── Mono numbers ── */
   .mono { font-family: 'DM Mono', monospace; letter-spacing: -0.02em; }
 
-  /* ── Dark cash card with drifting corner orbs ── */
+  /* ── Cash card — silver in light, dark in dark, with drifting corner orbs ── */
   .cash-card-grain {
-    background-color: #141210;
+    background: var(--cc-bg);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.35);
     position: relative;
     overflow: hidden;
   }
-  /* Orb 1 — top-right */
+  /* Dark mode border/shadow */
+  .dark .cash-card-grain {
+    border-color: rgba(255,255,255,0.06);
+    box-shadow: var(--card-shadow);
+  }
+  /* Orb 1 — top-right: white screen-blended in both modes */
   .cash-card-grain::before {
     content: '';
     position: absolute;
-    width: 75%;
-    height: 75%;
+    width: 90%;
+    height: 90%;
     border-radius: 50%;
-    top: -25%;
-    right: -15%;
+    top: -30%;
+    right: -18%;
     pointer-events: none;
     z-index: 1;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.05) 40%, transparent 72%);
-    filter: blur(28px);
+    background: radial-gradient(circle at center, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.40) 28%, transparent 55%);
+    filter: blur(6px);
     mix-blend-mode: screen;
-    animation: orb-drift-1 18s ease-in-out infinite;
+    animation: orb-drift-1 12s ease-in-out infinite;
   }
   /* Orb 2 — bottom-left */
   .cash-card-grain::after {
     content: '';
     position: absolute;
-    width: 65%;
-    height: 65%;
+    width: 80%;
+    height: 80%;
     border-radius: 50%;
-    bottom: -22%;
-    left: -10%;
+    bottom: -28%;
+    left: -14%;
     pointer-events: none;
     z-index: 1;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 45%, transparent 72%);
-    filter: blur(32px);
+    background: radial-gradient(circle at center, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.28) 32%, transparent 58%);
+    filter: blur(8px);
     mix-blend-mode: screen;
-    animation: orb-drift-2 22s ease-in-out infinite;
+    animation: orb-drift-2 15s ease-in-out infinite;
+  }
+  /* Dark mode orbs — same treatment, slightly dimmer */
+  .dark .cash-card-grain::before {
+    background: radial-gradient(circle at center, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.05) 40%, transparent 72%);
+  }
+  .dark .cash-card-grain::after {
+    background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 45%, transparent 72%);
   }
 
   /* ── Light bank account cards — gray drifting orbs on white surface ── */
@@ -269,14 +305,16 @@
 
 /* Orb drift keyframes — opposite ends of cash card */
 @keyframes orb-drift-1 {
-  0%, 100% { transform: translate(0%,  0%)   scale(1);    }
-  30%       { transform: translate(-9%,  7%)  scale(1.06); }
-  65%       { transform: translate(5%,  -5%)  scale(0.96); }
+  0%, 100% { transform: translate(0%,   0%)    scale(1);    }
+  25%       { transform: translate(-14%, 10%)   scale(1.10); }
+  55%       { transform: translate(8%,  -9%)    scale(0.93); }
+  80%       { transform: translate(-6%,  5%)    scale(1.05); }
 }
 @keyframes orb-drift-2 {
-  0%, 100% { transform: translate(0%,  0%)   scale(1);    }
-  30%       { transform: translate(9%,  -7%)  scale(0.95); }
-  65%       { transform: translate(-5%,  5%)  scale(1.05); }
+  0%, 100% { transform: translate(0%,   0%)    scale(1);    }
+  25%       { transform: translate(13%, -10%)   scale(0.91); }
+  55%       { transform: translate(-7%,  8%)    scale(1.09); }
+  80%       { transform: translate(5%,  -4%)    scale(0.97); }
 }
 
 @keyframes shimmer {

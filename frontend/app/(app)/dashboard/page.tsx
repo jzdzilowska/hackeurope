@@ -103,7 +103,7 @@ export default function DashboardPage() {
       <div className="flex-1 overflow-y-auto min-w-0 relative">
 
         {/* ── Top bar ── */}
-        <div className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 bg-background/80 backdrop-blur-md border-b border-border/30">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 bg-surface/50 backdrop-blur-xl border-b border-border/20">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-text-disabled mb-0.5">
               {org.name}

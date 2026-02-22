@@ -8,6 +8,8 @@ import {
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
 import { TrendingUp, AlertCircle } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { getChartColors } from '@/lib/chart-colors'
 
 const USER_ID = 'c5cbf7bd-2801-407e-9efe-222d8e93fddc'
 
@@ -38,12 +40,6 @@ interface RestockData {
   }
 }
 
-const confidenceColors: Record<string, string> = {
-  high: '#0a7030',
-  medium: '#9e5a00',
-  low: '#3e5e84',
-}
-
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   return (
@@ -65,6 +61,9 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function RestockForecast() {
   const [data, setData] = useState<RestockData | null>(null)
   const [loading, setLoading] = useState(true)
+  const { resolvedTheme } = useTheme()
+  const c = getChartColors(resolvedTheme as any)
+  const confidenceColors = { high: c.confidenceHigh, medium: c.confidenceMedium, low: c.confidenceLow }
 
   useEffect(() => {
     fetch(`/api/dashboard/restock-forecast?user_id=${USER_ID}`)
@@ -140,12 +139,12 @@ export default function RestockForecast() {
                 tickFormatter={v => `€${(v / 1000).toFixed(0)}k`}
               />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--cursor-line)', strokeWidth: 1 }} />
-              <Bar dataKey="sales" name="Sales" maxBarSize={10} fill="#3030cc" fillOpacity={0.7} />
+              <Bar dataKey="sales" name="Sales" maxBarSize={10} fill={c.salesBar} fillOpacity={0.7} />
               <Line
                 type="monotone"
                 dataKey="restock"
                 name="Restock"
-                stroke="#9e5a00"
+                stroke={c.restockLine}
                 strokeWidth={1.5}
                 strokeDasharray="4 2"
                 dot={false}

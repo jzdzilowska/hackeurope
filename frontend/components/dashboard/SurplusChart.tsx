@@ -7,6 +7,8 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
+import { useTheme } from 'next-themes'
+import { getChartColors } from '@/lib/chart-colors'
 
 const USER_ID = 'c5cbf7bd-2801-407e-9efe-222d8e93fddc'
 
@@ -62,6 +64,8 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function SurplusChart() {
   const [data, setData] = useState<SurplusData | null>(null)
   const [loading, setLoading] = useState(true)
+  const { resolvedTheme } = useTheme()
+  const c = getChartColors(resolvedTheme as any)
 
   useEffect(() => {
     fetch(`/api/dashboard/surplus?user_id=${USER_ID}`)
@@ -101,15 +105,15 @@ export default function SurplusChart() {
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#0c42b8]" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.inflowsBar }} />
             Inflows
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#2c5070]" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.overheadBar }} />
             Overhead
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block bg-[#9e5a00]" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.restockBar }} />
             Restock
           </span>
         </div>
@@ -141,21 +145,21 @@ export default function SurplusChart() {
               {/* Positive stack: inflows */}
               <Bar dataKey="inflows" name="Inflows" stackId="pos" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#0c42b8" fillOpacity={d.projected ? 0.4 : 0.75} />
+                  <Cell key={i} fill={c.inflowsBar} fillOpacity={d.projected ? 0.4 : 0.75} />
                 ))}
               </Bar>
 
               {/* Negative stack: overhead */}
               <Bar dataKey="overhead" name="Overhead" stackId="neg" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#2c5070" fillOpacity={d.projected ? 0.35 : 0.65} />
+                  <Cell key={i} fill={c.overheadBar} fillOpacity={d.projected ? 0.35 : 0.65} />
                 ))}
               </Bar>
 
               {/* Negative stack: restock */}
               <Bar dataKey="restock" name="Restock" stackId="neg" maxBarSize={18}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#9e5a00" fillOpacity={d.projected ? 0.35 : 0.65} />
+                  <Cell key={i} fill={c.restockBar} fillOpacity={d.projected ? 0.35 : 0.65} />
                 ))}
               </Bar>
 
@@ -164,20 +168,20 @@ export default function SurplusChart() {
                 type="monotone"
                 dataKey="surplus"
                 name="Surplus"
-                stroke="#0a7030"
+                stroke={c.surplusLine}
                 strokeWidth={2}
-                dot={{ r: 3, fill: '#0a7030', strokeWidth: 0 }}
-                activeDot={{ r: 4, fill: '#0a7030', strokeWidth: 0 }}
+                dot={{ r: 3, fill: c.surplusLine, strokeWidth: 0 }}
+                activeDot={{ r: 4, fill: c.surplusLine, strokeWidth: 0 }}
               />
 
               <ReferenceLine y={0} stroke="var(--chart-ref-line-dim)" strokeDasharray="3 3" />
               {floorLine > 0 && (
                 <ReferenceLine
                   y={floorLine}
-                  stroke="#0a7030"
+                  stroke={c.floorLine}
                   strokeOpacity={0.35}
                   strokeDasharray="5 3"
-                  label={{ value: 'Safe floor', position: 'insideTopLeft', fill: '#0a7030', fontSize: 9, fillOpacity: 0.6 }}
+                  label={{ value: 'Safe floor', position: 'insideTopLeft', fill: c.floorLine, fontSize: 9, fillOpacity: 0.6 }}
                 />
               )}
             </ComposedChart>

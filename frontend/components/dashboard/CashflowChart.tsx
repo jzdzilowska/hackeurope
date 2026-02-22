@@ -7,6 +7,8 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
+import { useTheme } from 'next-themes'
+import { getChartColors } from '@/lib/chart-colors'
 
 const USER_ID = 'c5cbf7bd-2801-407e-9efe-222d8e93fddc'
 
@@ -50,6 +52,8 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function CashflowChart() {
   const [data, setData] = useState<CashflowData | null>(null)
   const [loading, setLoading] = useState(true)
+  const { resolvedTheme } = useTheme()
+  const c = getChartColors(resolvedTheme as any)
 
   useEffect(() => {
     fetch(`/api/dashboard/cashflow?user_id=${USER_ID}`)
@@ -94,15 +98,15 @@ export default function CashflowChart() {
         </div>
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#3030cc' }} />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.balance }} />
             Balance
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full bg-success inline-block" />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.inflow }} />
             Inflow
           </span>
           <span className="flex items-center gap-1.5 text-xs text-text-muted">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#b41230' }} />
+            <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.outflow }} />
             Outflow
           </span>
         </div>
@@ -118,12 +122,12 @@ export default function CashflowChart() {
             <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
               <defs>
                 <linearGradient id="balanceHistGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3030cc" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="#3030cc" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor={c.balance} stopOpacity={0.25} />
+                  <stop offset="100%" stopColor={c.balance} stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="balanceProjGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3030cc" stopOpacity={0.1} />
-                  <stop offset="100%" stopColor="#3030cc" stopOpacity={0.0} />
+                  <stop offset="0%" stopColor={c.balance} stopOpacity={0.1} />
+                  <stop offset="100%" stopColor={c.balance} stopOpacity={0.0} />
                 </linearGradient>
               </defs>
 
@@ -146,7 +150,7 @@ export default function CashflowChart() {
               <Area
                 type="monotone"
                 dataKey="historicalBalance"
-                stroke="#3030cc"
+                stroke={c.balance}
                 strokeWidth={2}
                 fill="url(#balanceHistGrad)"
                 dot={false}
@@ -157,7 +161,7 @@ export default function CashflowChart() {
               <Area
                 type="monotone"
                 dataKey="projectedBalance"
-                stroke="#3030cc"
+                stroke={c.balance}
                 strokeWidth={1.5}
                 strokeDasharray="5 3"
                 fill="url(#balanceProjGrad)"
@@ -169,14 +173,14 @@ export default function CashflowChart() {
               {/* Inflow bars */}
               <Bar dataKey="inflow" name="Inflow" maxBarSize={6}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#0a7030" fillOpacity={d.projected ? 0.4 : 0.8} />
+                  <Cell key={i} fill={c.inflow} fillOpacity={d.projected ? 0.4 : 0.8} />
                 ))}
               </Bar>
 
               {/* Outflow bars (negative) */}
               <Bar dataKey="outflow" name="Outflow" maxBarSize={6}>
                 {chartData.map((d, i) => (
-                  <Cell key={i} fill="#b41230" fillOpacity={d.projected ? 0.4 : 0.8} />
+                  <Cell key={i} fill={c.outflow} fillOpacity={d.projected ? 0.4 : 0.8} />
                 ))}
               </Bar>
 
