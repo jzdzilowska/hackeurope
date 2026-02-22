@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Settings, Zap, Plus, Sun, Moon } from 'lucide-react'
+import { Settings, Zap, Plus, Sun, Moon, TrendingUp, TrendingDown, Receipt } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn, formatCurrency } from '@/lib/utils'
 import { useDashboard } from '@/lib/dashboard-context'
@@ -18,7 +18,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const { org: mockOrg, accounts: mockAccounts } = useDashboard()
+  const { org: mockOrg, kpis: mockKPIs } = useDashboard()
   const { theme, setTheme } = useTheme()
 
   return (
@@ -101,32 +101,44 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* ── Live accounts summary ── */}
-        <div className="px-4 pb-4 mt-4">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-text-disabled px-3 mb-2">
-            Accounts
+        {/* ── Quick stats ── */}
+        <div className="px-4 mt-6">
+          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-text-disabled px-3 mb-2.5">
+            Snapshot
           </p>
-          {mockAccounts.map(acc => (
-            <div
-              key={acc.id}
-              className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-surface-raised/60 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <div
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: acc.institutionColor }}
-                />
-                <span className="text-xs text-text-muted truncate">{acc.institution}</span>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
+              <TrendingUp size={12} className="text-success flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] text-text-disabled leading-tight">Cash</p>
+                <p className="text-xs font-semibold mono text-text-primary">
+                  {formatCurrency(mockKPIs.totalCashPosition, 'EUR', true)}
+                </p>
               </div>
-              <span className="text-xs mono text-text-secondary flex-shrink-0 ml-2">
-                {formatCurrency(acc.currentBalance, acc.currency, true)}
-              </span>
             </div>
-          ))}
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
+              <TrendingDown size={12} className="text-danger flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] text-text-disabled leading-tight">Monthly costs</p>
+                <p className="text-xs font-semibold mono text-text-primary">
+                  {formatCurrency(mockKPIs.monthlyBurn, 'EUR', true)}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-surface/60">
+              <Receipt size={12} className="text-warning flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] text-text-disabled leading-tight">Payables due</p>
+                <p className="text-xs font-semibold mono text-text-primary">
+                  {formatCurrency(mockKPIs.dueSoon, 'EUR', true)}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* ── Connect account CTA ── */}
-        <div className="px-4 pb-6">
+        <div className="px-4 py-6">
           <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border/50 hover:border-accent/30 hover:bg-accent/[0.03] transition-all text-xs text-text-disabled hover:text-accent group">
             <Plus size={12} className="group-hover:text-accent transition-colors" />
             Connect bank
