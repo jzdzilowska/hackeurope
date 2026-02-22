@@ -218,6 +218,15 @@
     background: rgba(255, 255, 255, 0.65);
     box-shadow: 0 4px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.95);
   }
+  .dark .glass-pill {
+    background: rgba(19, 18, 17, 0.75);
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .dark .glass-pill:hover {
+    background: rgba(26, 25, 24, 0.88);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
 
   /* ── Shimmer skeleton ── */
   .skeleton {
