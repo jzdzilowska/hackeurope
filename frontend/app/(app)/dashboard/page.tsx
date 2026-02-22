@@ -6,7 +6,7 @@ import { MessageSquare, Bell, ArrowUpRight } from 'lucide-react'
 import Sidebar              from '@/components/layout/Sidebar'
 import CashPositionHero     from '@/components/dashboard/CashPositionHero'
 import CashflowChart        from '@/components/dashboard/CashflowChart'
-import InsightsSummary      from '@/components/dashboard/InsightsSummary'
+import RecurringCosts       from '@/components/dashboard/RecurringCosts'
 import RestockForecast      from '@/components/dashboard/RestockForecast'
 import SurplusChart         from '@/components/dashboard/SurplusChart'
 import UpcomingPayments     from '@/components/dashboard/UpcomingPayments'
@@ -93,28 +93,32 @@ export default function DashboardPage() {
         {/* ── Page content ── */}
         <div className="px-8 pt-7 pb-10 space-y-8 max-w-[1200px]">
 
-          {/* Section 1: Cash position hero */}
+          {/* Section 1: Cash position + recurring costs */}
           <div>
             <SectionHeader tag="FINANCIAL" title="Cash Position" />
-            <CashPositionHero />
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <CashPositionHero />
+              </div>
+              <div className="col-span-1">
+                <RecurringCosts />
+              </div>
+            </div>
           </div>
 
-          {/* Section 2: Analytics grid — cashflow, insights, restock, surplus */}
+          {/* Section 2: Analytics grid — cashflow, restock, surplus */}
           <div>
             <SectionHeader tag="ANALYTICS" title="Financial Intelligence" />
             <div className="grid grid-cols-3 gap-4">
-              {/* Row 1: Cashflow (wide) + Insights (narrow) */}
+              {/* Row 1: Cashflow (wide) + Restock (narrow) */}
               <div className="col-span-2">
                 <CashflowChart />
               </div>
               <div className="col-span-1">
-                <InsightsSummary />
-              </div>
-              {/* Row 2: Restock (narrow) + Surplus (wide) */}
-              <div className="col-span-1">
                 <RestockForecast />
               </div>
-              <div className="col-span-2">
+              {/* Row 2: Surplus (full width) */}
+              <div className="col-span-3">
                 <SurplusChart />
               </div>
             </div>
