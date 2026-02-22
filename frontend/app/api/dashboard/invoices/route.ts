@@ -13,12 +13,14 @@ export async function GET(req: NextRequest) {
 
     const supabase = createServiceClient();
 
-    // Get pending invoices
+    // Get pending invoices — exclude failed-parse rows (null vendor or zero amount)
     const { data: invoices, error } = await supabase
       .from('invoices')
       .select('id, vendor, amount, due_date, status, parsed_data, transaction_id')
       .eq('user_id', user_id)
       .eq('status', 'pending')
+      .not('vendor', 'is', null)
+      .gt('amount', 0)
       .order('due_date', { ascending: true });
 
     if (error) {

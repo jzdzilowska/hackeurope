@@ -55,7 +55,7 @@ export default function CashPositionHero() {
             >
               <RefreshCw size={10} />
             </motion.div>
-            <span>Synced {formatTimeAgo(lastSynced)}</span>
+            <span suppressHydrationWarning>Synced {formatTimeAgo(lastSynced)}</span>
           </div>
         </div>
 
