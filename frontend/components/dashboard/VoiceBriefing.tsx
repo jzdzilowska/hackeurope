@@ -16,7 +16,7 @@ const USER_ID = 'c5cbf7bd-2801-407e-9efe-222d8e93fddc'
 
 type BriefingState = 'idle' | 'loading' | 'playing' | 'error'
 
-// Animated waveform shown while audio plays — matches the HELM design language
+// Animated waveform shown while audio plays — matches the Runwave design language
 function WaveformIcon() {
   return (
     <span className="flex items-center gap-[2px]" style={{ height: 11 }}>

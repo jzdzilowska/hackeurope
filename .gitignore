@@ -44,6 +44,14 @@ venv/
 # supabase
 supabase/.temp/
 
+# zapier credentials
+.zapier_client.json
+.zapier_tokens.json
+
+# email agent runtime output
+email_integration/output/
+email_integration/logs/
+
 # vercel
 .vercel
 

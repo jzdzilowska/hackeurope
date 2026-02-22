@@ -1,4 +1,4 @@
-# HELM — UI Architecture Reference
+# Runwave — UI Architecture Reference
 
 ## Quick Start
 ```bash

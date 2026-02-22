@@ -1,7 +1,7 @@
 """
 health_queries.py — Predictive financial health, forecasting, and purchase context queries.
 
-Companion to queries.py for the HELM Predictive & General Health module:
+Companion to queries.py for the Runwave Predictive & General Health module:
 
   query_financial_health()  → net worth, P&L, fixed / variable / payroll cost split
   query_forecast_data()     → 3-month historical series + OLS linear regression forecasts

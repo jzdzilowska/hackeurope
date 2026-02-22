@@ -17,7 +17,7 @@ interface Turn {
 export interface VoiceAgentProps {
   open: boolean
   onClose: () => void
-  /** If true, HELM speaks a greeting then starts listening automatically */
+  /** If true, Runwave speaks a greeting then starts listening automatically */
   autoGreet?: boolean
 }
 

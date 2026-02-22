@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     usage: 'off_session',
     payment_method_types: ['card'],
     description: `Auto-pay mandate for ${merchantName}`,
-    metadata: { recurringId, sandbox: 'true', source: 'helm_dashboard' },
+    metadata: { recurringId, sandbox: 'true', source: 'runwave_dashboard' },
   })
 
   return NextResponse.json({

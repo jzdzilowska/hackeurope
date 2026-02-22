@@ -1229,9 +1229,9 @@ export default function OnboardingPage() {
 
               <button
                 onClick={() => {
-                  if (orgName.trim()) localStorage.setItem('helm_org_name', orgName.trim())
+                  if (orgName.trim()) localStorage.setItem('runwave_org_name', orgName.trim())
                   if (teamSize) localStorage.setItem('helm_team_size', teamSize)
-                  if (bizType) localStorage.setItem('helm_biz_type', bizType)
+                  if (bizType) localStorage.setItem('runwave_biz_type', bizType)
                   router.push('/dashboard')
                 }}
                 className="w-full py-3 rounded-xl text-sm font-semibold bg-accent text-white hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2"

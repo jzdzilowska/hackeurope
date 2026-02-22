@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
         userId,
         vendor,
         dueDate,
-        source: 'helm_dashboard',
+        source: 'runwave_dashboard',
         sandbox: 'true',
       },
     })

@@ -141,8 +141,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   // Initial full fetch on mount — then start the invoice poller
   useEffect(() => {
-    const storedName = localStorage.getItem('helm_org_name')
-    const storedBiz  = localStorage.getItem('helm_biz_type')
+    const storedName = localStorage.getItem('runwave_org_name')
+    const storedBiz  = localStorage.getItem('runwave_biz_type')
     if (storedName || storedBiz) {
       const bizMap: Record<string, Organisation['businessType']> = {
         saas: 'software', physical: 'physical_goods', services: 'software', individual: 'software',
