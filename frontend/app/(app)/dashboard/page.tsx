@@ -128,6 +128,9 @@ export default function DashboardPage() {
               <MessageSquare size={11} className="text-text-muted" />
               Ask Runwave
             </button>
+
+            {/* Voice briefing */}
+            <VoiceBriefing />
           </div>
         </div>
 

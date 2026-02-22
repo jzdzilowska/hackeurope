@@ -7,21 +7,6 @@ import { cn, formatTimeAgo } from '@/lib/utils'
 import { useDashboard } from '@/lib/dashboard-context'
 import type { ChatMessage } from '@/lib/types'
 
-const CANNED_RESPONSES: Record<string, string> = {
-  default: "Based on your transaction data, **supplier costs** are your largest discretionary category at €4,380 this month — up 28% from the previous quarter. Your payroll is stable at €5,200.\n\nWould you like a detailed breakdown or a cost-reduction plan?",
-  supplier: "Your supplier spend this month is **€4,380**:\n\n• **Häfele** — €2,100 (↑41% MoM) · Largest spike\n• **IKEA Industry** — €1,890 · Stable\n• **Blum** — €89 · Stable\n\nThe Häfele jump is unusual. Most likely cause: bulk hardware order or new product line stocking. Worth checking your purchase orders.",
-  runway: "At your current costs of **€15,230/month**, here's your cash reserves projection:\n\n• **6 months** → €98,991 remaining → €6,609 left\n• **12 months** → Deficit of €83,569\n\nYou'll drop below the 6-month threshold on approximately **March 14th**. I'd recommend either reducing costs by ~€2,000/mo or initiating a credit line renegotiation now.",
-  subscriptions: "Analysing 8 active subscriptions across your accounts:\n\n**Potentially unused:**\n• **QuickBooks** — €80/mo · 2 seats idle 45+ days\n• **Adobe Creative** — €160/mo · 2 seats idle 6 weeks\n\n**Saving opportunity:** Downgrading these saves **€52/month** (€624/year). Want me to flag them in your payments queue?",
-}
-
-function getResponse(query: string): string {
-  const q = query.toLowerCase()
-  if (q.includes('supplier') || q.includes('häfele') || q.includes('cost')) return CANNED_RESPONSES.supplier
-  if (q.includes('runway') || q.includes('long') || q.includes('last')) return CANNED_RESPONSES.runway
-  if (q.includes('subscri') || q.includes('tool') || q.includes('saas') || q.includes('unused')) return CANNED_RESPONSES.subscriptions
-  return CANNED_RESPONSES.default
-}
-
 function useStreamText(text: string, active: boolean) {
   const [displayed, setDisplayed] = useState('')
   useEffect(() => {
@@ -81,7 +66,7 @@ interface AIChatProps {
 }
 
 export default function AIChat({ open, onClose }: AIChatProps) {
-  const { chatHistory } = useDashboard()
+  const { chatHistory, kpis, burnData, categories, insights, approvals, recurring, accounts, org } = useDashboard()
   const [messages, setMessages]     = useState<ChatMessage[]>(chatHistory)
   const [input, setInput]           = useState('')
   const [loading, setLoading]       = useState(false)
@@ -92,7 +77,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  const send = () => {
+  const send = async () => {
     if (!input.trim() || loading) return
     const userMsg: ChatMessage = {
       id: `msg_${Date.now()}`,
@@ -100,12 +85,22 @@ export default function AIChat({ open, onClose }: AIChatProps) {
       content: input.trim(),
       timestamp: new Date().toISOString(),
     }
-    const responseText = getResponse(input)
-    setMessages(prev => [...prev, userMsg])
+    const allMessages = [...messages, userMsg]
+    setMessages(allMessages)
     setInput('')
     setLoading(true)
 
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+          dashboardContext: { org, accounts, kpis, burnData, categories, insights, approvals, recurring },
+        }),
+      })
+      const data = await res.json()
+      const responseText = data.reply ?? data.error ?? 'Something went wrong.'
       const assistantMsg: ChatMessage = {
         id: `msg_${Date.now() + 1}`,
         role: 'assistant',
@@ -114,9 +109,18 @@ export default function AIChat({ open, onClose }: AIChatProps) {
       }
       setMessages(prev => [...prev, assistantMsg])
       setStreamingId(assistantMsg.id)
-      setLoading(false)
       setTimeout(() => setStreamingId(null), responseText.length * 12 + 500)
-    }, 800)
+    } catch {
+      const errMsg: ChatMessage = {
+        id: `msg_${Date.now() + 1}`,
+        role: 'assistant',
+        content: 'Sorry, I couldn\'t reach the server. Please try again.',
+        timestamp: new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, errMsg])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const suggestions = [
@@ -156,7 +160,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-text-primary">Ask Runwave</p>
-                  <p className="text-2xs text-text-muted">Powered by Claude · your data stays private</p>
+                  <p className="text-2xs text-text-muted">Powered by Gemini · your data stays private</p>
                 </div>
               </div>
               <button onClick={onClose}
