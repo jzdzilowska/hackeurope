@@ -9,12 +9,12 @@ import { formatCurrency, formatDate, formatTimeAgo, cn } from '@/lib/utils'
 import type { HelmCategory, Transaction } from '@/lib/types'
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Infrastructure: '#00D4A0', 'SaaS & Tools': '#E87878', Payroll: '#7AC0A8',
+  Infrastructure: '#00D4A0', 'Software & Services': '#E87878', Payroll: '#7AC0A8',
   Marketing: '#6898C8', 'Office & Rent': '#C89850', Revenue: '#00D4A0', Other: '#888',
 }
 
 const ALL_CATS: (HelmCategory | 'All')[] = [
-  'All', 'Revenue', 'Infrastructure', 'SaaS & Tools', 'Payroll', 'Marketing', 'Office & Rent',
+  'All', 'Revenue', 'Infrastructure', 'Software & Services', 'Payroll', 'Marketing', 'Office & Rent',
 ]
 
 function groupByDate(txns: Transaction[]) {
@@ -201,7 +201,7 @@ export default function AccountsPage() {
                       {/* Merchant icon */}
                       <div
                         className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-2xs font-bold text-text-muted border border-border/50"
-                        style={{ background: 'rgba(255,255,255,0.02)' }}
+                        style={{ background: 'var(--overlay-subtle)' }}
                       >
                         {txn.merchantLogoUrl ? (
                           <img

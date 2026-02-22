@@ -8,15 +8,15 @@ import { useDashboard } from '@/lib/dashboard-context'
 import type { ChatMessage } from '@/lib/types'
 
 const CANNED_RESPONSES: Record<string, string> = {
-  default: "Based on your Plaid transaction data, **infrastructure costs** are your largest discretionary category at €4,380 this month — up 28% from the previous quarter. Your payroll is stable at €5,200.\n\nWould you like a detailed breakdown or a cost-reduction plan?",
-  infra: "Your infrastructure spend this month is **€4,380**:\n\n• **AWS** — €2,100 (↑41% MoM) · Largest spike\n• **GCP** — €1,890 · Stable\n• **Vercel** — €89 · Stable\n\nThe AWS jump is unusual. Most likely cause: data transfer or a new EC2 instance. Worth checking your AWS Cost Explorer.",
-  runway: "At your current burn of **€15,230/month**, here's your runway projection:\n\n• **6 months** → €98,991 remaining → €6,609 left\n• **12 months** → Deficit of €83,569\n\nYou'll drop below the 6-month threshold on approximately **March 14th**. I'd recommend either reducing burn by ~€2,000/mo or initiating a funding conversation now.",
-  subscriptions: "Analysing 8 active subscriptions across your accounts:\n\n**Potentially unused:**\n• **Linear** — €80/mo · 2 seats idle 45+ days\n• **Notion** — €160/mo · 2 seats idle 6 weeks\n\n**Saving opportunity:** Downgrading these saves **€52/month** (€624/year). Want me to flag them in your payments queue?",
+  default: "Based on your transaction data, **supplier costs** are your largest discretionary category at €4,380 this month — up 28% from the previous quarter. Your payroll is stable at €5,200.\n\nWould you like a detailed breakdown or a cost-reduction plan?",
+  supplier: "Your supplier spend this month is **€4,380**:\n\n• **Häfele** — €2,100 (↑41% MoM) · Largest spike\n• **IKEA Industry** — €1,890 · Stable\n• **Blum** — €89 · Stable\n\nThe Häfele jump is unusual. Most likely cause: bulk hardware order or new product line stocking. Worth checking your purchase orders.",
+  runway: "At your current costs of **€15,230/month**, here's your cash reserves projection:\n\n• **6 months** → €98,991 remaining → €6,609 left\n• **12 months** → Deficit of €83,569\n\nYou'll drop below the 6-month threshold on approximately **March 14th**. I'd recommend either reducing costs by ~€2,000/mo or initiating a credit line renegotiation now.",
+  subscriptions: "Analysing 8 active subscriptions across your accounts:\n\n**Potentially unused:**\n• **QuickBooks** — €80/mo · 2 seats idle 45+ days\n• **Adobe Creative** — €160/mo · 2 seats idle 6 weeks\n\n**Saving opportunity:** Downgrading these saves **€52/month** (€624/year). Want me to flag them in your payments queue?",
 }
 
 function getResponse(query: string): string {
   const q = query.toLowerCase()
-  if (q.includes('infra') || q.includes('aws') || q.includes('cloud')) return CANNED_RESPONSES.infra
+  if (q.includes('supplier') || q.includes('häfele') || q.includes('cost')) return CANNED_RESPONSES.supplier
   if (q.includes('runway') || q.includes('long') || q.includes('last')) return CANNED_RESPONSES.runway
   if (q.includes('subscri') || q.includes('tool') || q.includes('saas') || q.includes('unused')) return CANNED_RESPONSES.subscriptions
   return CANNED_RESPONSES.default
@@ -122,7 +122,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
   const suggestions = [
     'How long can we last?',
     'Unused subscriptions?',
-    'Infra spend breakdown?',
+    'Supplier cost breakdown?',
   ]
 
   return (
@@ -145,7 +145,7 @@ export default function AIChat({ open, onClose }: AIChatProps) {
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', stiffness: 320, damping: 32 }}
             className="fixed right-0 top-0 h-full w-[380px] bg-surface border-l border-border z-40 flex flex-col"
-            style={{ boxShadow: '-8px 0 40px rgba(0,0,0,0.5)' }}
+            style={{ boxShadow: 'var(--panel-shadow)' }}
           >
             {/* Header */}
             <div className="px-5 py-4 border-b border-border/60 flex items-center justify-between flex-shrink-0">

@@ -4,11 +4,12 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, useInView, useAnimation } from 'framer-motion'
 import {
-  Zap, ArrowRight, Check, Building2, Brain, Mail,
-  TrendingUp, Users, Mic, Shield, Lock, CreditCard,
-  ChevronRight, BarChart3, AlertTriangle, Clock, DollarSign,
-  Menu, X,
+  Zap, ArrowRight, Check, Landmark, Sparkles, ScrollText,
+  LineChart, BookOpen, AudioLines, Shield, Lock, CreditCard,
+  ChevronRight, BarChart3, EyeOff, Hourglass, Banknote,
+  Menu, X, Sun, Moon, ScanLine,
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 
 /* ═══════════════════════════════════════════════
@@ -63,6 +64,7 @@ function AnimatedCounter({ target, suffix = '', prefix = '' }: { target: number;
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { theme, setTheme } = useTheme()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -101,6 +103,13 @@ function Nav() {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center gap-4">
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-raised/60 transition-colors"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun size={16} strokeWidth={1.8} /> : <Moon size={16} strokeWidth={1.8} />}
+          </button>
           <Link href="/onboarding" className="text-sm text-text-muted hover:text-text-primary transition-colors">
             Sign in
           </Link>
@@ -128,6 +137,13 @@ function Nav() {
           <a href="#features" onClick={() => setMobileOpen(false)} className="block text-sm text-text-secondary">Features</a>
           <a href="#pricing" onClick={() => setMobileOpen(false)} className="block text-sm text-text-secondary">Pricing</a>
           <a href="#about" onClick={() => setMobileOpen(false)} className="block text-sm text-text-secondary">About</a>
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="flex items-center gap-2 text-sm text-text-secondary"
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </button>
           <hr className="border-border/30" />
           <Link href="/onboarding" className="block text-sm text-text-secondary">Sign in</Link>
           <Link
@@ -258,7 +274,7 @@ function Hero() {
 
                   {/* Cash position hero */}
                   <div className="relative rounded-xl p-6 sm:p-8 mb-6 overflow-hidden" style={{
-                    background: 'linear-gradient(135deg, rgba(80,120,45,0.15) 0%, rgba(55,90,25,0.06) 100%)',
+                    background: 'linear-gradient(135deg, rgba(0,212,160,0.08) 0%, rgba(0,212,160,0.03) 100%)',
                   }}>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-text-muted mb-2">Total Cash on Hand</p>
                     <div className="flex items-end gap-3 mb-3">
@@ -332,28 +348,28 @@ function TrustBar() {
 
 const painPoints = [
   {
-    icon: DollarSign,
+    icon: Banknote,
     title: 'Cash flow surprises',
     desc: 'You pay suppliers in 15 days but customers pay you in 60. The gap is killing your margins.',
     color: 'text-danger',
     bg: 'bg-danger/10',
   },
   {
-    icon: Mail,
+    icon: ScrollText,
     title: 'Invoice chaos',
     desc: 'Invoices arrive by email, PDF, post. Matching them to payments is a full-time job.',
     color: 'text-warning',
     bg: 'bg-warning/10',
   },
   {
-    icon: Clock,
+    icon: Hourglass,
     title: 'Slow-paying customers',
     desc: "Three customers are 30+ days late. You find out when you manually check the books.",
     color: 'text-chart-amber',
     bg: 'bg-chart-amber/10',
   },
   {
-    icon: AlertTriangle,
+    icon: EyeOff,
     title: 'Hidden cost creep',
     desc: "Material costs went up 15% but your prices didn't. You discover the margin hit at quarter-end.",
     color: 'text-chart-pink',
@@ -397,38 +413,38 @@ function PainPoints() {
 
 const features = [
   {
-    icon: Building2,
+    icon: Landmark,
     title: 'Multi-Bank Dashboard',
     desc: 'Connect all your accounts — see total cash on hand across every bank in one view.',
     span: 'col-span-1',
   },
   {
-    icon: Brain,
+    icon: Sparkles,
     title: 'AI Financial Insights',
     desc: 'Claude-powered analysis tailored to wholesale — seasonal trends, supplier costs, margin changes. Not generic advice.',
     span: 'sm:col-span-2',
     featured: true,
   },
   {
-    icon: Mail,
+    icon: ScanLine,
     title: 'Invoice Scanner',
     desc: 'Invoices in your inbox get auto-detected and parsed. No manual entry, no missed payments.',
     span: 'col-span-1',
   },
   {
-    icon: TrendingUp,
+    icon: LineChart,
     title: 'Cash Flow Forecasting',
     desc: "See what's coming in and going out — 60 days ahead. No more end-of-month surprises.",
     span: 'sm:col-span-2',
   },
   {
-    icon: Users,
+    icon: BookOpen,
     title: 'Accounts Receivable',
     desc: 'Who owes you, how much, and how late. Track every outstanding invoice in real time.',
     span: 'col-span-1',
   },
   {
-    icon: Mic,
+    icon: AudioLines,
     title: 'Voice Summaries',
     desc: 'Get a daily financial briefing you can listen to on the drive to the warehouse.',
     span: 'col-span-1',

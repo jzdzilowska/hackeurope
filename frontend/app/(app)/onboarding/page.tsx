@@ -672,7 +672,7 @@ export default function OnboardingPage() {
                               <div
                                 key={i}
                                 className="w-7 h-7 rounded-lg flex items-center justify-center border border-white/10"
-                                style={{ background: 'rgba(255,255,255,0.05)' }}
+                                style={{ background: 'var(--overlay-subtle)' }}
                               >
                                 <Icon size={13} style={{ color: bt.accent }} />
                               </div>

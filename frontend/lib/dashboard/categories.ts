@@ -1,6 +1,6 @@
 export type HelmCategory =
   | 'Infrastructure'
-  | 'SaaS & Tools'
+  | 'Software & Services'
   | 'Payroll'
   | 'Office & Rent'
   | 'Marketing'
@@ -69,7 +69,7 @@ export function mapPlaidToHelmCategory(
       return 'Variable Costs';
 
     case 'GENERAL_SERVICES':
-      return merchantMatches(merchantName, SAAS_VENDORS) ? 'SaaS & Tools' : 'Other';
+      return merchantMatches(merchantName, SAAS_VENDORS) ? 'Software & Services' : 'Other';
 
     case 'GOVERNMENT_AND_NON_PROFIT':
     case 'TRANSFER_OUT':
@@ -80,7 +80,7 @@ export function mapPlaidToHelmCategory(
 
 export const HELM_CATEGORY_COLORS: Record<HelmCategory, string> = {
   'Infrastructure': '#3b82f6',
-  'SaaS & Tools': '#8b5cf6',
+  'Software & Services': '#8b5cf6',
   'Payroll': '#ec4899',
   'Office & Rent': '#f59e0b',
   'Marketing': '#10b981',

@@ -1,16 +1,19 @@
 import type { Metadata } from 'next'
+import { ThemeProvider } from 'next-themes'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'HELM — Financial control for companies moving fast',
-  description: 'AI-powered financial operating layer for early-stage companies',
+  description: 'AI-powered financial operating layer for wholesale businesses',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className="bg-background text-text-primary antialiased">
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="light">
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

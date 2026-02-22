@@ -29,7 +29,7 @@ export interface Account {
 // ─── Transactions ────────────────────────────────────────────────────────────
 export type HelmCategory =
   | 'Infrastructure'
-  | 'SaaS & Tools'
+  | 'Software & Services'
   | 'Payroll'
   | 'Office & Rent'
   | 'Marketing'
